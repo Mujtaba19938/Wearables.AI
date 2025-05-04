@@ -383,7 +383,7 @@ function getRecommendations(faceShape: string): GlassesStyle[] {
           name: "Wood Texture",
           description: "Eco-friendly frames with natural wood grain pattern that complement oval faces.",
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=fnd6y",
+          imageSrc: "/frames/wood-texture-brown.png",
         },
       ]
 
@@ -411,7 +411,7 @@ function getRecommendations(faceShape: string): GlassesStyle[] {
           name: "Hexagonal Wire",
           description: "Geometric angles help define and contrast with round face features.",
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=yaglw",
+          imageSrc: "/frames/hexagonal-wire-gold.png",
         },
         {
           name: "Wayfarer",
@@ -487,7 +487,7 @@ function getRecommendations(faceShape: string): GlassesStyle[] {
           name: "Clear Round Crystal",
           description: "Transparent round frames soften angular features with a modern look.",
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=4oyyq",
+          imageSrc: "/frames/clear-round-crystal.png",
         },
       ]
 
@@ -515,7 +515,7 @@ function getRecommendations(faceShape: string): GlassesStyle[] {
           name: "Narrow Oval",
           description: "Slim profile balances wider foreheads and adds width to narrow chins.",
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?height=400&width=600&query=slim narrow oval black eyeglasses frames",
+          imageSrc: "/frames/narrow-oval-black.png",
         },
         {
           name: "Round",
@@ -591,8 +591,7 @@ function getRecommendations(faceShape: string): GlassesStyle[] {
           name: "Butterfly Frame",
           description: "Upswept design complements high cheekbones and adds width to narrow features.",
           suitability: "Good",
-          imageSrc:
-            "/placeholder.svg?height=400&width=600&query=purple butterfly shaped eyeglasses frames with upswept corners",
+          imageSrc: "/frames/butterfly-frame-purple.png",
         },
       ]
 

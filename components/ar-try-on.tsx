@@ -23,6 +23,7 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
   const [selectedColor, setSelectedColor] = useState(frame.colors[0])
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [isCapturing, setIsCapturing] = useState(false)
+  const [frameImageError, setFrameImageError] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isMobile = useMobile()
@@ -44,8 +45,8 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
             videoRef.current.srcObject = stream
             setCameraReady(true)
           }
-        } catch (err) {
-          console.error("Error accessing camera:", err)
+        } catch (error) {
+          console.error("Error accessing camera:", error)
         }
       }
 
@@ -81,7 +82,10 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
       // For now, we'll just add a simple overlay
       const frameImg = new Image()
       frameImg.crossOrigin = "anonymous"
-      frameImg.src = frame.image
+
+      // Use a fallback image for AR try-on
+      const fallbackImage = "/placeholder.svg?height=600&width=600&query=eyeglasses frames"
+      frameImg.src = frameImageError ? fallbackImage : frame.image
 
       frameImg.onload = () => {
         // Position the glasses in the middle of the face (simplified)
@@ -95,6 +99,12 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
         // Convert canvas to image
         const imageDataUrl = canvas.toDataURL("image/png")
         setCapturedImage(imageDataUrl)
+        setIsCapturing(false)
+      }
+
+      frameImg.onerror = () => {
+        console.error("Error loading frame image for AR try-on")
+        setFrameImageError(true)
         setIsCapturing(false)
       }
     }
@@ -132,6 +142,14 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
     } catch (error) {
       console.error("Error sharing:", error)
     }
+  }
+
+  // Get a safe image source that falls back to placeholder if needed
+  const getSafeImageSrc = () => {
+    if (frameImageError) {
+      return `/placeholder.svg?height=600&width=600&query=${encodeURIComponent(frame.name + " eyeglasses frames")}`
+    }
+    return frame.image
   }
 
   return (
@@ -194,7 +212,21 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
                           ? "#8B4513"
                           : color.toLowerCase() === "clear"
                             ? "#f8f9fa"
-                            : color.toLowerCase(),
+                            : color.toLowerCase() === "havana"
+                              ? "#5D4037"
+                              : color.toLowerCase() === "gunmetal"
+                                ? "#484848"
+                                : color.toLowerCase() === "bronze"
+                                  ? "#CD7F32"
+                                  : color.toLowerCase() === "burgundy"
+                                    ? "#800020"
+                                    : color.toLowerCase() === "navy"
+                                      ? "#000080"
+                                      : color.toLowerCase() === "rose gold"
+                                        ? "#B76E79"
+                                        : color.toLowerCase().includes("/")
+                                          ? color.toLowerCase().split("/")[0]
+                                          : color.toLowerCase(),
                     }}
                     onClick={() => setSelectedColor(color)}
                     title={color}
@@ -232,12 +264,7 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
           <div className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="relative aspect-[3/4] bg-muted rounded-md overflow-hidden">
-                <Image
-                  src="/placeholder.svg?height=600&width=400&query=person face portrait for glasses try on"
-                  alt="Model face"
-                  fill
-                  className="object-cover"
-                />
+                <Image src="/frames/model-face.png" alt="Model face" fill className="object-cover" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div
                     className="relative w-[60%] aspect-[3/1]"
@@ -245,7 +272,13 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
                       top: "-5%",
                     }}
                   >
-                    <Image src={frame.image || "/placeholder.svg"} alt={frame.name} fill className="object-contain" />
+                    <Image
+                      src={getSafeImageSrc() || "/placeholder.svg"}
+                      alt={frame.name}
+                      fill
+                      className="object-contain"
+                      onError={() => setFrameImageError(true)}
+                    />
                   </div>
                 </div>
               </div>
@@ -272,7 +305,21 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
                               ? "#8B4513"
                               : color.toLowerCase() === "clear"
                                 ? "#f8f9fa"
-                                : color.toLowerCase(),
+                                : color.toLowerCase() === "havana"
+                                  ? "#5D4037"
+                                  : color.toLowerCase() === "gunmetal"
+                                    ? "#484848"
+                                    : color.toLowerCase() === "bronze"
+                                      ? "#CD7F32"
+                                      : color.toLowerCase() === "burgundy"
+                                        ? "#800020"
+                                        : color.toLowerCase() === "navy"
+                                          ? "#000080"
+                                          : color.toLowerCase() === "rose gold"
+                                            ? "#B76E79"
+                                            : color.toLowerCase().includes("/")
+                                              ? color.toLowerCase().split("/")[0]
+                                              : color.toLowerCase(),
                         }}
                         onClick={() => setSelectedColor(color)}
                         title={color}

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 import ARTryOn from "@/components/ar-try-on"
 import { Logo } from "@/components/logo"
 
-// Frame data with static image paths
+// Frame data with updated image paths
 const frames = [
   {
     id: 1,
@@ -40,7 +40,7 @@ const frames = [
     name: "Cat-Eye Elegance",
     description: "Upswept frames with a retro vibe",
     price: "$139",
-    image: "/frames/cat-eye-red.jpg",
+    image: "/placeholder.svg?key=oxenq",
     faceShapes: ["Diamond", "Oval"],
     colors: ["Red", "Black", "Tortoise"],
     category: "Fashion",
@@ -51,7 +51,7 @@ const frames = [
     name: "Modern Rectangle",
     description: "Structured frames with clean lines",
     price: "$109",
-    image: "/frames/modern-rectangle-black.jpg",
+    image: "/placeholder.svg?key=6chyu",
     faceShapes: ["Round", "Heart"],
     colors: ["Black", "Blue", "Gray"],
     category: "Professional",
@@ -71,7 +71,7 @@ const frames = [
     name: "Browline Scholar",
     description: "Semi-rimless style with bold upper frame",
     price: "$159",
-    image: "/frames/browline-black.png",
+    image: "/placeholder.svg?key=7ska8",
     faceShapes: ["Diamond", "Heart"],
     colors: ["Black", "Brown", "Burgundy"],
     category: "Professional",
@@ -81,7 +81,7 @@ const frames = [
     name: "Oversized Square",
     description: "Bold, large frames with a fashion-forward look",
     price: "$169",
-    image: "/frames/oversized-square-black.png",
+    image: "/placeholder.svg?key=46u8z",
     faceShapes: ["Oval"],
     colors: ["Black", "Clear", "Tortoise"],
     category: "Fashion",
@@ -91,7 +91,7 @@ const frames = [
     name: "Rimless Minimalist",
     description: "Subtle, frameless design for a barely-there look",
     price: "$189",
-    image: "/frames/rimless-clear.png",
+    image: "/placeholder.svg?key=3q3uq",
     faceShapes: ["Diamond", "Heart", "Oval"],
     colors: ["Clear", "Light Blue", "Light Pink"],
     category: "Professional",
@@ -101,7 +101,7 @@ const frames = [
     name: "Geometric Hexagon",
     description: "Modern, angular frames with a unique shape",
     price: "$149",
-    image: "/frames/geometric-hexagon-black.png",
+    image: "/placeholder.svg?height=600&width=600&query=black geometric hexagon eyeglasses frames on white background",
     faceShapes: ["Round", "Oval"],
     colors: ["Black", "Gold", "Rose Gold"],
     category: "Fashion",
@@ -112,7 +112,7 @@ const frames = [
     name: "Thin Metal Round",
     description: "Lightweight circular frames with minimalist appeal",
     price: "$139",
-    image: "/frames/thin-metal-round-silver.png",
+    image: "/placeholder.svg?height=600&width=600&query=silver thin metal round eyeglasses frames on white background",
     faceShapes: ["Square", "Heart", "Diamond"],
     colors: ["Silver", "Gold", "Rose Gold", "Black"],
     category: "Vintage",
@@ -132,7 +132,7 @@ const frames = [
     name: "Clubmaster Classic",
     description: "Iconic retro design with distinctive browline",
     price: "$159",
-    image: "/frames/clubmaster-brown.png",
+    image: "/placeholder.svg?height=600&width=600&query=brown clubmaster classic eyeglasses frames on white background",
     faceShapes: ["Round", "Oval", "Diamond"],
     colors: ["Brown/Gold", "Black/Silver", "Tortoise/Gold"],
     category: "Vintage",
@@ -143,7 +143,7 @@ const frames = [
     name: "Slim Rectangle",
     description: "Narrow rectangular frames for a subtle look",
     price: "$119",
-    image: "/frames/slim-rectangle-blue.png",
+    image: "/placeholder.svg?height=600&width=600&query=blue slim rectangle eyeglasses frames on white background",
     faceShapes: ["Round", "Oval"],
     colors: ["Blue", "Black", "Burgundy"],
     category: "Professional",
@@ -153,7 +153,7 @@ const frames = [
     name: "Sporty Wrap",
     description: "Curved frames designed for active lifestyles",
     price: "$149",
-    image: "/frames/sporty-wrap-black.png",
+    image: "/placeholder.svg?height=600&width=600&query=black sporty wrap eyeglasses frames on white background",
     faceShapes: ["Oval", "Heart"],
     colors: ["Black", "Gray", "Navy"],
     category: "Casual",
@@ -163,7 +163,7 @@ const frames = [
     name: "Retro Square",
     description: "Vintage-inspired square frames with character",
     price: "$139",
-    image: "/frames/retro-square-tortoise.png",
+    image: "/placeholder.svg?height=600&width=600&query=tortoise retro square eyeglasses frames on white background",
     faceShapes: ["Round", "Heart"],
     colors: ["Tortoise", "Black", "Green"],
     category: "Vintage",
@@ -173,7 +173,7 @@ const frames = [
     name: "Oval Wire",
     description: "Classic oval shape with thin metal construction",
     price: "$129",
-    image: "/frames/oval-wire-gold.png",
+    image: "/placeholder.svg?height=600&width=600&query=gold oval wire eyeglasses frames on white background",
     faceShapes: ["Square", "Diamond", "Heart"],
     colors: ["Gold", "Silver", "Bronze"],
     category: "Professional",
@@ -183,7 +183,7 @@ const frames = [
     name: "Designer Cat-Eye",
     description: "Luxury cat-eye frames with decorative temples",
     price: "$199",
-    image: "/frames/designer-cat-eye-black.png",
+    image: "/placeholder.svg?height=600&width=600&query=black designer cat eye eyeglasses frames on white background",
     faceShapes: ["Round", "Heart", "Oval"],
     colors: ["Black", "Tortoise", "Burgundy"],
     category: "Fashion",
@@ -194,7 +194,7 @@ const frames = [
     name: "Keyhole Bridge",
     description: "Distinctive keyhole bridge for a unique profile",
     price: "$149",
-    image: "/frames/keyhole-bridge-tortoise.png",
+    image: "/placeholder.svg?height=600&width=600&query=tortoise keyhole bridge eyeglasses frames on white background",
     faceShapes: ["Oval", "Heart", "Diamond"],
     colors: ["Tortoise", "Black", "Navy"],
     category: "Vintage",
@@ -204,7 +204,7 @@ const frames = [
     name: "Half-Rim Titanium",
     description: "Lightweight semi-rimless frames with titanium construction",
     price: "$179",
-    image: "/placeholder.svg?key=zmd4a",
+    image: "/placeholder.svg?height=600&width=600&query=silver half rim titanium eyeglasses frames on white background",
     faceShapes: ["Oval", "Heart", "Diamond"],
     colors: ["Silver", "Gunmetal", "Bronze"],
     category: "Professional",
@@ -214,7 +214,7 @@ const frames = [
     name: "Wood Texture",
     description: "Eco-friendly frames with natural wood grain pattern",
     price: "$159",
-    image: "/placeholder.svg?key=1jeff",
+    image: "/placeholder.svg?height=600&width=600&query=brown wood texture eyeglasses frames on white background",
     faceShapes: ["Square", "Round", "Oval"],
     colors: ["Brown", "Dark Brown", "Black"],
     category: "Casual",
@@ -225,7 +225,7 @@ const frames = [
     name: "Clear Round Crystal",
     description: "Transparent frames with a modern minimalist design",
     price: "$129",
-    image: "/placeholder.svg?key=jvi2w",
+    image: "/placeholder.svg?height=600&width=600&query=crystal clear round eyeglasses frames on white background",
     faceShapes: ["Square", "Diamond", "Heart"],
     colors: ["Crystal", "Light Blue", "Rose"],
     category: "Fashion",
@@ -235,7 +235,7 @@ const frames = [
     name: "Hexagonal Wire",
     description: "Geometric frames with thin metal construction",
     price: "$149",
-    image: "/placeholder.svg?key=4vs5x",
+    image: "/placeholder.svg?height=600&width=600&query=gold hexagonal wire eyeglasses frames on white background",
     faceShapes: ["Round", "Oval", "Heart"],
     colors: ["Gold", "Silver", "Black"],
     category: "Fashion",
@@ -245,7 +245,8 @@ const frames = [
     name: "Shield Sunglasses",
     description: "Bold oversized frames with gradient lenses",
     price: "$189",
-    image: "/placeholder.svg?key=cv692",
+    image:
+      "/placeholder.svg?height=600&width=600&query=black shield sunglasses with gradient lenses on white background",
     faceShapes: ["Oval", "Heart"],
     colors: ["Black/Gray", "Brown/Gold", "Blue/Silver"],
     category: "Fashion",
@@ -255,7 +256,7 @@ const frames = [
     name: "Narrow Oval",
     description: "Slim profile frames with a subtle retro influence",
     price: "$139",
-    image: "/placeholder.svg?height=400&width=600&query=slim narrow oval black eyeglasses frames",
+    image: "/placeholder.svg?height=600&width=600&query=black narrow oval eyeglasses frames on white background",
     faceShapes: ["Square", "Diamond", "Round"],
     colors: ["Black", "Tortoise", "Navy"],
     category: "Vintage",
@@ -265,7 +266,7 @@ const frames = [
     name: "Chunky Square",
     description: "Bold acetate frames with a statement look",
     price: "$169",
-    image: "/placeholder.svg?height=400&width=600&query=chunky thick havana tortoise square eyeglasses frames",
+    image: "/placeholder.svg?height=600&width=600&query=havana chunky square eyeglasses frames on white background",
     faceShapes: ["Oval", "Heart"],
     colors: ["Havana", "Black", "Tortoise"],
     category: "Fashion",
@@ -275,10 +276,113 @@ const frames = [
     name: "Butterfly Frame",
     description: "Feminine silhouette with upswept corners",
     price: "$159",
-    image: "/placeholder.svg?height=400&width=600&query=purple butterfly shaped eyeglasses frames with upswept corners",
+    image: "/frames/butterfly-frame-purple.png",
     faceShapes: ["Round", "Square", "Heart"],
     colors: ["Purple", "Black", "Tortoise"],
     category: "Fashion",
+    bestseller: true,
+  },
+  {
+    id: 27,
+    name: "Retro Wayfarer",
+    description: "Classic design with a modern twist and bold accents",
+    price: "$135",
+    image: "/placeholder.svg?height=600&width=600&query=black retro wayfarer eyeglasses frames on white background",
+    faceShapes: ["Oval", "Round", "Square"],
+    colors: ["Black", "Tortoise", "Navy"],
+    category: "Casual",
+  },
+  {
+    id: 28,
+    name: "Circular Vintage",
+    description: "Perfect round frames with antique metal finish",
+    price: "$125",
+    image: "/placeholder.svg?height=600&width=600&query=gold circular vintage eyeglasses frames on white background",
+    faceShapes: ["Square", "Heart", "Diamond"],
+    colors: ["Gold", "Silver", "Bronze"],
+    category: "Vintage",
+    bestseller: true,
+  },
+  {
+    id: 29,
+    name: "Modern Cat-Eye",
+    description: "Contemporary take on the classic upswept style",
+    price: "$145",
+    image: "/placeholder.svg?height=600&width=600&query=black modern cat eye eyeglasses frames on white background",
+    faceShapes: ["Diamond", "Oval", "Heart"],
+    colors: ["Black", "Red", "Tortoise"],
+    category: "Fashion",
+  },
+  {
+    id: 30,
+    name: "Slim Rectangular",
+    description: "Sleek frames with refined proportions and clean edges",
+    price: "$115",
+    image: "/placeholder.svg?height=600&width=600&query=gray slim rectangular eyeglasses frames on white background",
+    faceShapes: ["Round", "Oval", "Heart"],
+    colors: ["Gray", "Black", "Navy"],
+    category: "Professional",
+  },
+  {
+    id: 31,
+    name: "Pilot Aviator",
+    description: "Classic pilot style with double bridge detail",
+    price: "$155",
+    image: "/placeholder.svg?height=600&width=600&query=silver pilot aviator eyeglasses frames on white background",
+    faceShapes: ["Oval", "Square", "Heart"],
+    colors: ["Silver", "Gold", "Gunmetal"],
+    category: "Casual",
+  },
+  {
+    id: 32,
+    name: "Modern Browline",
+    description: "Contemporary take on the classic half-rim design",
+    price: "$165",
+    image: "/placeholder.svg?height=600&width=600&query=black modern browline eyeglasses frames on white background",
+    faceShapes: ["Diamond", "Heart", "Oval"],
+    colors: ["Black", "Tortoise", "Burgundy"],
+    category: "Professional",
+  },
+  {
+    id: 33,
+    name: "Oversized Round",
+    description: "Statement-making large circular frames",
+    price: "$139",
+    image: "/placeholder.svg?height=600&width=600&query=tortoise oversized round eyeglasses frames on white background",
+    faceShapes: ["Square", "Diamond"],
+    colors: ["Tortoise", "Black", "Clear"],
+    category: "Fashion",
+  },
+  {
+    id: 34,
+    name: "Ultra-Light Rimless",
+    description: "Nearly invisible frames with premium lens mounting",
+    price: "$199",
+    image:
+      "/placeholder.svg?height=600&width=600&query=clear ultra light rimless eyeglasses frames on white background",
+    faceShapes: ["Oval", "Heart", "Diamond", "Round"],
+    colors: ["Clear", "Gold Accent", "Silver Accent"],
+    category: "Professional",
+  },
+  {
+    id: 35,
+    name: "Geometric Pentagon",
+    description: "Unique five-sided frames for the fashion-forward",
+    price: "$159",
+    image: "/placeholder.svg?height=600&width=600&query=black geometric pentagon eyeglasses frames on white background",
+    faceShapes: ["Round", "Oval"],
+    colors: ["Black", "Gold", "Tortoise"],
+    category: "Fashion",
+  },
+  {
+    id: 36,
+    name: "Wire Round Classic",
+    description: "Timeless thin metal frames with vintage appeal",
+    price: "$129",
+    image: "/placeholder.svg?height=600&width=600&query=gold wire round classic eyeglasses frames on white background",
+    faceShapes: ["Square", "Diamond", "Heart"],
+    colors: ["Gold", "Silver", "Black"],
+    category: "Vintage",
     bestseller: true,
   },
 ]
@@ -298,6 +402,21 @@ export default function FramesPage() {
     priceRange: "All",
   })
   const [showFilters, setShowFilters] = useState(false)
+  const [imageLoadErrors, setImageLoadErrors] = useState<Record<number, boolean>>({})
+
+  // Track image loading errors
+  useEffect(() => {
+    const handleImageError = (event: Event) => {
+      const target = event.target as HTMLImageElement
+      console.error(`Image failed to load: ${target.src}`)
+    }
+
+    window.addEventListener("error", handleImageError, true)
+
+    return () => {
+      window.removeEventListener("error", handleImageError, true)
+    }
+  }, [])
 
   // Filter frames based on selected filters
   const filteredFrames = frames.filter((frame) => {
@@ -349,6 +468,13 @@ export default function FramesPage() {
       search: "",
       priceRange: "All",
     })
+  }
+
+  const handleImageError = (frameId: number) => {
+    setImageLoadErrors((prev) => ({
+      ...prev,
+      [frameId]: true,
+    }))
   }
 
   return (
@@ -461,11 +587,16 @@ export default function FramesPage() {
               <Card key={frame.id} className="overflow-hidden flex flex-col">
                 <div className="relative aspect-[4/3]">
                   <Image
-                    src={frame.image || "/placeholder.svg"}
+                    src={
+                      imageLoadErrors[frame.id]
+                        ? `/placeholder.svg?height=600&width=600&query=${encodeURIComponent(frame.name + " eyeglasses frames")}`
+                        : frame.image
+                    }
                     alt={frame.name}
                     fill
                     className="object-cover"
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    onError={() => handleImageError(frame.id)}
                   />
                   {frame.bestseller && (
                     <Badge className="absolute top-2 right-2 bg-yellow-500 hover:bg-yellow-600">Bestseller</Badge>
@@ -494,7 +625,21 @@ export default function FramesPage() {
                                 ? "#8B4513"
                                 : color.toLowerCase() === "clear"
                                   ? "#f8f9fa"
-                                  : color.toLowerCase(),
+                                  : color.toLowerCase() === "havana"
+                                    ? "#5D4037"
+                                    : color.toLowerCase() === "gunmetal"
+                                      ? "#484848"
+                                      : color.toLowerCase() === "bronze"
+                                        ? "#CD7F32"
+                                        : color.toLowerCase() === "burgundy"
+                                          ? "#800020"
+                                          : color.toLowerCase() === "navy"
+                                            ? "#000080"
+                                            : color.toLowerCase() === "rose gold"
+                                              ? "#B76E79"
+                                              : color.toLowerCase().includes("/")
+                                                ? color.toLowerCase().split("/")[0]
+                                                : color.toLowerCase(),
                           }}
                           title={color}
                         />
