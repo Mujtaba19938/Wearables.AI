@@ -44,12 +44,6 @@ export function Logo({ className, size = "md", showText = true, textClassName }:
           {/* Temple arms */}
           <path d="M15 30 H25" stroke="currentColor" strokeWidth="3" />
           <path d="M95 30 H105" stroke="currentColor" strokeWidth="3" />
-
-          {/* Dot accent in left lens */}
-          <circle cx="35" cy="30" r="3" fill="currentColor" />
-
-          {/* Dot accent in right lens */}
-          <circle cx="85" cy="30" r="3" fill="currentColor" />
         </svg>
       </div>
 

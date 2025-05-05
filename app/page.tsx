@@ -1,45 +1,41 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Logo } from "@/components/logo"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { ShieldCheck } from "lucide-react"
+import { Logo } from "@/components/logo"
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-3 sm:p-4 md:p-24">
-      <div className="mb-6 sm:mb-8 flex flex-col items-center">
-        <Logo size="lg" showText={false} />
-        <h1 className="mt-3 sm:mt-4 text-3xl sm:text-4xl font-extrabold tracking-tight">wearables.ai</h1>
-        <p className="mt-1 sm:mt-2 text-base sm:text-lg text-muted-foreground">Find your perfect eyewear match</p>
-      </div>
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 text-center">
+      <div className="max-w-md mx-auto">
+        <div className="flex flex-col items-center mb-8">
+          <Logo size="lg" showText={false} />
+          <h1 className="text-4xl font-bold mt-6 mb-2">wearables.ai</h1>
+          <p className="text-muted-foreground">Find your perfect eyewear match</p>
+        </div>
 
-      <Card className="w-full max-w-xs sm:max-w-sm md:max-w-3xl">
-        <CardHeader className="text-center p-4 sm:p-6">
-          <CardTitle className="text-xl sm:text-2xl">Face Shape Analyzer</CardTitle>
-          <CardDescription className="text-sm sm:text-base">
-            Discover eyeglasses that complement your unique facial features
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col items-center p-4 sm:p-6 pt-0 sm:pt-0">
-          <Alert className="mb-4 sm:mb-6 bg-primary/10 border-primary/20 text-xs sm:text-sm">
-            <ShieldCheck className="h-3 w-3 sm:h-4 sm:w-4 text-primary" />
-            <AlertDescription className="text-primary font-medium">
+        <div className="w-full bg-card/50 backdrop-blur-sm border border-border rounded-lg p-6 mb-8">
+          <h2 className="text-2xl font-semibold mb-2">Face Shape Analyzer</h2>
+          <p className="text-muted-foreground mb-6">Discover eyeglasses that complement your unique facial features</p>
+
+          <div className="bg-blue-950/30 border border-blue-900/50 rounded-md p-3 mb-6 flex items-start text-left">
+            <ShieldCheck className="h-5 w-5 text-blue-400 mr-2 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-blue-100">
               Faces or facial features data/images are not stored in any way and we do not sell your privacy.
-            </AlertDescription>
-          </Alert>
+            </p>
+          </div>
 
-          <p className="mb-4 sm:mb-6 text-center text-sm sm:text-base">
+          <p className="text-sm mb-6">
             Our AI will analyze your face shape and recommend the most suitable eyeglasses styles that enhance your
             appearance and boost your confidence.
           </p>
-          <Link href="/analyzer" passHref>
-            <Button size="lg" className="px-6 sm:px-8 w-full sm:w-auto">
+
+          <Link href="/analyzer">
+            <Button className="w-full" size="lg">
               Start Analysis
             </Button>
           </Link>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </main>
   )
 }

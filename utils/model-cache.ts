@@ -1,39 +1,41 @@
 // Utility functions for model caching and loading
 
+// Original model URL that you provided
+export const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models"
+
 // Check if the browser supports service workers
 export function isCachingSupported(): boolean {
-  return "serviceWorker" in navigator && "caches" in window
+  return typeof window !== "undefined" && "serviceWorker" in navigator && "caches" in window
 }
 
-// Register the service worker
+// Register the service worker with better error handling
 export async function registerServiceWorker(): Promise<boolean> {
   if (!isCachingSupported()) {
     console.log("Service workers not supported in this browser")
     return false
   }
 
+  // In Vercel preview environments, service workers might not work as expected
+  // Check if we're in a preview environment
+  if (window.location.hostname.includes("vusercontent.net")) {
+    console.log("Service worker registration skipped in preview environment")
+    return false
+  }
+
   try {
     const registration = await navigator.serviceWorker.register("/service-worker.js", {
       scope: "/",
-      updateViaCache: "none", // Don't use cached version of service worker
     })
     console.log("Service worker registered:", registration)
-
-    // Force update if needed
-    if (registration.active) {
-      registration.update().catch((err) => {
-        console.error("Error updating service worker:", err)
-      })
-    }
-
     return true
   } catch (error) {
     console.error("Service worker registration failed:", error)
+    // Don't treat this as a fatal error
     return false
   }
 }
 
-// Check if models are cached
+// Check if models are cached - with fallback
 export async function areModelsCached(): Promise<boolean> {
   if (!isCachingSupported()) return false
 
@@ -42,14 +44,14 @@ export async function areModelsCached(): Promise<boolean> {
     const keys = await cache.keys()
 
     // Check if we have at least one model file cached
-    return keys.some((key) => key.url.includes("face-api.js/models") || key.url.includes("face-api/model"))
+    return keys.some((key) => key.url.includes("face-api.js/models"))
   } catch (error) {
     console.error("Error checking cached models:", error)
     return false
   }
 }
 
-// Force update of cached models
+// Force update of cached models - with fallback
 export async function updateCachedModels(): Promise<boolean> {
   if (!isCachingSupported()) return false
 
@@ -69,8 +71,18 @@ export async function updateCachedModels(): Promise<boolean> {
   }
 }
 
+// Helper function to check if a URL is accessible
+export async function isUrlAccessible(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: "HEAD", mode: "cors", cache: "no-cache" })
+    return response.ok
+  } catch (error) {
+    return false
+  }
+}
+
 // Custom model loader that works with both cached and network resources
-export async function loadModelsWithCache(modelUrl: string, onProgress: (progress: number) => void): Promise<boolean> {
+export async function loadModelsWithCache(onProgress: (progress: number) => void): Promise<boolean> {
   try {
     // Check if models are already cached
     const modelsAreCached = await areModelsCached()
@@ -100,6 +112,15 @@ export function checkBrowserCapabilities(): {
   mediaDevices: boolean
   serviceWorker: boolean
 } {
+  if (typeof window === "undefined") {
+    return {
+      webgl: false,
+      webAssembly: false,
+      mediaDevices: false,
+      serviceWorker: false,
+    }
+  }
+
   return {
     webgl: !!window.WebGLRenderingContext,
     webAssembly: typeof WebAssembly === "object",

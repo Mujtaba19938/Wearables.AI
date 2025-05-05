@@ -6,16 +6,16 @@ import FaceAnalyzer from "@/components/face-analyzer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Camera, FileImage, RefreshCw, Info, AlertTriangle } from "lucide-react"
+import { ArrowLeft, Camera, FileImage, RefreshCw, AlertTriangle } from "lucide-react"
 import Link from "next/link"
-import RecommendationResults from "@/components/recommendation-results"
 import { Progress } from "@/components/ui/progress"
 import { Logo } from "@/components/logo"
-import { OfflineIndicator } from "@/components/offline-indicator"
 import { useMobile } from "@/hooks/use-mobile"
-import type { FacialMeasurements } from "@/types/facial-measurements"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { checkBrowserCapabilities } from "@/utils/model-cache"
+import type { FacialMeasurements } from "@/types/facial-measurements"
+import RecommendationResults from "@/components/recommendation-results"
+import { OfflineIndicator } from "@/components/offline-indicator"
 
 export default function AnalyzerPage() {
   const searchParams = useSearchParams()
@@ -29,7 +29,6 @@ export default function AnalyzerPage() {
   const [modelsLoading, setModelsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState(tabParam === "upload" ? "upload" : "camera")
   const [loadingError, setLoadingError] = useState<string | null>(null)
-  const [showARInfo, setShowARInfo] = useState(true)
   const [browserCapabilities, setBrowserCapabilities] = useState<ReturnType<typeof checkBrowserCapabilities> | null>(
     null,
   )
@@ -48,7 +47,6 @@ export default function AnalyzerPage() {
   const handleRetry = () => {
     setModelsLoading(true)
     setLoadingError(null)
-    // Force a reload of the models
     window.location.reload()
   }
 
@@ -97,22 +95,6 @@ export default function AnalyzerPage() {
                 "Your browser may not fully support WebGL, which is required for face detection. "}
               {!browserCapabilities.mediaDevices && "Your browser may have limited camera access capabilities. "}
               Consider using a modern browser like Chrome or Edge for the best experience.
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {showARInfo && !uploadMode && !faceShape && (
-          <Alert className="mb-4 bg-blue-100 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            <AlertDescription className="text-blue-600 dark:text-blue-400 font-medium text-sm">
-              New! AR mode is now available. See facial measurements in real-time as you move.
-              <Button
-                variant="link"
-                className="p-0 h-auto text-blue-600 dark:text-blue-400"
-                onClick={() => setShowARInfo(false)}
-              >
-                Dismiss
-              </Button>
             </AlertDescription>
           </Alert>
         )}

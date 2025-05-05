@@ -62,10 +62,10 @@
     "fs": "latest",
     "path": "latest",
     "child_process": "latest",
-    "framer-motion": "latest",
     "face-api.js": "latest",
     "html2canvas": "latest",
     "jspdf": "latest",
+    "framer-motion": "latest",
     "react-webcam": "latest"
   },
   "devDependencies": {

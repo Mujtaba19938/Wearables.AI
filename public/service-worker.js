@@ -1,12 +1,6 @@
 // Service worker for caching face-api.js models
 const CACHE_NAME = "wearables-face-models-v1"
-
-// Define multiple model sources to try
-const MODEL_SOURCES = [
-  "https://justadudewhohacks.github.io/face-api.js/models",
-  "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model",
-  "https://cdn.jsdelivr.net/npm/face-api.js/weights",
-]
+const MODEL_URL = "https://justadudewhohacks.github.io/face-api.js/models"
 
 // List of model files to cache
 const MODEL_FILES = [
@@ -23,8 +17,8 @@ const MODEL_FILES = [
   "face_expression_model-shard1",
 ]
 
-// Generate all possible model URLs
-const MODEL_URLS = MODEL_SOURCES.flatMap((source) => MODEL_FILES.map((file) => `${source}/${file}`))
+// Generate model URLs
+const MODEL_URLS = MODEL_FILES.map((file) => `${MODEL_URL}/${file}`)
 
 // Install event - cache models when service worker is installed
 self.addEventListener("install", (event) => {
@@ -83,38 +77,12 @@ self.addEventListener("activate", (event) => {
   )
 })
 
-// Helper function to find the right model URL
-async function findModelInCache(request) {
-  const cache = await caches.open(CACHE_NAME)
-  const cachedResponse = await cache.match(request)
-
-  if (cachedResponse) {
-    return cachedResponse
-  }
-
-  // If not found, try alternative URLs
-  const url = new URL(request.url)
-  const fileName = url.pathname.split("/").pop()
-
-  for (const source of MODEL_SOURCES) {
-    const alternativeUrl = `${source}/${fileName}`
-    if (alternativeUrl !== request.url) {
-      const alternativeResponse = await cache.match(alternativeUrl)
-      if (alternativeResponse) {
-        return alternativeResponse
-      }
-    }
-  }
-
-  return null
-}
-
 // Fetch event - serve from cache, falling back to network
 self.addEventListener("fetch", (event) => {
-  // Only cache the model files from the specific domains
-  if (MODEL_SOURCES.some((source) => event.request.url.includes(source))) {
+  // Only cache the model files from the specific domain
+  if (event.request.url.includes(MODEL_URL)) {
     event.respondWith(
-      findModelInCache(event.request).then((cachedResponse) => {
+      caches.match(event.request).then((cachedResponse) => {
         if (cachedResponse) {
           console.log("Service worker: Serving from cache", event.request.url)
           return cachedResponse
@@ -138,17 +106,7 @@ self.addEventListener("fetch", (event) => {
           })
           .catch((error) => {
             console.log("Service worker: Network fetch failed", error)
-
-            // If we have local models, try to serve those as a last resort
-            return caches.match(`/models/${event.request.url.split("/").pop()}`).then((localResponse) => {
-              if (localResponse) {
-                console.log("Service worker: Serving from local models")
-                return localResponse
-              }
-
-              console.log("Service worker: No cached or local version available")
-              throw error
-            })
+            throw error
           })
       }),
     )

@@ -12,7 +12,7 @@ export interface FacialMeasurements {
   jawToFaceWidthRatio: number
   cheekToJawRatio: number
   foreheadToChinRatio: number
-  foreheadToJawRatio: number // Add this new ratio
+  foreheadToJawRatio: number
 
   // Advanced measurements
   symmetryScore: number
