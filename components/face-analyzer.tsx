@@ -59,6 +59,7 @@ export default function FaceAnalyzer({
   const [currentModelUrl, setCurrentModelUrl] = useState(MODEL_URLS.primary)
   const [debugInfo, setDebugInfo] = useState<string[]>([])
   const [showDebugInfo, setShowDebugInfo] = useState(false)
+  const [showMeasurementDebug, setShowMeasurementDebug] = useState(false)
 
   // AR overlay states
   const [arEnabled, setArEnabled] = useState(true)
@@ -386,6 +387,25 @@ export default function FaceAnalyzer({
     const chinHeight = landmarks.positions[8].y - landmarks.positions[57].y
     const jawHeight = landmarks.positions[8].y - jawPoints[9].y
 
+    // Calculate more accurate face width and height
+    const faceTop = Math.min(landmarks.positions[21].y, landmarks.positions[22].y) - 10 // Eyebrows top with margin
+    const faceBottom = landmarks.positions[8].y // Chin bottom
+    const moreAccurateFaceHeight = faceBottom - faceTop
+
+    // Calculate width at different face levels
+    const foreheadWidth = Math.abs(landmarks.positions[21].x - landmarks.positions[22].x) * 1.2 // Eyebrow width with margin
+    const eyeWidthCalc = Math.abs(leftEye[3].x - rightEye[0].x) * 1.1 // Outer eye corners with margin
+    const cheekboneWidth = Math.abs(jawPoints[12].x - jawPoints[4].x) * 1.05 // Cheekbone width with margin
+    const jawlineWidth = Math.abs(jawPoints[14].x - jawPoints[2].x) // Jawline width
+
+    // Use the maximum width for better face shape detection
+    const moreAccurateFaceWidth = Math.max(foreheadWidth, eyeWidthCalc, cheekboneWidth, jawlineWidth)
+
+    // Calculate improved ratios
+    const improvedWidthToHeightRatio = moreAccurateFaceWidth / moreAccurateFaceHeight
+    const foreheadToJawRatio = foreheadWidth / jawlineWidth
+    const cheekboneToJawRatio = cheekboneWidth / jawlineWidth
+
     // Calculate facial thirds (rule of thirds)
     const upperThird = Math.abs(landmarks.positions[27].y - (landmarks.positions[21].y + landmarks.positions[22].y) / 2)
     const middleThird = Math.abs(
@@ -417,40 +437,62 @@ export default function FaceAnalyzer({
 
     // Calculate eye spacing
     const eyeDistance = Math.abs((leftEye[3].x + leftEye[0].x) / 2 - (rightEye[0].x + rightEye[3].x) / 2)
-    const eyeWidth = Math.abs(leftEye[3].x - leftEye[0].x)
+    const singleEyeWidth = Math.abs(leftEye[3].x - leftEye[0].x)
 
     // Calculate ratios
     const widthToHeightRatio = faceWidth / faceHeight
     const jawToFaceWidthRatio = jawWidth / faceWidth
     const cheekToJawRatio = cheekWidth / jawWidth
     const foreheadToChinRatio = foreheadHeight / chinHeight
-    const eyeSpacingRatio = eyeDistance / eyeWidth
+    const eyeSpacingRatio = eyeDistance / singleEyeWidth
 
     // Calculate golden ratio approximation (1.618)
     const goldenRatioScore = 1 - Math.abs(faceHeight / faceWidth - 1.618) / 1.618
 
     // Determine face shape based on enhanced ratios and measurements
-    let faceShape = "Oval"
+    let faceShape = "Oval" // Default to oval if no conditions match
 
-    if (widthToHeightRatio > 0.85 && jawToFaceWidthRatio > 0.78) {
+    // Log measurements for debugging
+    console.log("Face measurements:", {
+      widthToHeightRatio: improvedWidthToHeightRatio,
+      foreheadToJawRatio,
+      cheekboneToJawRatio,
+      foreheadToChinRatio,
+      symmetryScore,
+      goldenRatioScore,
+    })
+
+    // Improved face shape detection with better thresholds
+    if (improvedWidthToHeightRatio > 0.9 && improvedWidthToHeightRatio < 1.1 && cheekboneToJawRatio < 1.2) {
       faceShape = "Round"
-    } else if (widthToHeightRatio < 0.75 && jawToFaceWidthRatio < 0.7) {
+    } else if (improvedWidthToHeightRatio < 0.8 && cheekboneToJawRatio > 1.1) {
       faceShape = "Oval"
-    } else if (jawToFaceWidthRatio > 0.85 && cheekToJawRatio < 1.1) {
+    } else if (
+      improvedWidthToHeightRatio > 0.85 &&
+      improvedWidthToHeightRatio < 0.95 &&
+      cheekboneToJawRatio < 1.1 &&
+      foreheadToJawRatio < 1.1
+    ) {
       faceShape = "Square"
-    } else if (cheekToJawRatio > 1.15 && foreheadToChinRatio < 0.9) {
+    } else if (foreheadToJawRatio > 1.2 && foreheadToChinRatio < 0.9) {
       faceShape = "Heart"
-    } else if (jawToFaceWidthRatio < 0.8 && cheekToJawRatio > 1.05) {
+    } else if (cheekboneToJawRatio > 1.2 && foreheadToJawRatio < 1.1) {
       faceShape = "Diamond"
-    } else if (widthToHeightRatio < 0.8 && jawToFaceWidthRatio > 0.7 && jawHeight / faceHeight < 0.3) {
+    } else if (improvedWidthToHeightRatio < 0.7) {
       faceShape = "Oblong"
-    } else if (cheekToJawRatio < 0.9 && jawToFaceWidthRatio > 0.8 && widthToHeightRatio < 0.85) {
+    } else if (improvedWidthToHeightRatio < 0.85 && cheekboneToJawRatio < 1.1 && foreheadToJawRatio < 1.1) {
       faceShape = "Rectangle"
-    } else if (jawToFaceWidthRatio < 0.6 && widthToHeightRatio > 0.75) {
+    } else if (foreheadToJawRatio < 0.9 && cheekboneToJawRatio < 1.0) {
       faceShape = "Triangle"
+    } else {
+      // If no specific shape is detected, use the golden ratio to determine between oval and round
+      faceShape = goldenRatioScore > 0.7 ? "Oval" : "Round"
     }
 
-    // Compile all measurements
+    // Add more detailed logging for the determined face shape
+    console.log(`Face shape determined: ${faceShape} based on measurements`)
+
+    // Update the measurements object to include the new values
     const measurements: FacialMeasurements = {
       faceWidth,
       faceHeight,
@@ -458,14 +500,15 @@ export default function FaceAnalyzer({
       cheekWidth,
       foreheadHeight,
       chinHeight,
-      widthToHeightRatio,
+      widthToHeightRatio: improvedWidthToHeightRatio, // Use improved ratio
       jawToFaceWidthRatio,
-      cheekToJawRatio,
+      cheekToJawRatio: cheekboneToJawRatio, // Use improved ratio
       foreheadToChinRatio,
+      foreheadToJawRatio, // Add new ratio
       symmetryScore,
       goldenRatioScore,
       eyeDistance,
-      eyeWidth,
+      eyeWidth: singleEyeWidth,
       eyeSpacingRatio,
       facialThirds: {
         upper: upperThird,
@@ -592,7 +635,31 @@ export default function FaceAnalyzer({
 
           {showDebugInfo && (
             <div className="mt-4 p-4 bg-muted rounded-md text-left max-h-60 overflow-y-auto text-xs">
-              <h4 className="font-medium mb-2">Debug Information:</h4>
+              <div className="flex justify-between items-center mb-2">
+                <h4 className="font-medium">Debug Information:</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMeasurementDebug(!showMeasurementDebug)}
+                  className="text-xs"
+                >
+                  {showMeasurementDebug ? "Hide Measurements" : "Show Measurements"}
+                </Button>
+              </div>
+
+              {showMeasurementDebug && currentDetection && (
+                <div className="mb-3 p-2 bg-background/50 rounded border border-border">
+                  <p className="font-medium mb-1">Current Face Measurements:</p>
+                  <pre className="text-xs overflow-x-auto">
+                    {JSON.stringify(
+                      analyzeFaceInDepth(currentDetection.landmarks, currentDetection.detection),
+                      null,
+                      2,
+                    )}
+                  </pre>
+                </div>
+              )}
+
               <ul className="space-y-1">
                 {debugInfo.map((log, index) => (
                   <li key={index} className="font-mono">
