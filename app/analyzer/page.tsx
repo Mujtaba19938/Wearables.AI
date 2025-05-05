@@ -6,13 +6,15 @@ import FaceAnalyzer from "@/components/face-analyzer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Camera, FileImage, RefreshCw } from "lucide-react"
+import { ArrowLeft, Camera, FileImage, RefreshCw, Info } from "lucide-react"
 import Link from "next/link"
 import RecommendationResults from "@/components/recommendation-results"
 import { Progress } from "@/components/ui/progress"
 import { Logo } from "@/components/logo"
 import { OfflineIndicator } from "@/components/offline-indicator"
 import { useMobile } from "@/hooks/use-mobile"
+import type { FacialMeasurements } from "@/types/facial-measurements"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 
 export default function AnalyzerPage() {
   const searchParams = useSearchParams()
@@ -20,19 +22,23 @@ export default function AnalyzerPage() {
   const isMobile = useMobile()
 
   const [faceShape, setFaceShape] = useState<string | null>(null)
+  const [facialMeasurements, setFacialMeasurements] = useState<FacialMeasurements | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [uploadMode, setUploadMode] = useState(tabParam === "upload")
   const [modelsLoading, setModelsLoading] = useState(true)
   const [activeTab, setActiveTab] = useState(tabParam === "upload" ? "upload" : "camera")
   const [loadingError, setLoadingError] = useState<string | null>(null)
+  const [showARInfo, setShowARInfo] = useState(true)
 
-  const handleAnalysisComplete = (shape: string) => {
+  const handleAnalysisComplete = (shape: string, measurements: FacialMeasurements) => {
     setFaceShape(shape)
+    setFacialMeasurements(measurements)
     setIsAnalyzing(false)
   }
 
   const startNewAnalysis = () => {
     setFaceShape(null)
+    setFacialMeasurements(null)
   }
 
   const handleRetry = () => {
@@ -69,6 +75,22 @@ export default function AnalyzerPage() {
         </div>
 
         <OfflineIndicator />
+
+        {showARInfo && !uploadMode && !faceShape && (
+          <Alert className="mb-4 bg-blue-100 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            <AlertDescription className="text-blue-600 dark:text-blue-400 font-medium text-sm">
+              New! AR mode is now available. See facial measurements in real-time as you move.
+              <Button
+                variant="link"
+                className="p-0 h-auto text-blue-600 dark:text-blue-400"
+                onClick={() => setShowARInfo(false)}
+              >
+                Dismiss
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
 
         {modelsLoading && (
           <div className="w-full text-center py-4 sm:py-8 mb-4 sm:mb-6">
@@ -140,7 +162,14 @@ export default function AnalyzerPage() {
             </CardContent>
           </Card>
         ) : (
-          faceShape && <RecommendationResults faceShape={faceShape} onStartNew={startNewAnalysis} />
+          faceShape &&
+          facialMeasurements && (
+            <RecommendationResults
+              faceShape={faceShape}
+              facialMeasurements={facialMeasurements}
+              onStartNew={startNewAnalysis}
+            />
+          )
         )}
       </div>
     </main>

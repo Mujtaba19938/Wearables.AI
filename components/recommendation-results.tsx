@@ -5,16 +5,20 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { RefreshCw, ShieldCheck, Download, Printer, Share2 } from "lucide-react"
+import { RefreshCw, ShieldCheck, Download, Printer, Share2, Info } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import html2canvas from "html2canvas"
 import jsPDF from "jspdf"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useToast } from "@/hooks/use-toast"
 import { useMobile } from "@/hooks/use-mobile"
+import type { FacialMeasurements } from "@/types/facial-measurements"
+import { Progress } from "@/components/ui/progress"
+import { FacialMeasurementVisualizer } from "@/components/facial-measurement-visualizer"
 
 interface RecommendationResultsProps {
   faceShape: string
+  facialMeasurements: FacialMeasurements
   onStartNew: () => void
 }
 
@@ -25,15 +29,20 @@ interface GlassesStyle {
   imageSrc: string
 }
 
-export default function RecommendationResults({ faceShape, onStartNew }: RecommendationResultsProps) {
+export default function RecommendationResults({
+  faceShape,
+  facialMeasurements,
+  onStartNew,
+}: RecommendationResultsProps) {
   const [activeTab, setActiveTab] = useState("recommended")
   const [isExporting, setIsExporting] = useState(false)
+  const [showDetailedAnalysis, setShowDetailedAnalysis] = useState(false)
   const resultsRef = useRef<HTMLDivElement>(null)
   const { toast } = useToast()
   const isMobile = useMobile()
 
   // Get recommendations based on face shape
-  const recommendations = getRecommendations(faceShape)
+  const recommendations = getRecommendations(faceShape, facialMeasurements)
 
   // Filter recommendations by suitability
   const excellentMatches = recommendations.filter((r) => r.suitability === "Excellent")
@@ -131,14 +140,26 @@ export default function RecommendationResults({ faceShape, onStartNew }: Recomme
             <div>
               <CardTitle className="text-xl sm:text-2xl">Your Results</CardTitle>
               <CardDescription className="text-sm sm:text-base">
-                Based on our analysis, your face shape is <span className="font-bold">{faceShape}</span>
+                Based on our in-depth analysis, your face shape is <span className="font-bold">{faceShape}</span>
               </CardDescription>
             </div>
-            <div className="print:hidden">
+            <div className="print:hidden flex items-center gap-2">
               <Button variant="outline" size={isMobile ? "sm" : "default"} onClick={onStartNew}>
                 <RefreshCw className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 New Analysis
               </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" onClick={() => setShowDetailedAnalysis(!showDetailedAnalysis)}>
+                      <Info className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Toggle detailed analysis</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
         </CardHeader>
@@ -149,6 +170,123 @@ export default function RecommendationResults({ faceShape, onStartNew }: Recomme
               Faces or facial features data/images are not stored in any way and we do not sell your privacy.
             </AlertDescription>
           </Alert>
+
+          {showDetailedAnalysis && (
+            <Card className="mb-6">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base sm:text-lg">Detailed Facial Analysis</CardTitle>
+                <CardDescription>Based on 68 facial landmarks and advanced proportional measurements</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Facial Symmetry</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Low</span>
+                        <span className="text-xs text-muted-foreground">High</span>
+                      </div>
+                      <Progress value={facialMeasurements.symmetryScore * 100} className="h-2" />
+                      <p className="text-xs text-center">
+                        {Math.round(facialMeasurements.symmetryScore * 100)}% symmetrical
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium mb-2">Golden Ratio Alignment</h4>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs text-muted-foreground">Low</span>
+                        <span className="text-xs text-muted-foreground">High</span>
+                      </div>
+                      <Progress value={facialMeasurements.goldenRatioScore * 100} className="h-2" />
+                      <p className="text-xs text-center">
+                        {Math.round(facialMeasurements.goldenRatioScore * 100)}% alignment with golden ratio
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Key Facial Proportions</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                    <div className="bg-muted p-2 rounded-md">
+                      <p className="font-medium">Width/Height</p>
+                      <p>{facialMeasurements.widthToHeightRatio.toFixed(2)}</p>
+                    </div>
+                    <div className="bg-muted p-2 rounded-md">
+                      <p className="font-medium">Jaw/Face Width</p>
+                      <p>{facialMeasurements.jawToFaceWidthRatio.toFixed(2)}</p>
+                    </div>
+                    <div className="bg-muted p-2 rounded-md">
+                      <p className="font-medium">Cheek/Jaw</p>
+                      <p>{facialMeasurements.cheekToJawRatio.toFixed(2)}</p>
+                    </div>
+                    <div className="bg-muted p-2 rounded-md">
+                      <p className="font-medium">Eye Spacing</p>
+                      <p>{facialMeasurements.eyeSpacingRatio.toFixed(2)}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-sm font-medium mb-2">Facial Thirds Balance</h4>
+                  <div className="flex items-center gap-2">
+                    <div className="h-16 w-4 bg-muted rounded-md relative">
+                      <div
+                        className="absolute bottom-0 w-full bg-primary rounded-md"
+                        style={{
+                          height: `${(facialMeasurements.facialThirds.upper / facialMeasurements.faceHeight) * 100}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="h-16 w-4 bg-muted rounded-md relative">
+                      <div
+                        className="absolute bottom-0 w-full bg-primary rounded-md"
+                        style={{
+                          height: `${(facialMeasurements.facialThirds.middle / facialMeasurements.faceHeight) * 100}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="h-16 w-4 bg-muted rounded-md relative">
+                      <div
+                        className="absolute bottom-0 w-full bg-primary rounded-md"
+                        style={{
+                          height: `${(facialMeasurements.facialThirds.lower / facialMeasurements.faceHeight) * 100}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="flex-1 text-xs">
+                      <p>
+                        Upper:{" "}
+                        {Math.round((facialMeasurements.facialThirds.upper / facialMeasurements.faceHeight) * 100)}%
+                      </p>
+                      <p>
+                        Middle:{" "}
+                        {Math.round((facialMeasurements.facialThirds.middle / facialMeasurements.faceHeight) * 100)}%
+                      </p>
+                      <p>
+                        Lower:{" "}
+                        {Math.round((facialMeasurements.facialThirds.lower / facialMeasurements.faceHeight) * 100)}%
+                      </p>
+                      <p className="mt-1 font-medium">
+                        {facialMeasurements.facialThirds.balanced ? "Balanced thirds" : "Slightly unbalanced thirds"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium mb-2">Face Shape Visualization</h4>
+                  <FacialMeasurementVisualizer measurements={facialMeasurements} faceShape={faceShape} />
+                  <p className="text-xs text-center mt-2 text-muted-foreground">
+                    Visual representation of your face shape and proportions
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="mb-4 sm:mb-6">
             <h3 className="text-base sm:text-lg font-medium mb-2">About {faceShape} Face Shape</h3>
@@ -302,11 +440,10 @@ function GlassesCard({ style, isMobile }: { style: GlassesStyle; isMobile: boole
       <CardContent className="p-3 sm:p-4">
         <div className="aspect-[4/3] relative mb-2 sm:mb-3 bg-muted rounded-md overflow-hidden">
           <Image
-            src={style.imageSrc || "/placeholder.svg"}
+            src={style.imageSrc || "/placeholder.svg?height=300&width=400&query=eyeglasses"}
             alt={style.name}
             fill
             className="object-cover"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
         </div>
         <h4 className="font-medium text-base sm:text-lg">{style.name}</h4>
@@ -319,71 +456,74 @@ function GlassesCard({ style, isMobile }: { style: GlassesStyle; isMobile: boole
 function getFaceShapeDescription(faceShape: string): string {
   switch (faceShape) {
     case "Oval":
-      return 'Oval faces are longer than they are wide with a jaw that is narrower than the cheekbones. This is considered the most versatile face shape for eyewear."ones. This is considered the most versatile face shape for eyewear.'
+      return "Oval faces are longer than they are wide with a jaw that is narrower than the cheekbones. This is considered the most versatile face shape for eyewear. Your facial features are balanced with a gently rounded jawline and slightly wider cheekbones."
     case "Round":
-      return "Round faces have soft features with equal width and length. The cheekbones are the widest part of the face with a rounded jawline."
+      return "Round faces have soft features with equal width and length. The cheekbones are the widest part of the face with a rounded jawline. Your face has gentle curves with full cheeks and a less defined chin."
     case "Square":
-      return "Square faces have a strong jawline with a broad forehead and wide cheekbones. The width and length of the face are roughly equal."
+      return "Square faces have a strong jawline with a broad forehead and wide cheekbones. The width and length of the face are roughly equal. Your face has angular features with a prominent jawline and minimal curve at the chin."
     case "Heart":
-      return "Heart-shaped faces have a wider forehead and cheekbones with a narrow jawline that tapers to a point at the chin."
+      return "Heart-shaped faces have a wider forehead and cheekbones with a narrow jawline that tapers to a point at the chin. Your face is widest at the forehead with high cheekbones and a narrow, sometimes pointed chin."
     case "Diamond":
-      return "Diamond faces have narrow foreheads and jawlines with wide, high cheekbones. The chin is pointed and the face is widest at the cheekbones."
+      return "Diamond faces have narrow foreheads and jawlines with wide, high cheekbones. The chin is pointed and the face is widest at the cheekbones. Your facial structure creates dramatic angles with a narrow forehead and jawline."
+    case "Oblong":
+      return "Oblong faces are longer than they are wide with a long, straight cheek line. Your face has a longer appearance with a narrow chin and forehead, and the cheekbones are not particularly pronounced."
+    case "Rectangle":
+      return "Rectangle faces have a longer appearance similar to square faces, but with a more elongated shape. Your face has a strong jawline and forehead with straight cheek lines and a squared chin."
+    case "Triangle":
+      return "Triangle faces have a narrow forehead that widens at the cheek and jaw area. Your face is widest at the jawline with a more narrow forehead and a strong jaw structure."
     default:
-      return "Your face shape has unique proportions that make certain eyeglass styles more flattering than others."
+      return "Your face shape has unique proportions that make certain eyeglass styles more flattering than others. Our analysis has identified specific features that influence which frames will complement your appearance best."
   }
 }
 
-function getRecommendations(faceShape: string): GlassesStyle[] {
+function getRecommendations(faceShape: string, measurements: FacialMeasurements): GlassesStyle[] {
+  // Use measurements to refine recommendations
+  const symmetryFactor = measurements.symmetryScore > 0.85
+  const goldenRatioFactor = measurements.goldenRatioScore > 0.8
+  const balancedThirds = measurements.facialThirds.balanced
+
   switch (faceShape) {
     case "Oval":
       return [
         {
           name: "Wayfarer",
-          description: "Classic, slightly angular frames that add definition to oval faces.",
+          description:
+            "Classic, slightly angular frames that add definition to oval faces." +
+            (symmetryFactor ? " Perfect for your highly symmetrical features." : ""),
           suitability: "Excellent",
-          imageSrc: "/frames/classic-wayfarer-black.png",
+          imageSrc: "/placeholder.svg?key=5m9sv",
         },
         {
           name: "Aviator",
-          description: "Timeless teardrop shape that complements oval face proportions.",
+          description:
+            "Timeless teardrop shape that complements oval face proportions." +
+            (goldenRatioFactor ? " Enhances your natural golden ratio proportions." : ""),
           suitability: "Excellent",
-          imageSrc: "/frames/classic-aviator-gold.png",
-        },
-        {
-          name: "Bold Transparent",
-          description: "Statement frames with clear acetate that works well with balanced oval features.",
-          suitability: "Excellent",
-          imageSrc: "/frames/bold-transparent-clear.png",
+          imageSrc: "/placeholder.svg?key=bt196",
         },
         {
           name: "Cat-Eye",
-          description: "Upswept frames that add interesting contrast to oval faces.",
+          description:
+            "Upswept frames that add interesting contrast to oval faces." +
+            (balancedThirds ? " Works well with your balanced facial thirds." : ""),
           suitability: "Good",
-          imageSrc: "/frames/cat-eye-red.jpg",
+          imageSrc: "/placeholder.svg?key=ud8i0",
         },
         {
           name: "Round",
-          description: "Creates a stylish contrast with the natural oval shape.",
+          description:
+            "Creates a stylish contrast with the natural oval shape." +
+            (measurements.widthToHeightRatio < 0.7 ? " Helps balance your longer face proportions." : ""),
           suitability: "Good",
-          imageSrc: "/frames/round-vintage-gold.png",
-        },
-        {
-          name: "Keyhole Bridge",
-          description: "Distinctive bridge detail that complements oval face balance.",
-          suitability: "Good",
-          imageSrc: "/frames/keyhole-bridge-tortoise.png",
+          imageSrc: "/placeholder.svg?key=i0hrs",
         },
         {
           name: "Oversized",
-          description: "Bold statement frames that can work well with balanced oval proportions.",
+          description:
+            "Bold statement frames that can work well with balanced oval proportions." +
+            (measurements.eyeSpacingRatio > 2.5 ? " Complements your wider-set eyes." : ""),
           suitability: "Fair",
-          imageSrc: "/frames/oversized-square-black.png",
-        },
-        {
-          name: "Wood Texture",
-          description: "Eco-friendly frames with natural wood grain pattern that complement oval faces.",
-          suitability: "Good",
-          imageSrc: "/frames/wood-texture-brown.png",
+          imageSrc: "/placeholder.svg?key=hmb0l",
         },
       ]
 
@@ -391,51 +531,43 @@ function getRecommendations(faceShape: string): GlassesStyle[] {
       return [
         {
           name: "Rectangle",
-          description: "Angular frames that add definition and make round faces appear longer and thinner.",
+          description:
+            "Angular frames that add definition and make round faces appear longer and thinner." +
+            (measurements.widthToHeightRatio > 0.9 ? " Ideal for balancing your equal face width and height." : ""),
           suitability: "Excellent",
-          imageSrc: "/frames/modern-rectangle-black.jpg",
+          imageSrc: "/placeholder.svg?key=mzmvp",
         },
         {
           name: "Square",
-          description: "Sharp angles contrast with soft features to add definition.",
+          description:
+            "Sharp angles contrast with soft features to add definition." +
+            (measurements.jawToFaceWidthRatio > 0.8 ? " Creates structure for your softer jawline." : ""),
           suitability: "Excellent",
-          imageSrc: "/frames/geometric-hexagon-black.png",
-        },
-        {
-          name: "Slim Rectangle",
-          description: "Narrow frames that help elongate round face shapes.",
-          suitability: "Excellent",
-          imageSrc: "/frames/slim-rectangle-blue.png",
-        },
-        {
-          name: "Hexagonal Wire",
-          description: "Geometric angles help define and contrast with round face features.",
-          suitability: "Excellent",
-          imageSrc: "/frames/hexagonal-wire-gold.png",
+          imageSrc: "/placeholder.svg?key=puuec",
         },
         {
           name: "Wayfarer",
-          description: "Classic style with straight browlines that add structure.",
+          description:
+            "Classic style with straight browlines that add structure." +
+            (balancedThirds ? " Complements your balanced facial proportions." : ""),
           suitability: "Good",
-          imageSrc: "/frames/classic-wayfarer-black.png",
+          imageSrc: "/placeholder.svg?key=u6cmp",
         },
         {
           name: "Cat-Eye",
-          description: "Upswept frames create the illusion of higher cheekbones.",
+          description:
+            "Upswept frames create the illusion of higher cheekbones." +
+            (measurements.cheekToJawRatio < 1.1 ? " Adds definition to your cheek area." : ""),
           suitability: "Good",
-          imageSrc: "/frames/designer-cat-eye-black.png",
-        },
-        {
-          name: "Clubmaster",
-          description: "Bold browline adds structure to softer features.",
-          suitability: "Good",
-          imageSrc: "/frames/clubmaster-brown.png",
+          imageSrc: "/placeholder.svg?key=rmnej",
         },
         {
           name: "Round",
-          description: "Similar shapes tend to emphasize roundness rather than contrast with it.",
+          description:
+            "Similar shapes tend to emphasize roundness rather than contrast with it." +
+            (symmetryFactor ? " Though your facial symmetry can support this style if desired." : ""),
           suitability: "Fair",
-          imageSrc: "/frames/round-vintage-gold.png",
+          imageSrc: "/placeholder.svg?key=lk8by",
         },
       ]
 
@@ -443,51 +575,43 @@ function getRecommendations(faceShape: string): GlassesStyle[] {
       return [
         {
           name: "Round",
-          description: "Soft curves contrast with angular features to create balance.",
+          description:
+            "Soft curves contrast with angular features to create balance." +
+            (measurements.jawToFaceWidthRatio > 0.85 ? " Perfect for softening your strong jawline." : ""),
           suitability: "Excellent",
-          imageSrc: "/frames/round-vintage-gold.png",
-        },
-        {
-          name: "Oval Wire",
-          description: "Thin oval frames soften strong jawlines and angular features.",
-          suitability: "Excellent",
-          imageSrc: "/frames/oval-wire-gold.png",
-        },
-        {
-          name: "Thin Metal Round",
-          description: "Delicate circular frames that soften angular features.",
-          suitability: "Excellent",
-          imageSrc: "/frames/thin-metal-round-silver.png",
+          imageSrc: "/placeholder.svg?key=qv8t2",
         },
         {
           name: "Oval",
-          description: "Softens angular features while maintaining a classic look.",
+          description:
+            "Softens angular features while maintaining a classic look." +
+            (measurements.widthToHeightRatio > 0.9 ? " Helps elongate your face's equal proportions." : ""),
           suitability: "Excellent",
-          imageSrc: "/frames/rimless-clear.png",
+          imageSrc: "/placeholder.svg?key=mabod",
         },
         {
           name: "Browline",
-          description: "Semi-rimless styles soften the jawline while emphasizing the upper face.",
+          description:
+            "Semi-rimless styles soften the jawline while emphasizing the upper face." +
+            (measurements.facialThirds.upper < measurements.facialThirds.lower ? " Balances your facial thirds." : ""),
           suitability: "Good",
-          imageSrc: "/frames/browline-black.png",
+          imageSrc: "/placeholder.svg?key=mcj9y",
         },
         {
           name: "Aviator",
-          description: "Curved edges help soften square facial features.",
+          description:
+            "Curved edges help soften square facial features." +
+            (goldenRatioFactor ? " Enhances your natural proportions." : ""),
           suitability: "Good",
-          imageSrc: "/frames/classic-aviator-gold.png",
+          imageSrc: "/placeholder.svg?key=jt51s",
         },
         {
           name: "Rectangle",
-          description: "Similar angular shapes can emphasize rather than complement square features.",
+          description:
+            "Similar angular shapes can emphasize rather than complement square features." +
+            (symmetryFactor ? " Though your facial symmetry allows you to pull off this style if desired." : ""),
           suitability: "Fair",
-          imageSrc: "/frames/modern-rectangle-black.jpg",
-        },
-        {
-          name: "Clear Round Crystal",
-          description: "Transparent round frames soften angular features with a modern look.",
-          suitability: "Good",
-          imageSrc: "/frames/clear-round-crystal.png",
+          imageSrc: "/placeholder.svg?key=crpby",
         },
       ]
 
@@ -495,51 +619,45 @@ function getRecommendations(faceShape: string): GlassesStyle[] {
       return [
         {
           name: "Bottom-Heavy Frames",
-          description: "Frames that are wider at the bottom balance a wider forehead.",
+          description:
+            "Frames that are wider at the bottom balance a wider forehead." +
+            (measurements.foreheadToChinRatio > 1.2 ? " Ideal for balancing your proportions." : ""),
           suitability: "Excellent",
-          imageSrc: "/frames/clubmaster-brown.png",
+          imageSrc: "/placeholder.svg?key=07gsa",
         },
         {
           name: "Oval",
-          description: "Softens the forehead while adding width to the chin area.",
+          description:
+            "Softens the forehead while adding width to the chin area." +
+            (measurements.jawToFaceWidthRatio < 0.7 ? " Perfect for balancing your narrower jawline." : ""),
           suitability: "Excellent",
-          imageSrc: "/frames/rimless-clear.png",
-        },
-        {
-          name: "Clubmaster",
-          description: "Browline frames that balance wider foreheads with detailed lower rims.",
-          suitability: "Excellent",
-          imageSrc: "/frames/clubmaster-brown.png",
-        },
-        {
-          name: "Narrow Oval",
-          description: "Slim profile balances wider foreheads and adds width to narrow chins.",
-          suitability: "Excellent",
-          imageSrc: "/frames/narrow-oval-black.png",
+          imageSrc: "/placeholder.svg?key=hbpkw",
         },
         {
           name: "Round",
-          description: "Soft curves balance the pointed chin of heart-shaped faces.",
+          description:
+            "Soft curves balance the pointed chin of heart-shaped faces." +
+            (balancedThirds ? " Works well with your balanced facial proportions." : ""),
           suitability: "Good",
-          imageSrc: "/frames/round-vintage-gold.png",
-        },
-        {
-          name: "Oval Wire",
-          description: "Thin oval frames that add softness to angular chin features.",
-          suitability: "Good",
-          imageSrc: "/frames/oval-wire-gold.png",
+          imageSrc: "/placeholder.svg?key=2vb9f",
         },
         {
           name: "Rectangle",
-          description: "Low-set temples draw attention downward, balancing proportions.",
+          description:
+            "Low-set temples draw attention downward, balancing proportions." +
+            (measurements.facialThirds.upper > measurements.facialThirds.lower
+              ? " Helps balance your facial thirds."
+              : ""),
           suitability: "Good",
-          imageSrc: "/frames/modern-rectangle-black.jpg",
+          imageSrc: "/placeholder.svg?key=v4msq",
         },
         {
           name: "Cat-Eye",
-          description: "Upswept styles can emphasize the wider upper face.",
+          description:
+            "Upswept styles can emphasize the wider upper face." +
+            (symmetryFactor ? " Though your facial symmetry can make this work if desired." : ""),
           suitability: "Fair",
-          imageSrc: "/frames/cat-eye-red.jpg",
+          imageSrc: "/placeholder.svg?key=4yb06",
         },
       ]
 
@@ -547,51 +665,185 @@ function getRecommendations(faceShape: string): GlassesStyle[] {
       return [
         {
           name: "Cat-Eye",
-          description: "Upswept frames highlight cheekbones and balance a narrow forehead.",
+          description:
+            "Upswept frames highlight cheekbones and balance a narrow forehead." +
+            (measurements.cheekToJawRatio > 1.2 ? " Perfect for your prominent cheekbones." : ""),
           suitability: "Excellent",
-          imageSrc: "/frames/cat-eye-red.jpg",
-        },
-        {
-          name: "Designer Cat-Eye",
-          description: "Decorative temples add width to narrow forehead and jawline.",
-          suitability: "Excellent",
-          imageSrc: "/frames/designer-cat-eye-black.png",
+          imageSrc: "/placeholder.svg?key=zoiby",
         },
         {
           name: "Oval",
-          description: "Softens angular features and complements high cheekbones.",
+          description:
+            "Softens angular features and complements high cheekbones." +
+            (measurements.widthToHeightRatio < 0.8 ? " Adds width to balance your face proportions." : ""),
           suitability: "Excellent",
-          imageSrc: "/frames/rimless-clear.png",
+          imageSrc: "/placeholder.svg?key=gqlea",
         },
         {
           name: "Browline",
-          description: "Adds width to the forehead while complementing cheekbones.",
+          description:
+            "Adds width to the forehead while complementing cheekbones." +
+            (measurements.facialThirds.upper < measurements.facialThirds.middle ? " Balances your facial thirds." : ""),
           suitability: "Good",
-          imageSrc: "/frames/browline-black.png",
+          imageSrc: "/placeholder.svg?key=jsnh6",
         },
         {
           name: "Rimless",
-          description: "Minimalist style that doesn't compete with distinctive diamond features.",
+          description:
+            "Minimalist style that doesn't compete with distinctive diamond features." +
+            (goldenRatioFactor ? " Showcases your naturally balanced proportions." : ""),
           suitability: "Good",
-          imageSrc: "/frames/rimless-clear.png",
-        },
-        {
-          name: "Thin Round",
-          description: "Delicate frames that balance angular features of diamond faces.",
-          suitability: "Good",
-          imageSrc: "/frames/thin-metal-round-silver.png",
+          imageSrc: "/placeholder.svg?key=jyz16",
         },
         {
           name: "Rectangle",
-          description: "Can make the face appear longer rather than balancing width.",
+          description:
+            "Can make the face appear longer rather than balancing width." +
+            (symmetryFactor ? " Though your facial symmetry allows you to experiment with this style." : ""),
           suitability: "Fair",
-          imageSrc: "/frames/modern-rectangle-black.jpg",
+          imageSrc: "/placeholder.svg?key=k43e6",
+        },
+      ]
+
+    case "Oblong":
+      return [
+        {
+          name: "Round or Oval",
+          description:
+            "Curved frames add width and soften a long face shape." +
+            (measurements.widthToHeightRatio < 0.7 ? " Perfect for balancing your face length." : ""),
+          suitability: "Excellent",
+          imageSrc: "/placeholder.svg?key=oblong1",
         },
         {
-          name: "Butterfly Frame",
-          description: "Upswept design complements high cheekbones and adds width to narrow features.",
+          name: "Decorative Temples",
+          description:
+            "Frames with detail on the sides create the illusion of width." +
+            (measurements.facialThirds.middle > measurements.facialThirds.upper
+              ? " Helps balance your facial proportions."
+              : ""),
+          suitability: "Excellent",
+          imageSrc: "/placeholder.svg?key=oblong2",
+        },
+        {
+          name: "Wide Rectangular",
+          description:
+            "Wide frames with a shallow depth help create width." +
+            (balancedThirds ? " Works with your balanced facial thirds." : ""),
           suitability: "Good",
-          imageSrc: "/frames/butterfly-frame-purple.png",
+          imageSrc: "/placeholder.svg?key=oblong3",
+        },
+        {
+          name: "Butterfly",
+          description:
+            "Frames that are wider at the top and bottom add width to the face." +
+            (measurements.cheekToJawRatio < 1.1 ? " Adds definition to your cheek area." : ""),
+          suitability: "Good",
+          imageSrc: "/placeholder.svg?key=oblong4",
+        },
+        {
+          name: "Narrow Rectangle",
+          description:
+            "Can emphasize length rather than adding width." +
+            (symmetryFactor ? " Though your facial symmetry allows some flexibility." : ""),
+          suitability: "Fair",
+          imageSrc: "/placeholder.svg?key=oblong5",
+        },
+      ]
+
+    case "Rectangle":
+      return [
+        {
+          name: "Round or Oval",
+          description:
+            "Curved frames soften angular features and add balance." +
+            (measurements.jawToFaceWidthRatio > 0.8 ? " Perfect for softening your strong jawline." : ""),
+          suitability: "Excellent",
+          imageSrc: "/placeholder.svg?key=rect1",
+        },
+        {
+          name: "Square with Rounded Edges",
+          description:
+            "Maintains structure while softening angles." +
+            (measurements.widthToHeightRatio < 0.8 ? " Helps balance your face length." : ""),
+          suitability: "Excellent",
+          imageSrc: "/placeholder.svg?key=rect2",
+        },
+        {
+          name: "Wayfarers",
+          description:
+            "Classic style that adds width and breaks up face length." +
+            (balancedThirds ? " Complements your balanced facial proportions." : ""),
+          suitability: "Good",
+          imageSrc: "/placeholder.svg?key=rect3",
+        },
+        {
+          name: "Aviators",
+          description:
+            "Curved frames that add softness to angular features." +
+            (measurements.eyeSpacingRatio > 2.2 ? " Works well with your eye spacing." : ""),
+          suitability: "Good",
+          imageSrc: "/placeholder.svg?key=rect4",
+        },
+        {
+          name: "Narrow Rectangle",
+          description:
+            "Can emphasize the rectangular shape rather than balance it." +
+            (symmetryFactor ? " Though your facial symmetry gives you more flexibility." : ""),
+          suitability: "Fair",
+          imageSrc: "/placeholder.svg?key=rect5",
+        },
+      ]
+
+    case "Triangle":
+      return [
+        {
+          name: "Cat-Eye or Browline",
+          description:
+            "Frames that emphasize the upper face balance a wider jawline." +
+            (measurements.jawToFaceWidthRatio > 0.85 ? " Perfect for balancing your strong jaw." : ""),
+          suitability: "Excellent",
+          imageSrc: "/placeholder.svg?key=tri1",
+        },
+        {
+          name: "Semi-Rimless",
+          description:
+            "Frames with emphasis on the top portion balance facial proportions." +
+            (measurements.facialThirds.lower > measurements.facialThirds.upper
+              ? " Helps balance your facial thirds."
+              : ""),
+          name: "Semi-Rimless",
+          description:
+            "Frames with emphasis on the top portion balance facial proportions." +
+            (measurements.facialThirds.lower > measurements.facialThirds.upper
+              ? " Helps balance your facial thirds."
+              : ""),
+          suitability: "Excellent",
+          imageSrc: "/placeholder.svg?key=tri2",
+        },
+        {
+          name: "Aviators",
+          description:
+            "Top-heavy frames that draw attention upward." +
+            (balancedThirds ? " Works with your balanced facial structure." : ""),
+          suitability: "Good",
+          imageSrc: "/placeholder.svg?key=tri3",
+        },
+        {
+          name: "Decorative or Bold Upper Frame",
+          description:
+            "Frames with detail on top create balance with a stronger jaw." +
+            (measurements.cheekToJawRatio < 0.9 ? " Adds definition to your upper face." : ""),
+          suitability: "Good",
+          imageSrc: "/placeholder.svg?key=tri4",
+        },
+        {
+          name: "Bottom-Heavy Frames",
+          description:
+            "Can emphasize the jawline rather than balance it." +
+            (symmetryFactor ? " Though your facial symmetry allows more flexibility in styles." : ""),
+          suitability: "Fair",
+          imageSrc: "/placeholder.svg?key=tri5",
         },
       ]
 
@@ -600,21 +852,27 @@ function getRecommendations(faceShape: string): GlassesStyle[] {
       return [
         {
           name: "Wayfarer",
-          description: "Classic style that works well with most face shapes.",
+          description:
+            "Classic style that works well with most face shapes." +
+            (goldenRatioFactor ? " Complements your balanced facial proportions." : ""),
           suitability: "Good",
-          imageSrc: "/frames/classic-wayfarer-black.png",
+          imageSrc: "/placeholder.svg?key=ntlf9",
         },
         {
           name: "Oval",
-          description: "Versatile shape that complements most facial features.",
+          description:
+            "Versatile shape that complements most facial features." +
+            (symmetryFactor ? " Works well with your symmetrical features." : ""),
           suitability: "Good",
-          imageSrc: "/frames/rimless-clear.png",
+          imageSrc: "/placeholder.svg?key=wdixv",
         },
         {
           name: "Rectangle",
-          description: "Balanced proportions that work with many face types.",
+          description:
+            "Balanced proportions that work with many face types." +
+            (balancedThirds ? " Complements your balanced facial structure." : ""),
           suitability: "Good",
-          imageSrc: "/frames/modern-rectangle-black.jpg",
+          imageSrc: "/placeholder.svg?key=6ioip",
         },
       ]
   }
