@@ -1,0 +1,8 @@
+{
+  "weightsManifest": [
+    {
+      "paths": ["tiny_face_detector_model-shard1"],
+      "weights": []
+    }
+  ]
+}
