@@ -6,7 +6,7 @@ import FaceAnalyzer from "@/components/face-analyzer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ArrowLeft, Camera, FileImage, RefreshCw, Info } from "lucide-react"
+import { ArrowLeft, Camera, FileImage, RefreshCw, Info, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import RecommendationResults from "@/components/recommendation-results"
 import { Progress } from "@/components/ui/progress"
@@ -15,6 +15,7 @@ import { OfflineIndicator } from "@/components/offline-indicator"
 import { useMobile } from "@/hooks/use-mobile"
 import type { FacialMeasurements } from "@/types/facial-measurements"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { checkBrowserCapabilities } from "@/utils/model-cache"
 
 export default function AnalyzerPage() {
   const searchParams = useSearchParams()
@@ -29,6 +30,9 @@ export default function AnalyzerPage() {
   const [activeTab, setActiveTab] = useState(tabParam === "upload" ? "upload" : "camera")
   const [loadingError, setLoadingError] = useState<string | null>(null)
   const [showARInfo, setShowARInfo] = useState(true)
+  const [browserCapabilities, setBrowserCapabilities] = useState<ReturnType<typeof checkBrowserCapabilities> | null>(
+    null,
+  )
 
   const handleAnalysisComplete = (shape: string, measurements: FacialMeasurements) => {
     setFaceShape(shape)
@@ -47,6 +51,11 @@ export default function AnalyzerPage() {
     // Force a reload of the models
     window.location.reload()
   }
+
+  // Check browser capabilities on mount
+  useEffect(() => {
+    setBrowserCapabilities(checkBrowserCapabilities())
+  }, [])
 
   // Update tab when URL parameter changes
   useEffect(() => {
@@ -75,6 +84,22 @@ export default function AnalyzerPage() {
         </div>
 
         <OfflineIndicator />
+
+        {/* Browser compatibility warning */}
+        {browserCapabilities && (!browserCapabilities.webgl || !browserCapabilities.mediaDevices) && (
+          <Alert
+            variant="warning"
+            className="mb-4 bg-amber-100 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800"
+          >
+            <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+            <AlertDescription className="text-amber-600 dark:text-amber-400 font-medium text-sm">
+              {!browserCapabilities.webgl &&
+                "Your browser may not fully support WebGL, which is required for face detection. "}
+              {!browserCapabilities.mediaDevices && "Your browser may have limited camera access capabilities. "}
+              Consider using a modern browser like Chrome or Edge for the best experience.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {showARInfo && !uploadMode && !faceShape && (
           <Alert className="mb-4 bg-blue-100 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">

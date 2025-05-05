@@ -64,9 +64,9 @@
     "child_process": "latest",
     "framer-motion": "latest",
     "face-api.js": "latest",
-    "react-webcam": "latest",
     "html2canvas": "latest",
-    "jspdf": "latest"
+    "jspdf": "latest",
+    "react-webcam": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

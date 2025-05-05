@@ -13,8 +13,19 @@ export async function registerServiceWorker(): Promise<boolean> {
   }
 
   try {
-    const registration = await navigator.serviceWorker.register("/service-worker.js")
+    const registration = await navigator.serviceWorker.register("/service-worker.js", {
+      scope: "/",
+      updateViaCache: "none", // Don't use cached version of service worker
+    })
     console.log("Service worker registered:", registration)
+
+    // Force update if needed
+    if (registration.active) {
+      registration.update().catch((err) => {
+        console.error("Error updating service worker:", err)
+      })
+    }
+
     return true
   } catch (error) {
     console.error("Service worker registration failed:", error)
@@ -31,7 +42,7 @@ export async function areModelsCached(): Promise<boolean> {
     const keys = await cache.keys()
 
     // Check if we have at least one model file cached
-    return keys.some((key) => key.url.includes("justadudewhohacks.github.io/face-api.js/models"))
+    return keys.some((key) => key.url.includes("face-api.js/models") || key.url.includes("face-api/model"))
   } catch (error) {
     console.error("Error checking cached models:", error)
     return false
@@ -79,5 +90,20 @@ export async function loadModelsWithCache(modelUrl: string, onProgress: (progres
   } catch (error) {
     console.error("Error in loadModelsWithCache:", error)
     return false
+  }
+}
+
+// Check browser capabilities for face detection
+export function checkBrowserCapabilities(): {
+  webgl: boolean
+  webAssembly: boolean
+  mediaDevices: boolean
+  serviceWorker: boolean
+} {
+  return {
+    webgl: !!window.WebGLRenderingContext,
+    webAssembly: typeof WebAssembly === "object",
+    mediaDevices: !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia),
+    serviceWorker: "serviceWorker" in navigator,
   }
 }

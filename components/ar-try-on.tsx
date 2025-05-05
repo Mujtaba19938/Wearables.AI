@@ -5,8 +5,9 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Camera, Download, RefreshCw, Share2 } from "lucide-react"
+import { Camera, Download, RefreshCw, Share2, Info } from "lucide-react"
 import { useMobile } from "@/hooks/use-mobile"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 interface ARTryOnProps {
   frame: {
@@ -15,6 +16,8 @@ interface ARTryOnProps {
     image: string
     colors: string[]
     colorImages?: Record<string, string>
+    material?: string
+    price?: string
   }
 }
 
@@ -23,7 +26,7 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
   const [cameraReady, setCameraReady] = useState(false)
   const [selectedColor, setSelectedColor] = useState(frame.colors[0])
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
-  const [isCapturing, setIsCapturing] = useState(isCapturing)
+  const [isCapturing, setIsCapturing] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isMobile = useMobile()
@@ -140,7 +143,41 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
   return (
     <div className="flex flex-col h-full">
       <DialogHeader className="p-6 pb-2">
-        <DialogTitle>Try On: {frame.name}</DialogTitle>
+        <div className="flex justify-between items-center">
+          <DialogTitle>{frame.name}</DialogTitle>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium">{frame.price}</span>
+            {frame.material && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                      <span>{frame.material}</span>
+                      <Info className="h-3 w-3" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs max-w-[200px]">
+                      {frame.material === "Acetate" &&
+                        "A plant-based plastic that's durable, lightweight, and available in many colors and patterns."}
+                      {frame.material === "Metal" &&
+                        "Classic material offering a thin profile and adjustable features."}
+                      {frame.material === "Titanium" &&
+                        "Premium lightweight metal that's strong, corrosion-resistant, and hypoallergenic."}
+                      {frame.material === "TR-90" &&
+                        "A flexible, durable nylon material that's extremely lightweight and comfortable."}
+                      {frame.material === "Wood" &&
+                        "Natural material offering unique grain patterns and an eco-friendly option."}
+                      {frame.material === "Mixed" && "Combines different materials for both style and functionality."}
+                      {frame.material === "Beryllium" &&
+                        "A premium alloy that's lightweight, strong, and highly resistant to corrosion."}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </div>
+        </div>
       </DialogHeader>
 
       <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="flex-1">
@@ -255,6 +292,10 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
 
               <div className="flex flex-col">
                 <h3 className="text-lg font-medium mb-2">{frame.name}</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-medium">{frame.price}</span>
+                  {frame.material && <span className="text-sm text-muted-foreground">({frame.material})</span>}
+                </div>
                 <p className="text-sm text-muted-foreground mb-4">
                   This is a virtual representation of how these frames might look. For the most accurate experience, try
                   the live camera mode or visit a store for an in-person fitting.

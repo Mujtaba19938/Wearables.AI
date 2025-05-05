@@ -7,8 +7,9 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Glasses, Search, SlidersHorizontal, X } from "lucide-react"
+import { Glasses, Search, SlidersHorizontal, X, Info } from "lucide-react"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import ARTryOn from "@/components/ar-try-on"
 import { Logo } from "@/components/logo"
 
@@ -27,6 +28,15 @@ const frames = [
       Tortoise: "/images/frames/wayfarer-tortoise.png",
       Blue: "/images/frames/wayfarer-blue.png",
     },
+    materials: ["Acetate", "Mixed"],
+    materialDescriptions: {
+      Acetate: "Premium Italian acetate for durability and comfort",
+      Mixed: "Acetate front with lightweight metal temples",
+    },
+    materialPriceAdjustments: {
+      Acetate: 0,
+      Mixed: 20,
+    },
     category: "Casual",
     bestseller: true,
   },
@@ -42,6 +52,15 @@ const frames = [
       Gold: "/images/frames/round-gold.png",
       Silver: "/images/frames/round-silver.png",
       Black: "/images/frames/round-black.png",
+    },
+    materials: ["Metal", "Titanium"],
+    materialDescriptions: {
+      Metal: "Classic metal construction with adjustable nose pads",
+      Titanium: "Ultra-lightweight titanium for all-day comfort",
+    },
+    materialPriceAdjustments: {
+      Metal: 0,
+      Titanium: 40,
     },
     category: "Vintage",
   },
@@ -59,6 +78,15 @@ const frames = [
       Purple: "/images/frames/cat-eye-purple.png",
       Tortoise: "/images/frames/cat-eye-tortoise.png",
     },
+    materials: ["Acetate", "TR-90"],
+    materialDescriptions: {
+      Acetate: "Hand-polished acetate with rich color depth",
+      "TR-90": "Flexible, lightweight nylon material that's virtually unbreakable",
+    },
+    materialPriceAdjustments: {
+      Acetate: 0,
+      "TR-90": 15,
+    },
     category: "Fashion",
     bestseller: true,
   },
@@ -75,6 +103,17 @@ const frames = [
       Blue: "/images/frames/rectangle-blue.png",
       Gray: "/images/frames/rectangle-gray.png",
     },
+    materials: ["Acetate", "Metal", "Wood"],
+    materialDescriptions: {
+      Acetate: "Durable acetate with spring hinges for comfort",
+      Metal: "Sleek stainless steel construction",
+      Wood: "Sustainable bamboo with unique grain patterns",
+    },
+    materialPriceAdjustments: {
+      Acetate: 0,
+      Metal: 10,
+      Wood: 30,
+    },
     category: "Professional",
   },
   {
@@ -89,6 +128,15 @@ const frames = [
       Gold: "/images/frames/aviator-gold.png",
       Silver: "/images/frames/aviator-silver.png",
       Black: "/images/frames/aviator-black.png",
+    },
+    materials: ["Metal", "Titanium"],
+    materialDescriptions: {
+      Metal: "Classic metal frame with adjustable nose pads",
+      Titanium: "Premium titanium construction that's 40% lighter than standard metal",
+    },
+    materialPriceAdjustments: {
+      Metal: 0,
+      Titanium: 50,
     },
     category: "Casual",
   },
@@ -105,6 +153,15 @@ const frames = [
       Brown: "/images/frames/browline-brown.png",
       Burgundy: "/images/frames/browline-burgundy.png",
     },
+    materials: ["Mixed", "Titanium"],
+    materialDescriptions: {
+      Mixed: "Acetate browline with metal lower rim",
+      Titanium: "Titanium construction with acetate browline accent",
+    },
+    materialPriceAdjustments: {
+      Mixed: 0,
+      Titanium: 40,
+    },
     category: "Professional",
   },
   {
@@ -119,6 +176,15 @@ const frames = [
       Black: "/images/frames/square-black.png",
       Clear: "/images/frames/square-clear.png",
       Tortoise: "/images/frames/square-tortoise.png",
+    },
+    materials: ["Acetate", "TR-90"],
+    materialDescriptions: {
+      Acetate: "Premium thick acetate for a bold statement",
+      "TR-90": "Lightweight nylon material for comfortable all-day wear despite the oversized style",
+    },
+    materialPriceAdjustments: {
+      Acetate: 0,
+      "TR-90": 20,
     },
     category: "Fashion",
   },
@@ -135,6 +201,15 @@ const frames = [
       "Light Blue": "/images/frames/rimless-blue.png",
       "Light Pink": "/images/frames/rimless-pink.png",
     },
+    materials: ["Titanium", "Beryllium"],
+    materialDescriptions: {
+      Titanium: "Ultra-lightweight titanium temples and bridge",
+      Beryllium: "Premium beryllium alloy that's corrosion-resistant and hypoallergenic",
+    },
+    materialPriceAdjustments: {
+      Titanium: 0,
+      Beryllium: 30,
+    },
     category: "Professional",
   },
   {
@@ -150,6 +225,17 @@ const frames = [
       Gold: "/images/frames/hexagon-gold.png",
       "Rose Gold": "/images/frames/hexagon-rose-gold.png",
     },
+    materials: ["Metal", "Acetate", "Mixed"],
+    materialDescriptions: {
+      Metal: "Thin metal construction for a sleek profile",
+      Acetate: "Bold acetate construction for a statement look",
+      Mixed: "Metal frame with acetate temple tips for comfort",
+    },
+    materialPriceAdjustments: {
+      Metal: 0,
+      Acetate: 10,
+      Mixed: 15,
+    },
     category: "Fashion",
     bestseller: true,
   },
@@ -161,18 +247,34 @@ const allFaceShapes = ["Oval", "Round", "Square", "Heart", "Diamond"]
 // All available categories
 const allCategories = ["All", "Casual", "Professional", "Fashion", "Vintage"]
 
+// All available materials
+const allMaterials = ["All", "Acetate", "Metal", "Titanium", "TR-90", "Wood", "Mixed", "Beryllium"]
+
+// Material information for tooltips
+const materialInfo = {
+  Acetate: "A plant-based plastic that's durable, lightweight, and available in many colors and patterns.",
+  Metal: "Classic material offering a thin profile and adjustable features.",
+  Titanium: "Premium lightweight metal that's strong, corrosion-resistant, and hypoallergenic.",
+  "TR-90": "A flexible, durable nylon material that's extremely lightweight and comfortable.",
+  Wood: "Natural material offering unique grain patterns and an eco-friendly option.",
+  Mixed: "Combines different materials for both style and functionality.",
+  Beryllium: "A premium alloy that's lightweight, strong, and highly resistant to corrosion.",
+}
+
 export default function FramesPage() {
   const [selectedFrame, setSelectedFrame] = useState(null)
   const [filters, setFilters] = useState({
     faceShape: "All",
     category: "All",
+    material: "All",
     search: "",
     priceRange: "All",
   })
   const [showFilters, setShowFilters] = useState(false)
 
-  // Add a state to track the selected color for each frame
+  // Add states to track the selected color and material for each frame
   const [selectedColors, setSelectedColors] = useState<Record<number, string>>({})
+  const [selectedMaterials, setSelectedMaterials] = useState<Record<number, string>>({})
 
   // Filter frames based on selected filters
   const filteredFrames = frames.filter((frame) => {
@@ -183,6 +285,11 @@ export default function FramesPage() {
 
     // Filter by category
     if (filters.category !== "All" && frame.category !== filters.category) {
+      return false
+    }
+
+    // Filter by material
+    if (filters.material !== "All" && !frame.materials.includes(filters.material)) {
       return false
     }
 
@@ -197,12 +304,17 @@ export default function FramesPage() {
 
     // Filter by price range
     if (filters.priceRange !== "All") {
-      const price = Number.parseInt(frame.price.replace("$", ""))
-      if (filters.priceRange === "Under $120" && price >= 120) {
+      const basePrice = Number.parseInt(frame.price.replace("$", ""))
+      // Get material price adjustment
+      const material = selectedMaterials[frame.id] || frame.materials[0]
+      const priceAdjustment = frame.materialPriceAdjustments?.[material] || 0
+      const totalPrice = basePrice + priceAdjustment
+
+      if (filters.priceRange === "Under $120" && totalPrice >= 120) {
         return false
-      } else if (filters.priceRange === "$120-$150" && (price < 120 || price > 150)) {
+      } else if (filters.priceRange === "$120-$150" && (totalPrice < 120 || totalPrice > 150)) {
         return false
-      } else if (filters.priceRange === "Over $150" && price <= 150) {
+      } else if (filters.priceRange === "Over $150" && totalPrice <= 150) {
         return false
       }
     }
@@ -221,9 +333,18 @@ export default function FramesPage() {
     setFilters({
       faceShape: "All",
       category: "All",
+      material: "All",
       search: "",
       priceRange: "All",
     })
+  }
+
+  // Calculate the adjusted price based on selected material
+  const getAdjustedPrice = (frame) => {
+    const basePrice = Number.parseInt(frame.price.replace("$", ""))
+    const material = selectedMaterials[frame.id] || frame.materials[0]
+    const priceAdjustment = frame.materialPriceAdjustments?.[material] || 0
+    return `$${basePrice + priceAdjustment}`
   }
 
   return (
@@ -296,6 +417,22 @@ export default function FramesPage() {
                   </div>
 
                   <div>
+                    <label className="text-sm font-medium mb-1 block">Material</label>
+                    <Select value={filters.material} onValueChange={(value) => handleFilterChange("material", value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Materials" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {allMaterials.map((material) => (
+                          <SelectItem key={material} value={material}>
+                            {material}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div>
                     <label className="text-sm font-medium mb-1 block">Price Range</label>
                     <Select
                       value={filters.priceRange}
@@ -335,8 +472,14 @@ export default function FramesPage() {
             {filteredFrames.map((frame) => {
               // Get the currently selected color or default to the first color
               const currentColor = selectedColors[frame.id] || frame.colors[0]
+              // Get the currently selected material or default to the first material
+              const currentMaterial = selectedMaterials[frame.id] || frame.materials[0]
               // Get the image for the current color
               const currentImage = frame.colorImages?.[currentColor] || frame.image
+              // Get the material description
+              const materialDescription = frame.materialDescriptions?.[currentMaterial] || ""
+              // Get the adjusted price
+              const adjustedPrice = getAdjustedPrice(frame)
 
               return (
                 <Card key={frame.id} className="overflow-hidden flex flex-col">
@@ -356,6 +499,43 @@ export default function FramesPage() {
                         </span>
                       ))}
                     </div>
+
+                    {/* Material Selection */}
+                    <div className="mt-3">
+                      <div className="flex items-center gap-1">
+                        <p className="text-sm font-medium">Material:</p>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Info className="h-3 w-3 text-muted-foreground cursor-help" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p className="text-xs max-w-[200px]">{materialInfo[currentMaterial]}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      </div>
+                      <Select
+                        value={currentMaterial}
+                        onValueChange={(value) => setSelectedMaterials({ ...selectedMaterials, [frame.id]: value })}
+                      >
+                        <SelectTrigger className="h-8 mt-1 text-sm">
+                          <SelectValue placeholder="Select material" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {frame.materials.map((material) => (
+                            <SelectItem key={material} value={material}>
+                              {material}
+                              {frame.materialPriceAdjustments?.[material] > 0 &&
+                                ` (+$${frame.materialPriceAdjustments[material]})`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground mt-1">{materialDescription}</p>
+                    </div>
+
+                    {/* Color Selection */}
                     <div className="mt-3">
                       <p className="text-sm font-medium">Available Colors:</p>
                       <div className="flex gap-1 mt-1">
@@ -381,7 +561,7 @@ export default function FramesPage() {
                     </div>
                   </CardContent>
                   <CardFooter className="p-4 pt-0 flex justify-between items-center">
-                    <span className="font-bold">{frame.price}</span>
+                    <span className="font-bold">{adjustedPrice}</span>
                     <Dialog>
                       <DialogTrigger asChild>
                         <Button variant="outline" className="gap-2">
@@ -390,7 +570,14 @@ export default function FramesPage() {
                         </Button>
                       </DialogTrigger>
                       <DialogContent className="sm:max-w-[600px] p-0">
-                        <ARTryOn frame={{ ...frame, image: currentImage }} />
+                        <ARTryOn
+                          frame={{
+                            ...frame,
+                            image: currentImage,
+                            material: currentMaterial,
+                            price: adjustedPrice,
+                          }}
+                        />
                       </DialogContent>
                     </Dialog>
                   </CardFooter>
