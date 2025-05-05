@@ -3,8 +3,8 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Camera, Upload, Loader2, AlertCircle, WifiOff } from "lucide-react"
-import { loadFaceApiModels, detectFaceShape } from "@/utils/face-api"
+import { Camera, Upload, Loader2, AlertCircle, WifiOff, RefreshCw } from "lucide-react"
+import { loadFaceApiModels, detectFaceShape, initializeFaceApi } from "@/utils/face-api"
 
 interface FaceAnalyzerProps {
   onAnalysisComplete: (result: {
@@ -23,10 +23,29 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [isOffline, setIsOffline] = useState(false)
   const [modelsLoaded, setModelsLoaded] = useState(false)
+  const [initializationComplete, setInitializationComplete] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Initialize face-api
+  useEffect(() => {
+    const initialize = async () => {
+      try {
+        const initialized = initializeFaceApi()
+        setInitializationComplete(initialized)
+        if (!initialized) {
+          setError("Failed to initialize face analysis. Please try using a different browser.")
+        }
+      } catch (err) {
+        console.error("Initialization error:", err)
+        setError("Failed to initialize face analysis. Please try using a different browser.")
+      }
+    }
+
+    initialize()
+  }, [])
 
   // Check online status
   useEffect(() => {
@@ -50,6 +69,8 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
 
   // Load face-api models on component mount
   useEffect(() => {
+    if (!initializationComplete) return
+
     const loadModels = async () => {
       try {
         setModelLoading(true)
@@ -58,7 +79,11 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
         setModelsLoaded(true)
       } catch (err) {
         console.error("Error loading models:", err)
-        setError("Failed to load face analysis models. Please try again later.")
+        if (err instanceof Error) {
+          setError(err.message)
+        } else {
+          setError("Failed to load face analysis models. Please try again later.")
+        }
         setModelLoading(false)
       }
     }
@@ -71,7 +96,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
         stream.getTracks().forEach((track) => track.stop())
       }
     }
-  }, [])
+  }, [initializationComplete])
 
   // Start camera when mode is set to camera
   useEffect(() => {
@@ -210,9 +235,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
     } catch (err) {
       if (err instanceof Error) {
         throw new Error(
-          err.message === "No face detected"
-            ? "No face detected. Please try again with a clearer photo."
-            : "Failed to analyze face. Please try again.",
+          err.message === "No face detected" ? "No face detected. Please try again with a clearer photo." : err.message,
         )
       }
       throw new Error("Failed to analyze face. Please try again.")
@@ -233,6 +256,24 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
 
   const triggerFileInput = () => {
     fileInputRef.current?.click()
+  }
+
+  const retryModelLoading = async () => {
+    setError(null)
+    setModelLoading(true)
+    try {
+      await loadFaceApiModels()
+      setModelLoading(false)
+      setModelsLoaded(true)
+    } catch (err) {
+      console.error("Error reloading models:", err)
+      if (err instanceof Error) {
+        setError(err.message)
+      } else {
+        setError("Failed to load face analysis models. Please try again later.")
+      }
+      setModelLoading(false)
+    }
   }
 
   return (
@@ -302,7 +343,17 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
       {error && (
         <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4 flex items-center gap-2">
           <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <p className="text-red-200 text-sm">{error}</p>
+          <div className="flex-1">
+            <p className="text-red-200 text-sm">{error}</p>
+            {error.includes("Failed to load face analysis models") && (
+              <button
+                onClick={retryModelLoading}
+                className="flex items-center gap-1 text-xs text-red-300 hover:text-red-200 mt-1"
+              >
+                <RefreshCw className="w-3 h-3" /> Try again
+              </button>
+            )}
+          </div>
         </div>
       )}
 
@@ -310,10 +361,10 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <button
           onClick={() => handleModeSelect("camera")}
-          disabled={isLoading || (modelLoading && !modelsLoaded)}
+          disabled={isLoading || (modelLoading && !modelsLoaded) || !initializationComplete}
           className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base transition-all duration-300 ${
             mode === "camera" ? "bg-[#2563EB] text-white" : "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
-          } ${isLoading || (modelLoading && !modelsLoaded) ? "opacity-50 cursor-not-allowed" : ""}`}
+          } ${isLoading || (modelLoading && !modelsLoaded) || !initializationComplete ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
           Take Photo
@@ -321,7 +372,9 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
 
         <button
           onClick={() => (mode === "camera" ? captureImage() : handleModeSelect("upload"))}
-          disabled={isLoading || (modelLoading && !modelsLoaded) || (mode === "camera" && !stream)}
+          disabled={
+            isLoading || (modelLoading && !modelsLoaded) || (mode === "camera" && !stream) || !initializationComplete
+          }
           className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base transition-all duration-300 ${
             mode === "camera"
               ? "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
@@ -329,7 +382,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
                 ? "bg-[#2563EB] text-white"
                 : "bg-[#1a1f36] hover:bg-[#252b45] text-white"
           } ${
-            isLoading || (modelLoading && !modelsLoaded) || (mode === "camera" && !stream)
+            isLoading || (modelLoading && !modelsLoaded) || (mode === "camera" && !stream) || !initializationComplete
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}

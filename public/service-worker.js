@@ -1,6 +1,6 @@
 // Service worker for offline functionality
-const CACHE_NAME = "face-analyzer-cache-v1"
-const MODEL_CACHE_NAME = "face-api-models-v1"
+const CACHE_NAME = "face-analyzer-cache-v2"
+const MODEL_CACHE_NAME = "face-api-models-v2"
 
 // Resources to cache
 const STATIC_RESOURCES = [
@@ -45,12 +45,26 @@ self.addEventListener("install", (event) => {
           return cache.addAll(STATIC_RESOURCES)
         }),
 
-      // Cache model resources
+      // Cache model resources individually to prevent batch failures
       caches
         .open(MODEL_CACHE_NAME)
-        .then((cache) => {
+        .then(async (cache) => {
           console.log("Caching model resources")
-          return cache.addAll(MODEL_RESOURCES)
+          // Cache each model file individually to prevent one failure from stopping all caching
+          const modelCachePromises = MODEL_RESOURCES.map(async (modelUrl) => {
+            try {
+              const response = await fetch(modelUrl)
+              if (response.ok) {
+                return cache.put(modelUrl, response)
+              } else {
+                console.error(`Failed to cache model: ${modelUrl}, status: ${response.status}`)
+              }
+            } catch (error) {
+              console.error(`Error caching model: ${modelUrl}`, error)
+            }
+          })
+
+          return Promise.allSettled(modelCachePromises)
         }),
     ]).then(() => {
       console.log("Resources cached successfully")
