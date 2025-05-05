@@ -96,13 +96,13 @@ export default function FramesPage() {
           <input
             type="text"
             placeholder="Search frames..."
-            className="w-full bg-[#0f1117] border border-[#1a1c25] rounded-lg py-2 px-4 pl-9 sm:pl-10 text-white text-sm sm:text-base"
+            className="w-full bg-card border border-border rounded-lg py-2 px-4 pl-9 sm:pl-10 text-foreground text-sm sm:text-base"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
         </div>
-        <button className="bg-[#0f1117] border border-[#1a1c25] rounded-lg p-2">
+        <button className="bg-card border border-border rounded-lg p-2">
           <SlidersHorizontal className="w-5 h-5" />
         </button>
       </div>

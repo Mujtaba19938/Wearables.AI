@@ -23,7 +23,7 @@ export function TryOnModal({ isOpen, onClose, frame }: TryOnModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div className="bg-[#0a0c14] rounded-lg max-w-2xl w-full overflow-hidden border border-[#1a1c25]">
+      <div className="bg-card rounded-lg max-w-2xl w-full overflow-hidden border border-border">
         <div className="flex items-center justify-between p-4 border-b border-[#1a1c25]">
           <div className="flex items-center justify-between w-full">
             <h2 className="text-xl font-bold">{frame.name}</h2>
@@ -39,7 +39,7 @@ export function TryOnModal({ isOpen, onClose, frame }: TryOnModalProps) {
 
         <div className="grid grid-cols-2 border-b border-[#1a1c25]">
           <button
-            className={`py-3 text-center ${activeTab === "camera" ? "bg-[#0f1117] text-white" : "bg-[#0a0c14] text-gray-400"}`}
+            className={`py-3 text-center ${activeTab === "camera" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"}`}
             onClick={() => setActiveTab("camera")}
           >
             <span className="flex items-center justify-center gap-2">
@@ -48,7 +48,7 @@ export function TryOnModal({ isOpen, onClose, frame }: TryOnModalProps) {
             </span>
           </button>
           <button
-            className={`py-3 text-center ${activeTab === "sample" ? "bg-[#0f1117] text-white" : "bg-[#0a0c14] text-gray-400"}`}
+            className={`py-3 text-center ${activeTab === "sample" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"}`}
             onClick={() => setActiveTab("sample")}
           >
             <span className="flex items-center justify-center gap-2">
@@ -69,11 +69,7 @@ export function TryOnModal({ isOpen, onClose, frame }: TryOnModalProps) {
             </div>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <img
-                src="/placeholder.svg?height=400&width=600&query=person+face+sample"
-                alt="Sample face"
-                className="max-w-full max-h-full"
-              />
+              <img src="/placeholder.svg?key=vt1n0" alt="Sample face" className="max-w-full max-h-full" />
             </div>
           )}
 
@@ -95,7 +91,7 @@ export function TryOnModal({ isOpen, onClose, frame }: TryOnModalProps) {
               />
             ))}
           </div>
-          <button className="px-6 py-2 bg-[#3B82F6] hover:bg-[#2563EB] rounded-md flex items-center gap-2">
+          <button className="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-md flex items-center gap-2">
             <Camera className="w-4 h-4" />
             Capture
           </button>

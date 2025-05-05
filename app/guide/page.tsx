@@ -9,8 +9,8 @@ export default function GuidePage() {
       <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-8">How to Use the App</h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full mb-6 sm:mb-12">
-        <div className="bg-[#0f1117] p-4 sm:p-6 rounded-xl border border-[#1a1c25]">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#1a1f36] rounded-full flex items-center justify-center mb-3 sm:mb-4">
+        <div className="bg-card p-4 sm:p-6 rounded-xl border border-border">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-secondary rounded-full flex items-center justify-center mb-3 sm:mb-4">
             <span className="text-[#3B82F6] font-bold text-sm sm:text-base">1</span>
           </div>
           <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Take a Photo</h3>
@@ -19,8 +19,8 @@ export default function GuidePage() {
           </p>
         </div>
 
-        <div className="bg-[#0f1117] p-4 sm:p-6 rounded-xl border border-[#1a1c25]">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#1a1f36] rounded-full flex items-center justify-center mb-3 sm:mb-4">
+        <div className="bg-card p-4 sm:p-6 rounded-xl border border-border">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-secondary rounded-full flex items-center justify-center mb-3 sm:mb-4">
             <span className="text-[#3B82F6] font-bold text-sm sm:text-base">2</span>
           </div>
           <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Analyze</h3>
@@ -29,8 +29,8 @@ export default function GuidePage() {
           </p>
         </div>
 
-        <div className="bg-[#0f1117] p-4 sm:p-6 rounded-xl border border-[#1a1c25]">
-          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-[#1a1f36] rounded-full flex items-center justify-center mb-3 sm:mb-4">
+        <div className="bg-card p-4 sm:p-6 rounded-xl border border-border">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 bg-secondary rounded-full flex items-center justify-center mb-3 sm:mb-4">
             <span className="text-[#3B82F6] font-bold text-sm sm:text-base">3</span>
           </div>
           <h3 className="text-lg sm:text-xl font-bold mb-1 sm:mb-2">Get Recommendations</h3>
@@ -40,7 +40,7 @@ export default function GuidePage() {
         </div>
       </div>
 
-      <div className="bg-[#0f1117] p-4 sm:p-6 rounded-xl border border-[#1a1c25] w-full">
+      <div className="bg-card p-4 sm:p-6 rounded-xl border border-border w-full">
         <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
           <svg
             width="20"

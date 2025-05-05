@@ -24,6 +24,12 @@
   --input: 240 3.7% 90%;
   --ring: 217.2 91.2% 59.8%;
   --radius: 0.5rem;
+
+  /* Custom colors for our app */
+  --card-bg: 0 0% 98%;
+  --card-border: 240 10% 90%;
+  --card-inner-bg: 0 0% 100%;
+  --card-input-bg: 0 0% 95%;
 }
 
 .dark {
@@ -47,6 +53,12 @@
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
   --ring: 240 4.9% 83.9%;
+
+  /* Custom colors for our app */
+  --card-bg: 240 10% 6.9%;
+  --card-border: 240 10% 10%;
+  --card-inner-bg: 240 10% 4%;
+  --card-input-bg: 240 10% 2%;
 }
 
 @layer base {

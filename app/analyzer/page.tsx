@@ -158,7 +158,7 @@ export default function AnalyzerPage() {
 
             <button
               onClick={resetAnalysis}
-              className="w-full bg-[#1a1f36] hover:bg-[#252b45] text-white py-3 rounded-lg font-medium transition-all duration-300 mt-2"
+              className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground py-3 rounded-lg font-medium transition-all duration-300 mt-2"
             >
               Try Another Photo
             </button>
@@ -167,7 +167,7 @@ export default function AnalyzerPage() {
           <>
             <FaceAnalyzer onAnalysisComplete={handleAnalysisComplete} />
             <PhotoTips />
-            <div className="flex items-center gap-3 bg-[#0f1117] p-3 sm:p-4 rounded-xl border border-[#1a1c25] mt-4">
+            <div className="bg-card p-3 sm:p-4 rounded-xl border border-border mt-4">
               <Shield className="w-5 h-5 text-[#3B82F6] flex-shrink-0" />
               <p className="text-xs sm:text-sm text-[#3B82F6]">
                 Your privacy is important to us. All analysis is done on-device.

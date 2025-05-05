@@ -16,31 +16,27 @@ export function AnalysisModeSelector({ selectedMode, onChange }: AnalysisModePro
         <button
           onClick={() => onChange("simple")}
           className={`flex items-center justify-between p-3 rounded-lg border ${
-            selectedMode === "simple"
-              ? "bg-[#1a1f36] border-[#3B82F6]"
-              : "bg-[#0a0c14] border-[#1a1c25] hover:bg-[#0f1117]"
+            selectedMode === "simple" ? "bg-secondary border-primary" : "bg-muted border-border hover:bg-card"
           } transition-colors`}
         >
           <div className="flex flex-col items-start">
             <span className="font-medium">Simple</span>
-            <span className="text-xs text-gray-400">Face shape & recommendations</span>
+            <span className="text-xs text-muted-foreground">Face shape & recommendations</span>
           </div>
-          {selectedMode === "simple" && <Check className="w-4 h-4 text-[#3B82F6]" />}
+          {selectedMode === "simple" && <Check className="w-4 h-4 text-primary" />}
         </button>
 
         <button
           onClick={() => onChange("extensive")}
           className={`flex items-center justify-between p-3 rounded-lg border ${
-            selectedMode === "extensive"
-              ? "bg-[#1a1f36] border-[#3B82F6]"
-              : "bg-[#0a0c14] border-[#1a1c25] hover:bg-[#0f1117]"
+            selectedMode === "extensive" ? "bg-secondary border-primary" : "bg-muted border-border hover:bg-card"
           } transition-colors`}
         >
           <div className="flex flex-col items-start">
             <span className="font-medium">Extensive</span>
-            <span className="text-xs text-gray-400">Detailed measurements & analysis</span>
+            <span className="text-xs text-muted-foreground">Detailed measurements & analysis</span>
           </div>
-          {selectedMode === "extensive" && <Check className="w-4 h-4 text-[#3B82F6]" />}
+          {selectedMode === "extensive" && <Check className="w-4 h-4 text-primary" />}
         </button>
       </div>
     </div>

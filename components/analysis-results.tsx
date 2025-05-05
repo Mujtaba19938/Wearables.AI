@@ -73,7 +73,7 @@ export function AnalysisResults({
           </p>
         </div>
       )}
-      <div className="bg-[#0f1117] p-4 sm:p-6 rounded-xl border border-[#1a1c25] mb-4 sm:mb-6">
+      <div className="bg-card p-4 sm:p-6 rounded-xl border border-border mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
           <div className="w-full sm:w-40 sm:h-40 rounded-lg overflow-hidden flex-shrink-0">
             <FaceImageViewer imageData={imageData} landmarks={landmarks} measurements={measurements} />
@@ -89,7 +89,7 @@ export function AnalysisResults({
               </h2>
 
               {confidence > 0 && analysisMode === "extensive" && (
-                <div className="flex items-center gap-1 bg-[#0a0c14] px-2 py-1 rounded text-xs">
+                <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded text-xs">
                   <span className="text-gray-400">{isFallbackMode ? "Estimate" : "Confidence"}:</span>
                   <span
                     className={`font-medium ${
@@ -115,7 +115,7 @@ export function AnalysisResults({
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {alternativeShapes.slice(1, 3).map((alt, index) => (
-                    <div key={index} className="bg-[#0a0c14] px-2 py-1 rounded text-xs flex items-center gap-1">
+                    <div key={index} className="bg-muted px-2 py-1 rounded text-xs flex items-center gap-1">
                       <span>{alt.shape}</span>
                       <span className="text-gray-400">({alt.score}%)</span>
                     </div>
@@ -135,7 +135,7 @@ export function AnalysisResults({
             )}
 
             {showDetails && analysisMode === "extensive" && (
-              <div className="bg-[#0a0c14] p-3 rounded-lg mb-4 text-xs sm:text-sm">
+              <div className="bg-muted p-3 rounded-lg mb-4 text-xs sm:text-sm">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <p className="text-gray-400">Width/Height Ratio:</p>
@@ -160,12 +160,12 @@ export function AnalysisResults({
         </div>
       </div>
 
-      <div className="bg-[#0f1117] p-4 sm:p-6 rounded-xl border border-[#1a1c25] mb-4 sm:mb-6">
+      <div className="bg-card p-4 sm:p-6 rounded-xl border border-border mb-4 sm:mb-6">
         <h3 className="text-lg sm:text-xl font-bold mb-3">Recommended Frame Styles</h3>
 
         <div className="space-y-3">
           {frameStyles.map((style, index) => (
-            <div key={index} className="flex items-center gap-3 bg-[#0a0c14] p-3 rounded-lg">
+            <div key={index} className="flex items-center gap-3 bg-muted p-3 rounded-lg">
               <div className="w-8 h-8 rounded-full bg-[#1a1f36] flex items-center justify-center flex-shrink-0">
                 <Check className="w-4 h-4 text-[#3B82F6]" />
               </div>

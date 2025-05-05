@@ -57,7 +57,7 @@ export function FrameCard({
 
   return (
     <>
-      <div className="bg-[#0f1117] rounded-xl border border-[#1a1c25] overflow-hidden">
+      <div className="bg-card rounded-xl border border-border overflow-hidden">
         <div className="relative">
           <img src={image || "/placeholder.svg"} alt={name} className="w-full h-40 sm:h-48 object-cover" />
           {bestseller && (
@@ -75,7 +75,7 @@ export function FrameCard({
 
           <div className="flex gap-1.5 sm:gap-2 mb-3 sm:mb-4">
             {faceShapes.map((shape) => (
-              <span key={shape} className="bg-[#1a1f36] text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+              <span key={shape} className="bg-secondary text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
                 {shape}
               </span>
             ))}
@@ -85,7 +85,7 @@ export function FrameCard({
             <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-400 mb-1">Material:</div>
             <div className="relative">
               <select
-                className="w-full appearance-none bg-[#0a0c14] border border-[#1a1c25] rounded py-1.5 sm:py-2 px-2 sm:px-3 text-white text-sm"
+                className="w-full appearance-none bg-muted border border-border rounded py-1.5 sm:py-2 px-2 sm:px-3 text-foreground text-sm"
                 value={selectedMaterial}
                 onChange={(e) => setSelectedMaterial(e.target.value)}
               >

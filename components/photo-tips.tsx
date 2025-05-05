@@ -7,7 +7,7 @@ export function PhotoTips() {
   const [isExpanded, setIsExpanded] = useState(false)
 
   return (
-    <div className="bg-[#0f1117] p-4 rounded-xl border border-[#1a1c25] mb-4">
+    <div className="bg-card p-4 rounded-xl border border-border mb-4">
       <button onClick={() => setIsExpanded(!isExpanded)} className="w-full flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Info className="w-5 h-5 text-[#3B82F6]" />

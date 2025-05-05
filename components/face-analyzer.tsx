@@ -425,7 +425,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
       )}
 
       {/* Face preview area */}
-      <div className="aspect-square w-full bg-[#0a0c14] rounded-lg flex items-center justify-center mb-4 sm:mb-6 overflow-hidden relative">
+      <div className="aspect-square w-full bg-muted rounded-lg flex items-center justify-center mb-4 sm:mb-6 overflow-hidden relative">
         {modelLoading ? (
           <div className="flex flex-col items-center justify-center text-gray-400">
             <Loader2 className="w-8 h-8 animate-spin mb-2" />
@@ -488,7 +488,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
           onClick={() => handleModeSelect("camera")}
           disabled={isLoading || (modelLoading && !usingStandaloneMode)}
           className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base transition-all duration-300 ${
-            mode === "camera" ? "bg-[#2563EB] text-white" : "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+            mode === "camera" ? "bg-primary text-white" : "bg-primary hover:bg-primary/90 text-white"
           } ${isLoading || (modelLoading && !usingStandaloneMode) ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -500,10 +500,10 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
           disabled={isLoading || (modelLoading && !usingStandaloneMode) || (mode === "camera" && !stream)}
           className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base transition-all duration-300 ${
             mode === "camera"
-              ? "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+              ? "bg-primary hover:bg-primary/90 text-white"
               : mode === "upload"
-                ? "bg-[#2563EB] text-white"
-                : "bg-[#1a1f36] hover:bg-[#252b45] text-white"
+                ? "bg-primary text-white"
+                : "bg-secondary hover:bg-secondary/90 text-secondary-foreground"
           } ${
             isLoading || (modelLoading && !usingStandaloneMode) || (mode === "camera" && !stream)
               ? "opacity-50 cursor-not-allowed"

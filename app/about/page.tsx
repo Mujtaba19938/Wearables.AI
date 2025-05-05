@@ -3,7 +3,7 @@ export default function AboutPage() {
     <main className="flex min-h-screen flex-col items-start p-4 sm:p-6 max-w-4xl mx-auto">
       <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-10">About wearables.ai</h1>
 
-      <div className="bg-[#0f1117] p-4 sm:p-6 rounded-xl border border-[#1a1c25] w-full mb-4 sm:mb-8">
+      <div className="bg-card p-4 sm:p-6 rounded-xl border border-border w-full mb-4 sm:mb-8">
         <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Our Mission</h2>
 
         <p className="text-sm sm:text-base text-gray-300 mb-3 sm:mb-4">
@@ -18,7 +18,7 @@ export default function AboutPage() {
         </p>
       </div>
 
-      <div className="bg-[#0f1117] p-4 sm:p-6 rounded-xl border border-[#1a1c25] w-full mb-4 sm:mb-8">
+      <div className="bg-card p-4 sm:p-6 rounded-xl border border-border w-full mb-4 sm:mb-8">
         <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">How It Works</h2>
 
         <p className="text-sm sm:text-base text-gray-300 mb-3 sm:mb-4">
@@ -33,7 +33,7 @@ export default function AboutPage() {
         </p>
       </div>
 
-      <div className="bg-[#0f1117] p-4 sm:p-6 rounded-xl border border-[#1a1c25] w-full">
+      <div className="bg-card p-4 sm:p-6 rounded-xl border border-border w-full">
         <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Privacy & Security</h2>
 
         <p className="text-sm sm:text-base text-gray-300 mb-3 sm:mb-4">

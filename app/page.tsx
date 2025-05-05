@@ -23,13 +23,13 @@ export default function HomePage() {
         <p className="text-lg sm:text-xl dark:text-gray-400 text-gray-600">Find your perfect eyewear match</p>
 
         <div className="grid grid-cols-1 gap-6 w-full max-w-md mt-4 sm:mt-8">
-          <div className="dark:bg-[#0f1117] bg-gray-100 p-4 sm:p-6 rounded-xl border dark:border-[#1a1c25] border-gray-200">
+          <div className="bg-card p-4 sm:p-6 rounded-xl border border-border">
             <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Face Shape Analyzer</h2>
             <p className="text-sm sm:text-base dark:text-gray-400 text-gray-600 mb-4 sm:mb-6">
               Discover eyeglasses that complement your unique facial features
             </p>
 
-            <div className="dark:bg-[#0a0c14] bg-white p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+            <div className="bg-muted p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
               <svg
                 width="20"
                 height="20"
@@ -55,7 +55,7 @@ export default function HomePage() {
 
             <a
               href="/analyzer"
-              className="inline-block w-full bg-[#3B82F6] hover:bg-[#2563EB] text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-all duration-300 text-center"
+              className="inline-block w-full bg-primary hover:bg-primary/90 text-white px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg font-medium transition-all duration-300 text-center"
             >
               Start Analysis
             </a>
