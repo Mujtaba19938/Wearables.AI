@@ -47,3 +47,44 @@
 .hover-bounce:hover {
   animation: subtle-bounce 0.5s ease-in-out;
 }
+
+/* Add these responsive utility classes at the end of the file */
+@layer utilities {
+  .container-responsive {
+    @apply w-full px-4 sm:px-6 md:px-8 mx-auto max-w-7xl;
+  }
+
+  .text-responsive {
+    @apply text-base sm:text-lg md:text-xl;
+  }
+
+  .heading-responsive {
+    @apply text-2xl sm:text-3xl md:text-4xl font-bold;
+  }
+
+  .subheading-responsive {
+    @apply text-xl sm:text-2xl md:text-3xl font-semibold;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .sm-hidden {
+    display: none;
+  }
+
+  .sm-py-2 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .sm-px-2 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}
+
+/* Ensure content doesn't get hidden behind the navbar */
+body {
+  padding-bottom: 5rem;
+}

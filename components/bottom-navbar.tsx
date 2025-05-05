@@ -16,9 +16,10 @@ export function BottomNavbar() {
     { href: "/profile", icon: User, label: "Profile" },
   ]
 
+  // Make the navbar responsive
   return (
-    <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center">
-      <nav className="flex items-center justify-between px-6 py-3 mx-auto bg-black/60 backdrop-blur-lg rounded-full w-auto gap-8 shadow-lg border border-white/10">
+    <div className="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center">
+      <nav className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3 mx-auto bg-black/60 backdrop-blur-lg rounded-full w-auto gap-2 sm:gap-8 shadow-lg border border-white/10">
         {navItems.map(({ href, icon: Icon, label }) => {
           const isActive = pathname === href
           return (
@@ -26,7 +27,7 @@ export function BottomNavbar() {
               key={href}
               href={href}
               className={cn(
-                "flex flex-col items-center justify-center min-w-[60px] relative group transition-all duration-300 ease-in-out",
+                "flex flex-col items-center justify-center min-w-[40px] sm:min-w-[60px] relative group transition-all duration-300 ease-in-out",
                 isActive ? "text-white" : "text-gray-400 hover:text-white",
               )}
             >
@@ -39,7 +40,7 @@ export function BottomNavbar() {
 
               <Icon
                 className={cn(
-                  "h-6 w-6 transition-all duration-300 ease-in-out",
+                  "h-5 w-5 sm:h-6 sm:w-6 transition-all duration-300 ease-in-out",
                   isActive
                     ? "text-white"
                     : "text-gray-400 group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]",
@@ -48,7 +49,7 @@ export function BottomNavbar() {
               />
               <span
                 className={cn(
-                  "text-xs mt-1 transition-all duration-300 ease-in-out",
+                  "text-[10px] sm:text-xs mt-1 transition-all duration-300 ease-in-out",
                   isActive ? "" : "group-hover:font-medium group-hover:scale-105",
                 )}
               >
@@ -56,8 +57,8 @@ export function BottomNavbar() {
               </span>
               {isActive && (
                 <span
-                  className="absolute -bottom-1 w-1.5 h-1.5 bg-white rounded-full 
-                  transition-all duration-300 ease-in-out animate-in fade-in zoom-in"
+                  className="absolute -bottom-1 w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full 
+                transition-all duration-300 ease-in-out animate-in fade-in zoom-in"
                 />
               )}
             </Link>
