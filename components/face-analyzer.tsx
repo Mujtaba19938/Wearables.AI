@@ -6,6 +6,7 @@ import { useState, useRef, useEffect } from "react"
 import { Camera, Upload, Loader2, AlertCircle, WifiOff, Smartphone } from "lucide-react"
 import { shouldUseStandaloneAnalyzer } from "@/utils/mobile-detector"
 import { analyzeImageStandalone } from "@/utils/standalone-face-analyzer"
+import { AnalysisModeSelector, type AnalysisMode } from "@/components/analysis-mode-selector"
 
 // Only import face-api related functions if we're not using the standalone analyzer
 // This prevents any face-api.js code from running on incompatible browsers
@@ -32,6 +33,7 @@ interface FaceAnalyzerProps {
     measurements: any
     landmarks: any
     imageData: string
+    analysisMode: AnalysisMode
   }) => void
 }
 
@@ -44,6 +46,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
   const [isOffline, setIsOffline] = useState(false)
   const [modelsLoaded, setModelsLoaded] = useState(false)
   const [usingStandaloneMode, setUsingStandaloneMode] = useState(false)
+  const [analysisMode, setAnalysisMode] = useState<AnalysisMode>("extensive")
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -171,6 +174,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
             onAnalysisComplete({
               ...result,
               imageData: event.target?.result as string,
+              analysisMode,
             })
           } catch (err) {
             if (err instanceof Error) {
@@ -233,6 +237,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
       onAnalysisComplete({
         ...result,
         imageData,
+        analysisMode,
       })
     } catch (err) {
       if (err instanceof Error) {
@@ -285,6 +290,9 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
     <div className="w-full">
       {/* Hidden canvas for image processing */}
       <canvas ref={canvasRef} className="hidden"></canvas>
+
+      {/* Analysis Mode Selector */}
+      <AnalysisModeSelector selectedMode={analysisMode} onChange={setAnalysisMode} />
 
       {/* Offline indicator */}
       {isOffline && !usingStandaloneMode && (

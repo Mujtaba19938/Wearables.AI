@@ -6,6 +6,7 @@ import { AnalysisResults } from "@/components/analysis-results"
 import { FacialMeasurementsCard } from "@/components/facial-measurements-card"
 import { Shield, WifiOff, Smartphone } from "lucide-react"
 import { shouldUseStandaloneAnalyzer } from "@/utils/mobile-detector"
+import type { AnalysisMode } from "@/components/analysis-mode-selector"
 
 // Only import face-api related functions if we're not using the standalone analyzer
 let areModelsLoaded: () => boolean
@@ -26,6 +27,7 @@ export default function AnalyzerPage() {
     measurements: any
     landmarks: any
     imageData: string
+    analysisMode: AnalysisMode
   } | null>(null)
   const [usingStandaloneMode, setUsingStandaloneMode] = useState(false)
 
@@ -73,6 +75,7 @@ export default function AnalyzerPage() {
     measurements: any
     landmarks: any
     imageData: string
+    analysisMode: AnalysisMode
   }) => {
     setAnalysisResults(results)
     setAnalysisComplete(true)
@@ -144,10 +147,13 @@ export default function AnalyzerPage() {
               measurements={analysisResults.measurements}
               landmarks={analysisResults.landmarks}
               imageData={analysisResults.imageData}
+              analysisMode={analysisResults.analysisMode}
             />
 
-            {/* Add the facial measurements card */}
-            <FacialMeasurementsCard measurements={analysisResults.measurements} />
+            {/* Only show the facial measurements card in extensive mode */}
+            {analysisResults.analysisMode === "extensive" && (
+              <FacialMeasurementsCard measurements={analysisResults.measurements} />
+            )}
 
             <button
               onClick={resetAnalysis}

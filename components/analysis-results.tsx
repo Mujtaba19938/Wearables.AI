@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Check, ChevronRight, Info } from "lucide-react"
 import Link from "next/link"
 import { FaceImageViewer } from "./face-image-viewer"
+import type { AnalysisMode } from "./analysis-mode-selector"
 
 interface AnalysisResultsProps {
   faceShape: string
@@ -12,6 +13,7 @@ interface AnalysisResultsProps {
   measurements: any
   landmarks: any
   imageData: string
+  analysisMode: AnalysisMode
 }
 
 export function AnalysisResults({
@@ -21,6 +23,7 @@ export function AnalysisResults({
   measurements,
   landmarks,
   imageData,
+  analysisMode,
 }: AnalysisResultsProps) {
   const [showDetails, setShowDetails] = useState(false)
 
@@ -74,7 +77,9 @@ export function AnalysisResults({
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
           <div className="w-full sm:w-40 sm:h-40 rounded-lg overflow-hidden flex-shrink-0">
             <FaceImageViewer imageData={imageData} landmarks={landmarks} measurements={measurements} />
-            <p className="text-xs text-center text-gray-400 mt-1">Toggle the eye icon to view facial landmarks</p>
+            {analysisMode === "extensive" && (
+              <p className="text-xs text-center text-gray-400 mt-1">Toggle the eye icon to view facial landmarks</p>
+            )}
           </div>
 
           <div className="flex-1">
@@ -83,7 +88,7 @@ export function AnalysisResults({
                 Your Face Shape: <span className="text-[#3B82F6]">{faceShape}</span>
               </h2>
 
-              {confidence > 0 && (
+              {confidence > 0 && analysisMode === "extensive" && (
                 <div className="flex items-center gap-1 bg-[#0a0c14] px-2 py-1 rounded text-xs">
                   <span className="text-gray-400">{isFallbackMode ? "Estimate" : "Confidence"}:</span>
                   <span
@@ -102,7 +107,7 @@ export function AnalysisResults({
               {description}
             </p>
 
-            {alternativeShapes && alternativeShapes.length > 1 && (
+            {alternativeShapes && alternativeShapes.length > 1 && analysisMode === "extensive" && (
               <div className="mb-4">
                 <div className="flex items-center gap-1 text-xs text-gray-400 mb-2">
                   <Info className="w-3 h-3" />
@@ -119,15 +124,17 @@ export function AnalysisResults({
               </div>
             )}
 
-            <button
-              onClick={() => setShowDetails(!showDetails)}
-              className="flex items-center gap-1 text-[#3B82F6] text-sm mb-2"
-            >
-              {showDetails ? "Hide" : "Show"} measurement details
-              <ChevronRight className={`w-4 h-4 transition-transform ${showDetails ? "rotate-90" : ""}`} />
-            </button>
+            {analysisMode === "extensive" && (
+              <button
+                onClick={() => setShowDetails(!showDetails)}
+                className="flex items-center gap-1 text-[#3B82F6] text-sm mb-2"
+              >
+                {showDetails ? "Hide" : "Show"} measurement details
+                <ChevronRight className={`w-4 h-4 transition-transform ${showDetails ? "rotate-90" : ""}`} />
+              </button>
+            )}
 
-            {showDetails && (
+            {showDetails && analysisMode === "extensive" && (
               <div className="bg-[#0a0c14] p-3 rounded-lg mb-4 text-xs sm:text-sm">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
