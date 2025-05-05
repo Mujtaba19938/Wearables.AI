@@ -2,77 +2,63 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, BookOpen, Glasses, Info, User } from "lucide-react"
+import { Home, Camera, Glasses, User } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useEffect, useState } from "react"
-import { useAuth } from "@/context/auth-context"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 export function BottomNavbar() {
   const pathname = usePathname()
-  const [mounted, setMounted] = useState(false)
-  const { user } = useAuth()
-
-  // Prevent hydration mismatch
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   const navItems = [
-    {
-      name: "Home",
-      href: "/",
-      icon: Home,
-    },
-    {
-      name: "Guide",
-      href: "/guide",
-      icon: BookOpen,
-    },
-    {
-      name: "Frames",
-      href: "/frames",
-      icon: Glasses,
-    },
-    {
-      name: "About",
-      href: "/about",
-      icon: Info,
-    },
-    {
-      name: "Profile",
-      href: "/profile",
-      icon: User,
-      isProfile: true,
-    },
+    { href: "/", icon: Home, label: "Home" },
+    { href: "/analyzer", icon: Camera, label: "Analyzer" },
+    { href: "/frames", icon: Glasses, label: "Frames" },
+    { href: "/profile", icon: User, label: "Profile" },
   ]
 
-  if (!mounted) return null
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50">
-      <nav className="bg-card/80 backdrop-blur-md border-t border-border flex justify-around items-center py-3">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href
-
+    <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center">
+      <nav className="flex items-center justify-between px-6 py-3 mx-auto bg-black/60 backdrop-blur-lg rounded-full w-auto gap-8 shadow-lg border border-white/10">
+        {navItems.map(({ href, icon: Icon, label }) => {
+          const isActive = pathname === href
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={href}
+              href={href}
               className={cn(
-                "flex flex-col items-center justify-center text-xs",
-                isActive ? "text-primary" : "text-muted-foreground",
+                "flex flex-col items-center justify-center min-w-[60px] relative group transition-all duration-300 ease-in-out",
+                isActive ? "text-white" : "text-gray-400 hover:text-white",
               )}
             >
-              {item.isProfile && user ? (
-                <Avatar className="h-6 w-6 mb-1">
-                  <AvatarImage src={user.profilePic || "/placeholder.svg"} alt={user.name} />
-                  <AvatarFallback className="text-[10px]">{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-              ) : (
-                <item.icon className="h-5 w-5 mb-1" />
+              <div
+                className={cn(
+                  "absolute inset-0 rounded-full bg-white/0 transition-all duration-300 ease-in-out -z-10",
+                  isActive ? "bg-white/0" : "group-hover:bg-white/10",
+                )}
+              />
+
+              <Icon
+                className={cn(
+                  "h-6 w-6 transition-all duration-300 ease-in-out",
+                  isActive
+                    ? "text-white"
+                    : "text-gray-400 group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]",
+                  !isActive && "group-hover:animate-[subtle-bounce_0.5s_ease-in-out]",
+                )}
+              />
+              <span
+                className={cn(
+                  "text-xs mt-1 transition-all duration-300 ease-in-out",
+                  isActive ? "" : "group-hover:font-medium group-hover:scale-105",
+                )}
+              >
+                {label}
+              </span>
+              {isActive && (
+                <span
+                  className="absolute -bottom-1 w-1.5 h-1.5 bg-white rounded-full 
+                  transition-all duration-300 ease-in-out animate-in fade-in zoom-in"
+                />
               )}
-              <span>{item.name}</span>
             </Link>
           )
         })}

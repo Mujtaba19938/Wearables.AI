@@ -1,163 +1,53 @@
-"use client"
-
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Camera, Save, LogOut } from "lucide-react"
-import { Logo } from "@/components/logo"
-import { useMobile } from "@/hooks/use-mobile"
-import { useAuth } from "@/context/auth-context"
-import { LoginForm } from "@/components/login-form"
-import { SignupForm } from "@/components/signup-form"
-import { useToast } from "@/hooks/use-toast"
-
 export default function ProfilePage() {
-  const [isEditing, setIsEditing] = useState(false)
-  const [showLoginForm, setShowLoginForm] = useState(true)
-  const [name, setName] = useState("")
-  const [email, setEmail] = useState("")
-  const isMobile = useMobile()
-  const { user, logout, updateProfile } = useAuth()
-  const { toast } = useToast()
-
-  // Initialize form values when user data is available
-  useState(() => {
-    if (user) {
-      setName(user.name)
-      setEmail(user.email)
-    }
-  })
-
-  const handleSave = () => {
-    updateProfile({ name, email })
-    setIsEditing(false)
-    toast({
-      title: "Profile updated",
-      description: "Your profile has been updated successfully",
-    })
-  }
-
-  const handleLogout = () => {
-    logout()
-    toast({
-      title: "Logged out",
-      description: "You have been logged out successfully",
-    })
-  }
-
   return (
-    <main className="flex min-h-screen flex-col items-center p-3 sm:p-4 md:p-8 pb-20">
-      <div className="w-full max-w-md">
-        <div className="mb-4 sm:mb-6 flex items-center justify-between">
-          <h1 className="text-xl sm:text-2xl font-bold">Profile</h1>
-          <Logo size={isMobile ? "sm" : "md"} />
+    <main className="flex min-h-screen flex-col items-center justify-center p-6">
+      <div className="flex flex-col items-center justify-center gap-6 max-w-md w-full">
+        <div className="w-24 h-24 bg-black/40 rounded-full mb-2"></div>
+        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
+
+        <div className="bg-black/20 p-6 rounded-xl border border-white/10 w-full">
+          <div className="space-y-4 w-full">
+            <div>
+              <h2 className="text-sm text-gray-400 mb-1">Name</h2>
+              <p className="font-medium">Guest User</p>
+            </div>
+
+            <div>
+              <h2 className="text-sm text-gray-400 mb-1">Email</h2>
+              <p className="font-medium">Not signed in</p>
+            </div>
+
+            <div className="pt-4">
+              <button className="w-full bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300">
+                Sign In
+              </button>
+            </div>
+
+            <div>
+              <button className="w-full bg-transparent hover:bg-white/5 text-white px-6 py-3 rounded-lg font-medium transition-all duration-300 border border-white/10">
+                Create Account
+              </button>
+            </div>
+          </div>
         </div>
 
-        {user ? (
-          // Authenticated user view
-          <>
-            <Card className="mb-6">
-              <CardHeader className="pb-2">
-                <CardTitle>Your Profile</CardTitle>
-                <CardDescription>Manage your account information</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col items-center gap-4 mb-6">
-                  <Avatar className="h-24 w-24 sm:h-32 sm:w-32">
-                    <AvatarImage src={user.profilePic || "/placeholder.svg"} alt={user.name} />
-                    <AvatarFallback className="text-2xl sm:text-3xl bg-primary/10">
-                      {user.name.substring(0, 2).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <Button variant="outline" size="sm">
-                    <Camera className="mr-2 h-4 w-4" />
-                    Change Photo
-                  </Button>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    {isEditing ? (
-                      <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-                    ) : (
-                      <p className="text-lg font-medium">{user.name}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    {isEditing ? (
-                      <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                    ) : (
-                      <p>{user.email}</p>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                {isEditing ? (
-                  <div className="flex gap-2">
-                    <Button onClick={handleSave}>
-                      <Save className="mr-2 h-4 w-4" />
-                      Save Changes
-                    </Button>
-                    <Button variant="outline" onClick={() => setIsEditing(false)}>
-                      Cancel
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="flex gap-2">
-                    <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
-                    <Button variant="outline" onClick={handleLogout}>
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Logout
-                    </Button>
-                  </div>
-                )}
-              </CardFooter>
-            </Card>
-
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>App Settings</CardTitle>
-                <CardDescription>Configure your app preferences</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <h3 className="font-medium">Privacy</h3>
-                  <p className="text-sm text-muted-foreground">
-                    We do not store any of your facial data. All analysis is performed locally on your device.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="font-medium">Saved Results</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Your face shape analysis results and recommendations are saved to your account.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="font-medium">About wearables.ai</h3>
-                  <p className="text-sm text-muted-foreground">Version 1.0.0</p>
-                </div>
-              </CardContent>
-            </Card>
-          </>
-        ) : (
-          // Non-authenticated view with login/signup forms
-          <div className="w-full">
-            {showLoginForm ? (
-              <LoginForm onToggleForm={() => setShowLoginForm(false)} />
-            ) : (
-              <SignupForm onToggleForm={() => setShowLoginForm(true)} />
-            )}
+        <div className="w-full bg-black/20 p-6 rounded-xl border border-white/10">
+          <h2 className="font-semibold mb-4">Settings</h2>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span>Dark Mode</span>
+              <div className="w-10 h-6 bg-white/20 rounded-full relative">
+                <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full"></div>
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <span>Notifications</span>
+              <div className="w-10 h-6 bg-white/20 rounded-full relative">
+                <div className="absolute left-1 top-1 w-4 h-4 bg-white/40 rounded-full"></div>
+              </div>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </main>
   )

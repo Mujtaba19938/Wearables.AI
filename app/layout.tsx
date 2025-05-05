@@ -1,26 +1,28 @@
 import type React from "react"
-import "./globals.css"
 import type { Metadata } from "next"
-import ClientLayout from "@/components/client-layout"
-import { FaviconHead } from "@/components/favicon-head"
+import { Inter } from "next/font/google"
+import "./globals.css"
+import { ClientLayout } from "@/components/client-layout"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Wearables.ai - Face Shape Analyzer",
-  description: "Find the perfect eyewear for your face shape",
+  title: "Face Shape Analyzer",
+  description: "Find the perfect glasses for your face shape",
     generator: 'v0.dev'
 }
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode
-}) {
+}>) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <FaviconHead />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
       </head>
-      <body>
+      <body className={inter.className}>
         <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
