@@ -3,13 +3,32 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Camera, Upload, Loader2, AlertCircle, WifiOff, RefreshCw } from "lucide-react"
-import { loadFaceApiModels, detectFaceShape, initializeFaceApi } from "@/utils/face-api"
-import { detectBrowser, canUseFallbackMode } from "@/utils/browser-detection"
+import { Camera, Upload, Loader2, AlertCircle, WifiOff, Smartphone } from "lucide-react"
+import { shouldUseStandaloneAnalyzer } from "@/utils/mobile-detector"
+import { analyzeImageStandalone } from "@/utils/standalone-face-analyzer"
+
+// Only import face-api related functions if we're not using the standalone analyzer
+// This prevents any face-api.js code from running on incompatible browsers
+let loadFaceApiModels: () => Promise<void>
+let detectFaceShape: (imageElement: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement) => Promise<any>
+let initializeFaceApi: () => boolean
+let areModelsLoaded: () => boolean
+
+// We'll dynamically import these only if needed
+if (!shouldUseStandaloneAnalyzer()) {
+  import("@/utils/face-api").then((module) => {
+    loadFaceApiModels = module.loadFaceApiModels
+    detectFaceShape = module.detectFaceShape
+    initializeFaceApi = module.initializeFaceApi
+    areModelsLoaded = module.areModelsLoaded
+  })
+}
 
 interface FaceAnalyzerProps {
   onAnalysisComplete: (result: {
     shape: string
+    confidence?: number
+    alternativeShapes?: Array<{ shape: string; score: number }>
     measurements: any
     landmarks: any
     imageData: string
@@ -20,45 +39,25 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
   const [mode, setMode] = useState<"camera" | "upload" | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [modelLoading, setModelLoading] = useState(true)
+  const [modelLoading, setModelLoading] = useState(false)
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [isOffline, setIsOffline] = useState(false)
   const [modelsLoaded, setModelsLoaded] = useState(false)
-  const [initializationComplete, setInitializationComplete] = useState(false)
-  const [browserCompatible, setBrowserCompatible] = useState<boolean | null>(null)
-  const [usingFallbackMode, setUsingFallbackMode] = useState(false)
+  const [usingStandaloneMode, setUsingStandaloneMode] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  // Initialize face-api
+  // Check if we should use standalone mode
   useEffect(() => {
-    const initialize = async () => {
-      try {
-        const initialized = initializeFaceApi()
-        setInitializationComplete(initialized)
-        if (!initialized) {
-          setError("Failed to initialize face analysis. Please try using a different browser.")
-        }
-      } catch (err) {
-        console.error("Initialization error:", err)
-        setError("Failed to initialize face analysis. Please try using a different browser.")
-      }
-    }
+    const standalone = shouldUseStandaloneAnalyzer()
+    setUsingStandaloneMode(standalone)
 
-    initialize()
-  }, [])
-
-  // Check browser compatibility
-  useEffect(() => {
-    const browserInfo = detectBrowser()
-    setBrowserCompatible(browserInfo.compatible)
-
-    if (!browserInfo.compatible && canUseFallbackMode()) {
-      setUsingFallbackMode(true)
-      setModelLoading(false)
+    // If using standalone mode, we don't need to load models
+    if (standalone) {
       setModelsLoaded(true)
+      setModelLoading(false)
     }
   }, [])
 
@@ -82,12 +81,14 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
     }
   }, [])
 
-  // Load face-api models on component mount
+  // Load face-api models on component mount (only if not using standalone mode)
   useEffect(() => {
-    if (!initializationComplete) return
+    if (usingStandaloneMode) return
 
     const loadModels = async () => {
       try {
+        if (!loadFaceApiModels) return
+
         setModelLoading(true)
         await loadFaceApiModels()
         setModelLoading(false)
@@ -111,7 +112,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
         stream.getTracks().forEach((track) => track.stop())
       }
     }
-  }, [initializationComplete])
+  }, [usingStandaloneMode])
 
   // Start camera when mode is set to camera
   useEffect(() => {
@@ -245,8 +246,15 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
 
   const analyzeImage = async (imageElement: HTMLImageElement | HTMLCanvasElement) => {
     try {
-      const result = await detectFaceShape(imageElement)
-      return result
+      // Use the appropriate analysis method based on mode
+      if (usingStandaloneMode) {
+        return await analyzeImageStandalone(imageElement)
+      } else {
+        if (!detectFaceShape) {
+          throw new Error("Face detection not available. Please try again.")
+        }
+        return await detectFaceShape(imageElement)
+      }
     } catch (err) {
       if (err instanceof Error) {
         throw new Error(
@@ -273,31 +281,13 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
     fileInputRef.current?.click()
   }
 
-  const retryModelLoading = async () => {
-    setError(null)
-    setModelLoading(true)
-    try {
-      await loadFaceApiModels()
-      setModelLoading(false)
-      setModelsLoaded(true)
-    } catch (err) {
-      console.error("Error reloading models:", err)
-      if (err instanceof Error) {
-        setError(err.message)
-      } else {
-        setError("Failed to load face analysis models. Please try again later.")
-      }
-      setModelLoading(false)
-    }
-  }
-
   return (
     <div className="w-full">
       {/* Hidden canvas for image processing */}
       <canvas ref={canvasRef} className="hidden"></canvas>
 
       {/* Offline indicator */}
-      {isOffline && (
+      {isOffline && !usingStandaloneMode && (
         <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-3 mb-4 flex items-center gap-2">
           <WifiOff className="w-5 h-5 text-yellow-500 flex-shrink-0" />
           <div>
@@ -311,24 +301,15 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
         </div>
       )}
 
-      {/* Browser compatibility warning */}
-      {browserCompatible === false && !usingFallbackMode && (
-        <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4 flex items-center gap-2">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+      {/* Mobile mode indicator */}
+      {usingStandaloneMode && (
+        <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-3 mb-4 flex items-center gap-2">
+          <Smartphone className="w-5 h-5 text-blue-500 flex-shrink-0" />
           <div>
-            <p className="text-red-200 text-sm font-medium">Browser compatibility issue detected</p>
-            <p className="text-red-300/70 text-xs">Please try using a different browser or device.</p>
-          </div>
-        </div>
-      )}
-
-      {/* Fallback mode notice */}
-      {usingFallbackMode && (
-        <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-3 mb-4 flex items-center gap-2">
-          <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
-          <div>
-            <p className="text-yellow-200 text-sm font-medium">Using simplified detection mode</p>
-            <p className="text-yellow-300/70 text-xs">For better results, try using Chrome on desktop.</p>
+            <p className="text-blue-200 text-sm font-medium">Mobile compatibility mode</p>
+            <p className="text-blue-300/70 text-xs">
+              Using simplified face analysis for better compatibility with your device
+            </p>
           </div>
         </div>
       )}
@@ -382,14 +363,6 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
           <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
           <div className="flex-1">
             <p className="text-red-200 text-sm">{error}</p>
-            {error.includes("Failed to load face analysis models") && (
-              <button
-                onClick={retryModelLoading}
-                className="flex items-center gap-1 text-xs text-red-300 hover:text-red-200 mt-1"
-              >
-                <RefreshCw className="w-3 h-3" /> Try again
-              </button>
-            )}
           </div>
         </div>
       )}
@@ -398,22 +371,10 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <button
           onClick={() => handleModeSelect("camera")}
-          disabled={
-            isLoading ||
-            (modelLoading && !modelsLoaded && !usingFallbackMode) ||
-            !initializationComplete ||
-            (browserCompatible === false && !usingFallbackMode)
-          }
+          disabled={isLoading || (modelLoading && !usingStandaloneMode)}
           className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base transition-all duration-300 ${
             mode === "camera" ? "bg-[#2563EB] text-white" : "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
-          } ${
-            isLoading ||
-            (modelLoading && !modelsLoaded && !usingFallbackMode) ||
-            !initializationComplete ||
-            (browserCompatible === false && !usingFallbackMode)
-              ? "opacity-50 cursor-not-allowed"
-              : ""
-          }`}
+          } ${isLoading || (modelLoading && !usingStandaloneMode) ? "opacity-50 cursor-not-allowed" : ""}`}
         >
           <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
           Take Photo
@@ -421,13 +382,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
 
         <button
           onClick={() => (mode === "camera" ? captureImage() : handleModeSelect("upload"))}
-          disabled={
-            isLoading ||
-            (modelLoading && !modelsLoaded && !usingFallbackMode) ||
-            (mode === "camera" && !stream) ||
-            !initializationComplete ||
-            (browserCompatible === false && !usingFallbackMode)
-          }
+          disabled={isLoading || (modelLoading && !usingStandaloneMode) || (mode === "camera" && !stream)}
           className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base transition-all duration-300 ${
             mode === "camera"
               ? "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
@@ -435,11 +390,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
                 ? "bg-[#2563EB] text-white"
                 : "bg-[#1a1f36] hover:bg-[#252b45] text-white"
           } ${
-            isLoading ||
-            (modelLoading && !modelsLoaded && !usingFallbackMode) ||
-            (mode === "camera" && !stream) ||
-            !initializationComplete ||
-            (browserCompatible === false && !usingFallbackMode)
+            isLoading || (modelLoading && !usingStandaloneMode) || (mode === "camera" && !stream)
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}

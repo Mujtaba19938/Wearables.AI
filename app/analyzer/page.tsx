@@ -4,8 +4,16 @@ import { useState, useEffect } from "react"
 import { FaceAnalyzer } from "@/components/face-analyzer"
 import { AnalysisResults } from "@/components/analysis-results"
 import { FacialMeasurementsCard } from "@/components/facial-measurements-card"
-import { Shield, WifiOff } from "lucide-react"
-import { areModelsLoaded } from "@/utils/face-api"
+import { Shield, WifiOff, Smartphone } from "lucide-react"
+import { shouldUseStandaloneAnalyzer } from "@/utils/mobile-detector"
+
+// Only import face-api related functions if we're not using the standalone analyzer
+let areModelsLoaded: () => boolean
+if (!shouldUseStandaloneAnalyzer()) {
+  import("@/utils/face-api").then((module) => {
+    areModelsLoaded = module.areModelsLoaded
+  })
+}
 
 export default function AnalyzerPage() {
   const [analysisComplete, setAnalysisComplete] = useState(false)
@@ -19,13 +27,20 @@ export default function AnalyzerPage() {
     landmarks: any
     imageData: string
   } | null>(null)
-  const [usingFallbackMode, setUsingFallbackMode] = useState(false)
+  const [usingStandaloneMode, setUsingStandaloneMode] = useState(false)
+
+  // Check if we should use standalone mode
+  useEffect(() => {
+    setUsingStandaloneMode(shouldUseStandaloneAnalyzer())
+  }, [])
 
   // Check online status and models
   useEffect(() => {
     const checkStatus = () => {
       setIsOffline(!navigator.onLine)
-      setModelsReady(areModelsLoaded())
+      if (areModelsLoaded) {
+        setModelsReady(areModelsLoaded())
+      }
     }
 
     checkStatus()
@@ -39,7 +54,9 @@ export default function AnalyzerPage() {
 
     // Check models status periodically
     const interval = setInterval(() => {
-      setModelsReady(areModelsLoaded())
+      if (areModelsLoaded) {
+        setModelsReady(areModelsLoaded())
+      }
     }, 2000)
 
     return () => {
@@ -47,23 +64,6 @@ export default function AnalyzerPage() {
       window.removeEventListener("offline", handleOnlineStatusChange)
       clearInterval(interval)
     }
-  }, [])
-
-  // Check if using fallback mode
-  useEffect(() => {
-    const checkFallbackMode = async () => {
-      try {
-        // Dynamic import to avoid server-side rendering issues
-        const { canUseFallbackMode } = await import("@/utils/browser-detection")
-        if (typeof canUseFallbackMode === "function") {
-          setUsingFallbackMode(canUseFallbackMode())
-        }
-      } catch (err) {
-        console.error("Error checking fallback mode:", err)
-      }
-    }
-
-    checkFallbackMode()
   }, [])
 
   const handleAnalysisComplete = (results: {
@@ -95,7 +95,7 @@ export default function AnalyzerPage() {
             : "Take or upload a photo to analyze your face shape"}
         </p>
 
-        {isOffline && !modelsReady && !analysisComplete && (
+        {isOffline && !modelsReady && !analysisComplete && !usingStandaloneMode && (
           <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 mb-6 text-center">
             <WifiOff className="w-8 h-8 text-red-500 mx-auto mb-2" />
             <h3 className="text-lg font-bold text-red-200 mb-1">Offline Mode Limited</h3>
@@ -106,7 +106,7 @@ export default function AnalyzerPage() {
           </div>
         )}
 
-        {isOffline && modelsReady && !analysisComplete && (
+        {isOffline && modelsReady && !analysisComplete && !usingStandaloneMode && (
           <div className="bg-green-900/20 border border-green-800 rounded-lg p-4 mb-6 text-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -120,6 +120,17 @@ export default function AnalyzerPage() {
             <h3 className="text-lg font-bold text-green-200 mb-1">Offline Mode Ready</h3>
             <p className="text-sm text-green-300/80">
               Face analysis models are loaded and ready to use in offline mode.
+            </p>
+          </div>
+        )}
+
+        {!analysisComplete && usingStandaloneMode && (
+          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mb-6 text-center">
+            <Smartphone className="w-8 h-8 text-blue-500 mx-auto mb-2" />
+            <h3 className="text-lg font-bold text-blue-200 mb-1">Mobile Compatibility Mode</h3>
+            <p className="text-sm text-blue-300/80">
+              Using simplified face analysis for better compatibility with your device. For the most accurate results,
+              try using a desktop browser.
             </p>
           </div>
         )}
@@ -147,29 +158,6 @@ export default function AnalyzerPage() {
           </>
         ) : (
           <>
-            {!analysisComplete && usingFallbackMode && (
-              <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-4 mb-6 text-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="w-8 h-8 text-yellow-500 mx-auto mb-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                  />
-                </svg>
-                <h3 className="text-lg font-bold text-yellow-200 mb-1">Using Simplified Analysis</h3>
-                <p className="text-sm text-yellow-300/80">
-                  Your device is using a simplified face analysis mode with less precise results. For the best
-                  experience, try using a desktop browser.
-                </p>
-              </div>
-            )}
             <FaceAnalyzer onAnalysisComplete={handleAnalysisComplete} />
 
             <div className="flex items-center gap-3 bg-[#0f1117] p-3 sm:p-4 rounded-xl border border-[#1a1c25] mt-4">
