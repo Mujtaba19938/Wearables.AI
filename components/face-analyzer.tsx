@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { Camera, Upload, Loader2, AlertCircle, WifiOff, Smartphone, Glasses, HardHatIcon as Hat } from "lucide-react"
-import { shouldUseStandaloneAnalyzer } from "@/utils/mobile-detector"
 import { analyzeImageStandalone } from "@/utils/standalone-face-analyzer"
 import { AnalysisModeSelector, type AnalysisMode } from "@/components/analysis-mode-selector"
 
@@ -16,14 +15,16 @@ let initializeFaceApi: () => boolean
 let areModelsLoaded: () => boolean
 
 // We'll dynamically import these only if needed
-if (!shouldUseStandaloneAnalyzer()) {
-  import("@/utils/face-api").then((module) => {
+import("@/utils/face-api")
+  .then((module) => {
     loadFaceApiModels = module.loadFaceApiModels
     detectFaceShape = module.detectFaceShape
     initializeFaceApi = module.initializeFaceApi
     areModelsLoaded = module.areModelsLoaded
   })
-}
+  .catch((error) => {
+    console.error("Error importing face-api module:", error)
+  })
 
 interface FaceAnalyzerProps {
   onAnalysisComplete: (result: {
@@ -55,14 +56,30 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
 
   // Check if we should use standalone mode
   useEffect(() => {
-    const standalone = shouldUseStandaloneAnalyzer()
-    setUsingStandaloneMode(standalone)
+    const checkStandaloneMode = async () => {
+      try {
+        // First try to initialize face-api
+        if (initializeFaceApi && initializeFaceApi()) {
+          // If initialization succeeds, we can use the full face-api
+          setUsingStandaloneMode(false)
+        } else {
+          // If initialization fails, use standalone mode
+          setUsingStandaloneMode(true)
+        }
+      } catch (error) {
+        console.error("Error checking standalone mode:", error)
+        // If there's an error, default to standalone mode
+        setUsingStandaloneMode(true)
+      }
 
-    // If using standalone mode, we don't need to load models
-    if (standalone) {
-      setModelsLoaded(true)
-      setModelLoading(false)
+      // If using standalone mode, we don't need to load models
+      if (usingStandaloneMode) {
+        setModelsLoaded(true)
+        setModelLoading(false)
+      }
     }
+
+    checkStandaloneMode()
   }, [])
 
   // Check online status
@@ -91,7 +108,10 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
 
     const loadModels = async () => {
       try {
-        if (!loadFaceApiModels) return
+        if (!loadFaceApiModels) {
+          console.warn("loadFaceApiModels function not available yet")
+          return
+        }
 
         setModelLoading(true)
         await loadFaceApiModels()
@@ -100,6 +120,13 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
       } catch (err) {
         console.error("Error loading models:", err)
         if (err instanceof Error) {
+          // If we get a browser compatibility error, switch to standalone mode
+          if (err.message.includes("Browser compatibility issue")) {
+            setUsingStandaloneMode(true)
+            setModelsLoaded(true)
+            setModelLoading(false)
+            return
+          }
           setError(err.message)
         } else {
           setError("Failed to load face analysis models. Please try again later.")
@@ -284,6 +311,12 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
       }
     } catch (err) {
       if (err instanceof Error) {
+        // If we get a browser compatibility error, switch to standalone mode and retry
+        if (err.message.includes("Browser compatibility issue")) {
+          setUsingStandaloneMode(true)
+          return await analyzeImageStandalone(imageElement)
+        }
+
         throw new Error(
           err.message === "No face detected" ? "No face detected. Please try again with a clearer photo." : err.message,
         )
@@ -383,7 +416,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
         <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-3 mb-4 flex items-center gap-2">
           <Smartphone className="w-5 h-5 text-blue-500 flex-shrink-0" />
           <div>
-            <p className="text-blue-200 text-sm font-medium">Mobile compatibility mode</p>
+            <p className="text-blue-200 text-sm font-medium">Compatibility mode</p>
             <p className="text-blue-300/70 text-xs">
               Using simplified face analysis for better compatibility with your device
             </p>

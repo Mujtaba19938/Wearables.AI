@@ -12,7 +12,7 @@ export function detectBrowser(): BrowserInfo {
   let browserVersion = "unknown"
   let isMobile = false
   let osName = "unknown"
-  let compatible = true
+  let compatible = true // Default to compatible for all browsers
 
   // Detect if mobile
   if (/android/i.test(userAgent)) {
@@ -25,8 +25,8 @@ export function detectBrowser(): BrowserInfo {
       const match = userAgent.match(/Chrome\/(\d+)/)
       browserVersion = match ? match[1] : "unknown"
 
-      // Mark older Chrome on Android versions as incompatible
-      compatible = Number.parseInt(browserVersion) >= 90
+      // Most modern Chrome versions on Android are compatible
+      compatible = true
     }
   } else if (/iPad|iPhone|iPod/.test(userAgent)) {
     isMobile = true
@@ -38,7 +38,8 @@ export function detectBrowser(): BrowserInfo {
       browserVersion = match ? match[1] : "unknown"
     } else if (/FxiOS\//.test(userAgent)) {
       browserName = "Firefox"
-      compatible = false // Firefox on iOS has issues with face-api
+      // Firefox on iOS is generally compatible now
+      compatible = true
     } else if (/EdgiOS\//.test(userAgent)) {
       browserName = "Edge"
     } else {
@@ -46,11 +47,11 @@ export function detectBrowser(): BrowserInfo {
       const match = userAgent.match(/Version\/(\d+)/)
       browserVersion = match ? match[1] : "unknown"
 
-      // Mark older Safari versions as incompatible
-      compatible = Number.parseInt(browserVersion) >= 13
+      // Modern Safari versions are compatible
+      compatible = true
     }
   } else {
-    // Desktop browsers
+    // Desktop browsers - all should be compatible
     if (/Firefox\//.test(userAgent)) {
       browserName = "Firefox"
       const match = userAgent.match(/Firefox\/(\d+)/)
@@ -67,9 +68,6 @@ export function detectBrowser(): BrowserInfo {
       browserName = "Safari"
       const match = userAgent.match(/Version\/(\d+)/)
       browserVersion = match ? match[1] : "unknown"
-
-      // Mark older Safari versions as incompatible
-      compatible = Number.parseInt(browserVersion) >= 13
     } else if (/Trident\//.test(userAgent) || /MSIE/.test(userAgent)) {
       browserName = "Internet Explorer"
       compatible = false // IE is not compatible with face-api
@@ -96,8 +94,10 @@ export function detectBrowser(): BrowserInfo {
   }
 
   // Check available memory - face-api needs significant resources
-  if (navigator.deviceMemory !== undefined && navigator.deviceMemory < 2) {
-    compatible = false
+  // But don't make this a hard requirement as it's not available in all browsers
+  if (navigator.deviceMemory !== undefined && navigator.deviceMemory < 1) {
+    // Just a warning, not a blocker
+    console.warn("Low device memory detected, performance may be affected")
   }
 
   return {
@@ -111,8 +111,14 @@ export function detectBrowser(): BrowserInfo {
 
 // Check if we can use the simplified fallback mode
 export function canUseFallbackMode(): boolean {
+  // Always return true to ensure fallback is available
+  return true
+}
+
+// Check if we should use the standalone analyzer
+export function shouldUseStandaloneAnalyzer(): boolean {
   const browser = detectBrowser()
 
-  // Simplified mode works on most modern browsers, even if full face-api doesn't
-  return !browser.compatible && browser.name !== "Internet Explorer"
+  // Only use standalone analyzer for truly incompatible browsers
+  return !browser.compatible
 }

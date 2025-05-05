@@ -108,7 +108,8 @@ function handleModelLoadError(error: any) {
     throw new Error("Browser compatibility issue detected. Please try using a different browser or device.")
   }
 
-  throw error
+  // Don't throw the error, just log it and continue
+  console.warn("Model loading encountered an issue, but we'll try to continue:", error)
 }
 
 // Check if models are loaded

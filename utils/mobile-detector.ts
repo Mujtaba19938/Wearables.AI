@@ -10,9 +10,6 @@ export function isMobileBrowser(): boolean {
 
 // Check if we should use the standalone analyzer instead of face-api.js
 export function shouldUseStandaloneAnalyzer(): boolean {
-  const isMobile = isMobileBrowser()
-
-  // For now, use standalone analyzer for all mobile browsers to be safe
-  // We can refine this later to only target problematic browsers
-  return isMobile
+  // Don't use standalone analyzer by default, let the browser detection logic decide
+  return false
 }
