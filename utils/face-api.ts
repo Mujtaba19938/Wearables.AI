@@ -1,6 +1,7 @@
 import * as faceapi from "face-api.js"
 import { detectBrowser, canUseFallbackMode } from "./browser-detection"
 import { detectFaceShapeSimplified } from "./face-api-fallback"
+import { detectFaceObstructions } from "./obstruction-detector"
 
 // Track loading state
 let modelsLoaded = false
@@ -150,10 +151,11 @@ export async function detectFaceShape(imageElement: HTMLImageElement | HTMLVideo
   }
 
   try {
-    // Detect all faces with landmarks
+    // Detect all faces with landmarks and expressions
     const detections = await faceapi
       .detectAllFaces(imageElement, new faceapi.TinyFaceDetectorOptions())
       .withFaceLandmarks()
+      .withFaceExpressions()
 
     if (!detections.length) {
       throw new Error("No face detected")
@@ -162,6 +164,13 @@ export async function detectFaceShape(imageElement: HTMLImageElement | HTMLVideo
     // Get the first face detected
     const face = detections[0]
     const landmarks = face.landmarks
+    const expressions = face.expressions
+
+    // Check for face obstructions before proceeding
+    const obstruction = detectFaceObstructions(imageElement, landmarks.positions, expressions)
+    if (obstruction) {
+      throw new Error(obstruction.message)
+    }
 
     // Extract key facial landmarks
     const jawOutline = landmarks.getJawOutline()

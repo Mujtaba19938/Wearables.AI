@@ -7,6 +7,7 @@ import { FacialMeasurementsCard } from "@/components/facial-measurements-card"
 import { Shield, WifiOff, Smartphone } from "lucide-react"
 import { shouldUseStandaloneAnalyzer } from "@/utils/mobile-detector"
 import type { AnalysisMode } from "@/components/analysis-mode-selector"
+import { PhotoTips } from "@/components/photo-tips"
 
 // Only import face-api related functions if we're not using the standalone analyzer
 let areModelsLoaded: () => boolean
@@ -165,7 +166,7 @@ export default function AnalyzerPage() {
         ) : (
           <>
             <FaceAnalyzer onAnalysisComplete={handleAnalysisComplete} />
-
+            <PhotoTips />
             <div className="flex items-center gap-3 bg-[#0f1117] p-3 sm:p-4 rounded-xl border border-[#1a1c25] mt-4">
               <Shield className="w-5 h-5 text-[#3B82F6] flex-shrink-0" />
               <p className="text-xs sm:text-sm text-[#3B82F6]">

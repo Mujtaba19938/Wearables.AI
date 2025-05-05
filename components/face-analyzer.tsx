@@ -3,7 +3,7 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Camera, Upload, Loader2, AlertCircle, WifiOff, Smartphone } from "lucide-react"
+import { Camera, Upload, Loader2, AlertCircle, WifiOff, Smartphone, Glasses, HardHatIcon as Hat } from "lucide-react"
 import { shouldUseStandaloneAnalyzer } from "@/utils/mobile-detector"
 import { analyzeImageStandalone } from "@/utils/standalone-face-analyzer"
 import { AnalysisModeSelector, type AnalysisMode } from "@/components/analysis-mode-selector"
@@ -41,6 +41,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
   const [mode, setMode] = useState<"camera" | "upload" | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [errorType, setErrorType] = useState<"glasses" | "hat" | "mask" | "hair" | "other" | null>(null)
   const [modelLoading, setModelLoading] = useState(false)
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [isOffline, setIsOffline] = useState(false)
@@ -127,6 +128,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
   const startCamera = async () => {
     try {
       setError(null)
+      setErrorType(null)
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "user",
@@ -143,6 +145,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
     } catch (err) {
       console.error("Error accessing camera:", err)
       setError("Unable to access camera. Please check permissions and try again.")
+      setErrorType("other")
     }
   }
 
@@ -162,6 +165,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
     if (!file) return
 
     setError(null)
+    setErrorType(null)
     setIsLoading(true)
 
     const reader = new FileReader()
@@ -179,24 +183,34 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
           } catch (err) {
             if (err instanceof Error) {
               setError(err.message)
+              // Determine error type based on error message
+              if (err.message.includes("glasses")) setErrorType("glasses")
+              else if (err.message.includes("hat") || err.message.includes("cap")) setErrorType("hat")
+              else if (err.message.includes("mask")) setErrorType("mask")
+              else if (err.message.includes("hair")) setErrorType("hair")
+              else setErrorType("other")
             } else {
               setError("An unknown error occurred during analysis")
+              setErrorType("other")
             }
             setIsLoading(false)
           }
         }
         img.onerror = () => {
           setError("Failed to load the image. Please try another one.")
+          setErrorType("other")
           setIsLoading(false)
         }
         img.src = event.target?.result as string
       } catch (err) {
         setError("Failed to process the image")
+        setErrorType("other")
         setIsLoading(false)
       }
     }
     reader.onerror = () => {
       setError("Failed to read the file")
+      setErrorType("other")
       setIsLoading(false)
     }
     reader.readAsDataURL(file)
@@ -206,6 +220,7 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
     if (!videoRef.current || !canvasRef.current) return
 
     setError(null)
+    setErrorType(null)
     setIsLoading(true)
 
     try {
@@ -242,8 +257,15 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
     } catch (err) {
       if (err instanceof Error) {
         setError(err.message)
+        // Determine error type based on error message
+        if (err.message.includes("glasses")) setErrorType("glasses")
+        else if (err.message.includes("hat") || err.message.includes("cap")) setErrorType("hat")
+        else if (err.message.includes("mask")) setErrorType("mask")
+        else if (err.message.includes("hair")) setErrorType("hair")
+        else setErrorType("other")
       } else {
         setError("An unknown error occurred during analysis")
+        setErrorType("other")
       }
       setIsLoading(false)
     }
@@ -284,6 +306,53 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
 
   const triggerFileInput = () => {
     fileInputRef.current?.click()
+  }
+
+  // Get the appropriate error icon based on error type
+  const getErrorIcon = () => {
+    switch (errorType) {
+      case "glasses":
+        return <Glasses className="w-5 h-5 text-red-500 flex-shrink-0" />
+      case "hat":
+        return <Hat className="w-5 h-5 text-red-500 flex-shrink-0" />
+      case "mask":
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-5 h-5 text-red-500 flex-shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M6.5 6.5C7.5 5.5 9 5 12 5c3 0 4.5.5 5.5 1.5" />
+            <path d="M6.5 17.5c1 1 2.5 1.5 5.5 1.5 3 0 4.5-.5 5.5-1.5" />
+            <path d="M6.5 12H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-.5" />
+            <path d="M6.5 12h11" />
+            <path d="M6.5 17.5V12" />
+            <path d="M17.5 17.5V12" />
+          </svg>
+        )
+      case "hair":
+        return (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-5 h-5 text-red-500 flex-shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M15 9c0 4-6.5 7-6.5 11a6.5 6.5 0 1 0 13 0c0-4-6.5-7-6.5-11" />
+          </svg>
+        )
+      default:
+        return <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+    }
   }
 
   return (
@@ -368,9 +437,14 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
       {/* Error message */}
       {error && (
         <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4 flex items-center gap-2">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+          {getErrorIcon()}
           <div className="flex-1">
             <p className="text-red-200 text-sm">{error}</p>
+            {errorType && errorType !== "other" && (
+              <p className="text-red-300/80 text-xs mt-1">
+                For accurate analysis, please ensure your face is clearly visible without obstructions.
+              </p>
+            )}
           </div>
         </div>
       )}
