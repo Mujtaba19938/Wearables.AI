@@ -40,8 +40,8 @@ export function OfflineDetector() {
     <div
       className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-lg shadow-lg flex items-center gap-2 transition-all duration-300 ${
         isOffline
-          ? "bg-red-900/90 text-white border border-red-700"
-          : "bg-green-900/90 text-white border border-green-700"
+          ? "dark:bg-red-900/90 bg-red-200 dark:text-white text-red-800 dark:border-red-700 border-red-300"
+          : "dark:bg-green-900/90 bg-green-200 dark:text-white text-green-800 dark:border-green-700 border-green-300"
       }`}
     >
       {isOffline ? (

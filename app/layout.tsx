@@ -2,7 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { BottomNavbar } from "@/components/bottom-navbar"
+import { ClientLayout } from "@/components/client-layout"
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration"
 import { OfflineDetector } from "@/components/offline-detector"
 
@@ -25,11 +25,12 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, minimum-scale=1" />
         <link rel="manifest" href="/manifest.json" />
       </head>
-      <body className={`${inter.className} bg-[#0a0a1a] text-white min-h-screen`}>
-        <ServiceWorkerRegistration />
-        <OfflineDetector />
-        {children}
-        <BottomNavbar />
+      <body className={inter.className}>
+        <ClientLayout>
+          <ServiceWorkerRegistration />
+          <OfflineDetector />
+          {children}
+        </ClientLayout>
       </body>
     </html>
   )

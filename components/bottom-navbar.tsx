@@ -19,7 +19,7 @@ export function BottomNavbar() {
   // Make the navbar responsive
   return (
     <div className="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center">
-      <nav className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3 mx-auto bg-black/60 backdrop-blur-lg rounded-full w-auto gap-2 sm:gap-8 shadow-lg border border-white/10">
+      <nav className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3 mx-auto dark:bg-black/60 bg-white/60 backdrop-blur-lg rounded-full w-auto gap-2 sm:gap-8 shadow-lg border dark:border-white/10 border-black/10">
         {navItems.map(({ href, icon: Icon, label }) => {
           const isActive = pathname === href
           return (
@@ -28,13 +28,15 @@ export function BottomNavbar() {
               href={href}
               className={cn(
                 "flex flex-col items-center justify-center min-w-[40px] sm:min-w-[60px] relative group transition-all duration-300 ease-in-out",
-                isActive ? "text-white" : "text-gray-400 hover:text-white",
+                isActive
+                  ? "dark:text-white text-black"
+                  : "dark:text-gray-400 text-gray-600 dark:hover:text-white hover:text-black",
               )}
             >
               <div
                 className={cn(
-                  "absolute inset-0 rounded-full bg-white/0 transition-all duration-300 ease-in-out -z-10",
-                  isActive ? "bg-white/0" : "group-hover:bg-white/10",
+                  "absolute inset-0 rounded-full dark:bg-white/0 bg-black/0 transition-all duration-300 ease-in-out -z-10",
+                  isActive ? "dark:bg-white/0 bg-black/0" : "dark:group-hover:bg-white/10 group-hover:bg-black/10",
                 )}
               />
 
@@ -42,8 +44,8 @@ export function BottomNavbar() {
                 className={cn(
                   "h-5 w-5 sm:h-6 sm:w-6 transition-all duration-300 ease-in-out",
                   isActive
-                    ? "text-white"
-                    : "text-gray-400 group-hover:text-white group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]",
+                    ? "dark:text-white text-black"
+                    : "dark:text-gray-400 text-gray-600 dark:group-hover:text-white group-hover:text-black dark:group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] group-hover:drop-shadow-[0_0_8px_rgba(0,0,0,0.3)]",
                   !isActive && "group-hover:animate-[subtle-bounce_0.5s_ease-in-out]",
                 )}
               />
@@ -57,7 +59,7 @@ export function BottomNavbar() {
               </span>
               {isActive && (
                 <span
-                  className="absolute -bottom-1 w-1 h-1 sm:w-1.5 sm:h-1.5 bg-white rounded-full 
+                  className="absolute -bottom-1 w-1 h-1 sm:w-1.5 sm:h-1.5 dark:bg-white bg-black rounded-full 
                 transition-all duration-300 ease-in-out animate-in fade-in zoom-in"
                 />
               )}
