@@ -1,15 +1,39 @@
 import * as faceapi from "face-api.js"
+import { detectBrowser, canUseFallbackMode } from "./browser-detection"
+import { detectFaceShapeSimplified } from "./face-api-fallback"
 
 // Track loading state
 let modelsLoaded = false
 let loadingPromise: Promise<void> | null = null
 let loadingError: Error | null = null
 
+let browserCompatible: boolean | null = null
+let useFallbackMode = false
+
 // Function to safely load models with error handling
 export async function loadFaceApiModels() {
   // If models are already loaded, return immediately
   if (modelsLoaded) {
     return
+  }
+
+  // Check browser compatibility if not already checked
+  if (browserCompatible === null) {
+    const browserInfo = detectBrowser()
+    browserCompatible = browserInfo.compatible
+
+    // If browser is incompatible but can use fallback, set fallback mode
+    if (!browserCompatible && canUseFallbackMode()) {
+      console.log("Using simplified face detection fallback mode")
+      useFallbackMode = true
+      modelsLoaded = true // Mark as loaded since we'll use fallback
+      return
+    }
+
+    // If browser is incompatible and can't use fallback, throw error
+    if (!browserCompatible) {
+      throw new Error("Browser compatibility issue detected. Please try using a different browser or device.")
+    }
   }
 
   // If there was a previous loading error, throw it again
@@ -51,6 +75,15 @@ export async function loadFaceApiModels() {
       console.log("Face-API models loaded successfully")
     } catch (error) {
       console.error("Error loading Face-API models:", error)
+
+      // Check if we can use fallback mode
+      if (canUseFallbackMode()) {
+        console.log("Switching to simplified face detection fallback mode")
+        useFallbackMode = true
+        modelsLoaded = true
+        return
+      }
+
       if (error instanceof Error) {
         loadingError = error
       } else {
@@ -109,6 +142,11 @@ export function initializeFaceApi() {
 export async function detectFaceShape(imageElement: HTMLImageElement | HTMLVideoElement | HTMLCanvasElement) {
   if (!modelsLoaded) {
     await loadFaceApiModels()
+  }
+
+  // If using fallback mode, use the simplified detection
+  if (useFallbackMode) {
+    return detectFaceShapeSimplified(imageElement)
   }
 
   try {

@@ -5,6 +5,7 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { Camera, Upload, Loader2, AlertCircle, WifiOff, RefreshCw } from "lucide-react"
 import { loadFaceApiModels, detectFaceShape, initializeFaceApi } from "@/utils/face-api"
+import { detectBrowser, canUseFallbackMode } from "@/utils/browser-detection"
 
 interface FaceAnalyzerProps {
   onAnalysisComplete: (result: {
@@ -24,6 +25,8 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
   const [isOffline, setIsOffline] = useState(false)
   const [modelsLoaded, setModelsLoaded] = useState(false)
   const [initializationComplete, setInitializationComplete] = useState(false)
+  const [browserCompatible, setBrowserCompatible] = useState<boolean | null>(null)
+  const [usingFallbackMode, setUsingFallbackMode] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -45,6 +48,18 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
     }
 
     initialize()
+  }, [])
+
+  // Check browser compatibility
+  useEffect(() => {
+    const browserInfo = detectBrowser()
+    setBrowserCompatible(browserInfo.compatible)
+
+    if (!browserInfo.compatible && canUseFallbackMode()) {
+      setUsingFallbackMode(true)
+      setModelLoading(false)
+      setModelsLoaded(true)
+    }
   }, [])
 
   // Check online status
@@ -296,6 +311,28 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
         </div>
       )}
 
+      {/* Browser compatibility warning */}
+      {browserCompatible === false && !usingFallbackMode && (
+        <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 mb-4 flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
+          <div>
+            <p className="text-red-200 text-sm font-medium">Browser compatibility issue detected</p>
+            <p className="text-red-300/70 text-xs">Please try using a different browser or device.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Fallback mode notice */}
+      {usingFallbackMode && (
+        <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-3 mb-4 flex items-center gap-2">
+          <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+          <div>
+            <p className="text-yellow-200 text-sm font-medium">Using simplified detection mode</p>
+            <p className="text-yellow-300/70 text-xs">For better results, try using Chrome on desktop.</p>
+          </div>
+        </div>
+      )}
+
       {/* Face preview area */}
       <div className="aspect-square w-full bg-[#0a0c14] rounded-lg flex items-center justify-center mb-4 sm:mb-6 overflow-hidden relative">
         {modelLoading ? (
@@ -361,10 +398,22 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <button
           onClick={() => handleModeSelect("camera")}
-          disabled={isLoading || (modelLoading && !modelsLoaded) || !initializationComplete}
+          disabled={
+            isLoading ||
+            (modelLoading && !modelsLoaded && !usingFallbackMode) ||
+            !initializationComplete ||
+            (browserCompatible === false && !usingFallbackMode)
+          }
           className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base transition-all duration-300 ${
             mode === "camera" ? "bg-[#2563EB] text-white" : "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
-          } ${isLoading || (modelLoading && !modelsLoaded) || !initializationComplete ? "opacity-50 cursor-not-allowed" : ""}`}
+          } ${
+            isLoading ||
+            (modelLoading && !modelsLoaded && !usingFallbackMode) ||
+            !initializationComplete ||
+            (browserCompatible === false && !usingFallbackMode)
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          }`}
         >
           <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
           Take Photo
@@ -373,7 +422,11 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
         <button
           onClick={() => (mode === "camera" ? captureImage() : handleModeSelect("upload"))}
           disabled={
-            isLoading || (modelLoading && !modelsLoaded) || (mode === "camera" && !stream) || !initializationComplete
+            isLoading ||
+            (modelLoading && !modelsLoaded && !usingFallbackMode) ||
+            (mode === "camera" && !stream) ||
+            !initializationComplete ||
+            (browserCompatible === false && !usingFallbackMode)
           }
           className={`py-2.5 sm:py-3 px-3 sm:px-4 rounded-lg font-medium flex items-center justify-center gap-1.5 sm:gap-2 text-sm sm:text-base transition-all duration-300 ${
             mode === "camera"
@@ -382,7 +435,11 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
                 ? "bg-[#2563EB] text-white"
                 : "bg-[#1a1f36] hover:bg-[#252b45] text-white"
           } ${
-            isLoading || (modelLoading && !modelsLoaded) || (mode === "camera" && !stream) || !initializationComplete
+            isLoading ||
+            (modelLoading && !modelsLoaded && !usingFallbackMode) ||
+            (mode === "camera" && !stream) ||
+            !initializationComplete ||
+            (browserCompatible === false && !usingFallbackMode)
               ? "opacity-50 cursor-not-allowed"
               : ""
           }`}

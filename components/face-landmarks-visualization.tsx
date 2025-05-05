@@ -18,6 +18,7 @@ interface FaceLandmarksVisualizationProps {
 
 export function FaceLandmarksVisualization({ imageData, landmarks, measurements }: FaceLandmarksVisualizationProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const imgRef = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
     if (!canvasRef.current || !landmarks || landmarks.length === 0) return
@@ -42,16 +43,64 @@ export function FaceLandmarksVisualization({ imageData, landmarks, measurements 
       ctx.fillStyle = "#3B82F6"
 
       // Draw facial landmarks
-      drawFacialLandmarks(ctx, landmarks)
+      drawFacialLandmarks(ctx, img, landmarks)
 
       // Draw measurements
-      drawMeasurements(ctx, landmarks, measurements)
+      drawMeasurements(ctx, img, landmarks, measurements)
     }
     img.src = imageData
+    imgRef.current = img
   }, [imageData, landmarks, measurements])
 
   // Function to draw facial landmarks
-  const drawFacialLandmarks = (ctx: CanvasRenderingContext2D, landmarks: Array<{ x: number; y: number }>) => {
+  const drawFacialLandmarks = (
+    ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
+    landmarks: Array<{ x: number; y: number }>,
+  ) => {
+    // Check if we're using simplified landmarks (from fallback mode)
+    const isSimplifiedLandmarks = landmarks.length < 68
+
+    if (isSimplifiedLandmarks) {
+      // Draw a simple face outline for fallback mode
+      ctx.beginPath()
+
+      // Draw a face outline
+      const centerX = img.width / 2
+      const centerY = img.height / 2
+      const faceWidth = img.width * 0.6
+      const faceHeight = img.height * 0.8
+
+      ctx.ellipse(centerX, centerY, faceWidth / 2, faceHeight / 2, 0, 0, 2 * Math.PI)
+      ctx.stroke()
+
+      // Draw eyes
+      const eyeSize = faceWidth * 0.12
+      ctx.beginPath()
+      ctx.ellipse(centerX - faceWidth * 0.2, centerY - faceHeight * 0.1, eyeSize, eyeSize / 2, 0, 0, 2 * Math.PI)
+      ctx.stroke()
+
+      ctx.beginPath()
+      ctx.ellipse(centerX + faceWidth * 0.2, centerY - faceHeight * 0.1, eyeSize, eyeSize / 2, 0, 0, 2 * Math.PI)
+      ctx.stroke()
+
+      // Draw mouth
+      ctx.beginPath()
+      ctx.ellipse(centerX, centerY + faceHeight * 0.2, faceWidth * 0.25, faceHeight * 0.1, 0, 0, Math.PI)
+      ctx.stroke()
+
+      // Draw nose
+      ctx.beginPath()
+      ctx.moveTo(centerX, centerY - faceHeight * 0.05)
+      ctx.lineTo(centerX - faceWidth * 0.05, centerY + faceHeight * 0.1)
+      ctx.lineTo(centerX + faceWidth * 0.05, centerY + faceHeight * 0.1)
+      ctx.closePath()
+      ctx.stroke()
+
+      return
+    }
+
+    // For full landmarks (68 points), use the original code:
     // Draw jawline
     ctx.beginPath()
     ctx.moveTo(landmarks[0].x, landmarks[0].y)
@@ -122,9 +171,43 @@ export function FaceLandmarksVisualization({ imageData, landmarks, measurements 
   // Function to draw measurements
   const drawMeasurements = (
     ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
     landmarks: Array<{ x: number; y: number }>,
     measurements: { [key: string]: number },
   ) => {
+    // Check if we're using simplified landmarks (from fallback mode)
+    const isSimplifiedLandmarks = landmarks.length < 68
+
+    if (isSimplifiedLandmarks) {
+      // For simplified mode, draw basic measurements
+      const centerX = img.width / 2
+      const centerY = img.height / 2
+      const faceWidth = measurements.faceWidth
+      const faceHeight = measurements.faceHeight
+
+      // Set styles for measurements
+      ctx.lineWidth = 2
+      ctx.strokeStyle = "#10B981" // Green color
+      ctx.fillStyle = "#10B981"
+      ctx.font = "14px sans-serif"
+      ctx.textAlign = "center"
+
+      // Draw face width line
+      drawMeasurementLine(ctx, centerX - faceWidth / 2, centerY, centerX + faceWidth / 2, centerY, "Face Width")
+
+      // Draw face height line
+      drawMeasurementLine(ctx, centerX, centerY - faceHeight / 2, centerX, centerY + faceHeight / 2, "Face Height")
+
+      // Draw key points
+      drawKeyPoint(ctx, centerX, centerY - faceHeight * 0.4, "Forehead")
+      drawKeyPoint(ctx, centerX, centerY + faceHeight * 0.4, "Chin")
+      drawKeyPoint(ctx, centerX, centerY, "Nose")
+      drawKeyPoint(ctx, centerX, centerY + faceHeight * 0.2, "Mouth")
+
+      return
+    }
+
+    // For full landmarks (68 points), use the original code:
     const jawOutline = landmarks.slice(0, 17)
     const nose = landmarks.slice(27, 36)
     const leftEye = landmarks.slice(36, 42)

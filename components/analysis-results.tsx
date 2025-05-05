@@ -54,8 +54,22 @@ export function AnalysisResults({
     faceShapeDescriptions[faceShape as keyof typeof faceShapeDescriptions] ||
     "balanced proportions that work well with many eyeglass styles."
 
+  const isFallbackMode = landmarks.length < 68
+
   return (
     <div className="w-full">
+      {isFallbackMode && (
+        <div className="bg-yellow-900/20 border border-yellow-800 rounded-lg p-3 mb-4 text-sm">
+          <div className="flex items-center gap-2 mb-2">
+            <Info className="w-4 h-4 text-yellow-400" />
+            <span className="text-yellow-200 font-medium">Simplified Analysis</span>
+          </div>
+          <p className="text-yellow-300/80">
+            Your device is using a simplified analysis mode that provides estimated results. For the most accurate face
+            shape analysis, try using a desktop browser like Chrome or Edge.
+          </p>
+        </div>
+      )}
       <div className="bg-[#0f1117] p-4 sm:p-6 rounded-xl border border-[#1a1c25] mb-4 sm:mb-6">
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center sm:items-start">
           <div className="w-full sm:w-40 sm:h-40 rounded-lg overflow-hidden flex-shrink-0">
@@ -71,9 +85,11 @@ export function AnalysisResults({
 
               {confidence > 0 && (
                 <div className="flex items-center gap-1 bg-[#0a0c14] px-2 py-1 rounded text-xs">
-                  <span className="text-gray-400">Confidence:</span>
+                  <span className="text-gray-400">{isFallbackMode ? "Estimate" : "Confidence"}:</span>
                   <span
-                    className={`font-medium ${confidence > 75 ? "text-green-400" : confidence > 50 ? "text-yellow-400" : "text-red-400"}`}
+                    className={`font-medium ${
+                      confidence > 75 ? "text-green-400" : confidence > 50 ? "text-yellow-400" : "text-red-400"
+                    }`}
                   >
                     {confidence}%
                   </span>
