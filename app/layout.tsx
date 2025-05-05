@@ -2,13 +2,13 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { ClientLayout } from "@/components/client-layout"
+import { BottomNavbar } from "@/components/bottom-navbar"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Face Shape Analyzer",
-  description: "Find the perfect glasses for your face shape",
+  title: "wearables.ai - Face Shape Analyzer",
+  description: "Find the perfect eyeglasses for your face shape",
     generator: 'v0.dev'
 }
 
@@ -22,8 +22,9 @@ export default function RootLayout({
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
       </head>
-      <body className={inter.className}>
-        <ClientLayout>{children}</ClientLayout>
+      <body className={`${inter.className} bg-[#0a0a1a] text-white min-h-screen`}>
+        {children}
+        <BottomNavbar />
       </body>
     </html>
   )
