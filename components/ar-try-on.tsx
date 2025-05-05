@@ -14,6 +14,7 @@ interface ARTryOnProps {
     name: string
     image: string
     colors: string[]
+    colorImages?: Record<string, string>
   }
 }
 
@@ -22,7 +23,7 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
   const [cameraReady, setCameraReady] = useState(false)
   const [selectedColor, setSelectedColor] = useState(frame.colors[0])
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
-  const [isCapturing, setIsCapturing] = useState(false)
+  const [isCapturing, setIsCapturing] = useState(isCapturing)
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const isMobile = useMobile()
@@ -81,7 +82,9 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
       // For now, we'll just add a simple overlay
       const frameImg = new Image()
       frameImg.crossOrigin = "anonymous"
-      frameImg.src = frame.image
+      // Use the image for the selected color if available
+      const frameImageSrc = frame.colorImages?.[selectedColor] || frame.image
+      frameImg.src = frameImageSrc
 
       frameImg.onload = () => {
         // Position the glasses in the middle of the face (simplified)
@@ -240,7 +243,12 @@ export default function ARTryOn({ frame }: ARTryOnProps) {
                       top: "-5%",
                     }}
                   >
-                    <Image src={frame.image || "/placeholder.svg"} alt={frame.name} fill className="object-contain" />
+                    <Image
+                      src={frame.colorImages?.[selectedColor] || frame.image}
+                      alt={frame.name}
+                      fill
+                      className="object-contain"
+                    />
                   </div>
                 </div>
               </div>

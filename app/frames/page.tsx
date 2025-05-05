@@ -19,9 +19,14 @@ const frames = [
     name: "Classic Wayfarer",
     description: "Timeless design with a slightly angular frame",
     price: "$129",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/frames/wayfarer-black.png",
     faceShapes: ["Oval", "Round"],
     colors: ["Black", "Tortoise", "Blue"],
+    colorImages: {
+      Black: "/images/frames/wayfarer-black.png",
+      Tortoise: "/images/frames/wayfarer-tortoise.png",
+      Blue: "/images/frames/wayfarer-blue.png",
+    },
     category: "Casual",
     bestseller: true,
   },
@@ -30,9 +35,14 @@ const frames = [
     name: "Round Vintage",
     description: "Circular frames with a vintage feel",
     price: "$119",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/frames/round-gold.png",
     faceShapes: ["Square", "Heart"],
     colors: ["Gold", "Silver", "Black"],
+    colorImages: {
+      Gold: "/images/frames/round-gold.png",
+      Silver: "/images/frames/round-silver.png",
+      Black: "/images/frames/round-black.png",
+    },
     category: "Vintage",
   },
   {
@@ -40,9 +50,15 @@ const frames = [
     name: "Cat-Eye Elegance",
     description: "Upswept frames with a retro vibe",
     price: "$139",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/frames/cat-eye-red.png",
     faceShapes: ["Diamond", "Oval"],
-    colors: ["Red", "Black", "Tortoise"],
+    colors: ["Red", "Black", "Purple", "Tortoise"],
+    colorImages: {
+      Red: "/images/frames/cat-eye-red.png",
+      Black: "/images/frames/cat-eye-black.png",
+      Purple: "/images/frames/cat-eye-purple.png",
+      Tortoise: "/images/frames/cat-eye-tortoise.png",
+    },
     category: "Fashion",
     bestseller: true,
   },
@@ -51,9 +67,14 @@ const frames = [
     name: "Modern Rectangle",
     description: "Structured frames with clean lines",
     price: "$109",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/frames/rectangle-black.png",
     faceShapes: ["Round", "Heart"],
     colors: ["Black", "Blue", "Gray"],
+    colorImages: {
+      Black: "/images/frames/rectangle-black.png",
+      Blue: "/images/frames/rectangle-blue.png",
+      Gray: "/images/frames/rectangle-gray.png",
+    },
     category: "Professional",
   },
   {
@@ -61,9 +82,14 @@ const frames = [
     name: "Classic Aviator",
     description: "Timeless teardrop shape",
     price: "$149",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/frames/aviator-gold.png",
     faceShapes: ["Oval", "Square"],
     colors: ["Gold", "Silver", "Black"],
+    colorImages: {
+      Gold: "/images/frames/aviator-gold.png",
+      Silver: "/images/frames/aviator-silver.png",
+      Black: "/images/frames/aviator-black.png",
+    },
     category: "Casual",
   },
   {
@@ -71,9 +97,14 @@ const frames = [
     name: "Browline Scholar",
     description: "Semi-rimless style with bold upper frame",
     price: "$159",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/frames/browline-black.png",
     faceShapes: ["Diamond", "Heart"],
     colors: ["Black", "Brown", "Burgundy"],
+    colorImages: {
+      Black: "/images/frames/browline-black.png",
+      Brown: "/images/frames/browline-brown.png",
+      Burgundy: "/images/frames/browline-burgundy.png",
+    },
     category: "Professional",
   },
   {
@@ -81,9 +112,14 @@ const frames = [
     name: "Oversized Square",
     description: "Bold, large frames with a fashion-forward look",
     price: "$169",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/frames/square-black.png",
     faceShapes: ["Oval"],
     colors: ["Black", "Clear", "Tortoise"],
+    colorImages: {
+      Black: "/images/frames/square-black.png",
+      Clear: "/images/frames/square-clear.png",
+      Tortoise: "/images/frames/square-tortoise.png",
+    },
     category: "Fashion",
   },
   {
@@ -91,9 +127,14 @@ const frames = [
     name: "Rimless Minimalist",
     description: "Subtle, frameless design for a barely-there look",
     price: "$189",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/frames/rimless-clear.png",
     faceShapes: ["Diamond", "Heart", "Oval"],
     colors: ["Clear", "Light Blue", "Light Pink"],
+    colorImages: {
+      Clear: "/images/frames/rimless-clear.png",
+      "Light Blue": "/images/frames/rimless-blue.png",
+      "Light Pink": "/images/frames/rimless-pink.png",
+    },
     category: "Professional",
   },
   {
@@ -101,9 +142,14 @@ const frames = [
     name: "Geometric Hexagon",
     description: "Modern, angular frames with a unique shape",
     price: "$149",
-    image: "/placeholder.svg?height=300&width=400",
+    image: "/images/frames/hexagon-black.png",
     faceShapes: ["Round", "Oval"],
     colors: ["Black", "Gold", "Rose Gold"],
+    colorImages: {
+      Black: "/images/frames/hexagon-black.png",
+      Gold: "/images/frames/hexagon-gold.png",
+      "Rose Gold": "/images/frames/hexagon-rose-gold.png",
+    },
     category: "Fashion",
     bestseller: true,
   },
@@ -124,6 +170,9 @@ export default function FramesPage() {
     priceRange: "All",
   })
   const [showFilters, setShowFilters] = useState(false)
+
+  // Add a state to track the selected color for each frame
+  const [selectedColors, setSelectedColors] = useState<Record<number, string>>({})
 
   // Filter frames based on selected filters
   const filteredFrames = frames.filter((frame) => {
@@ -283,61 +332,71 @@ export default function FramesPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredFrames.map((frame) => (
-              <Card key={frame.id} className="overflow-hidden flex flex-col">
-                <div className="relative aspect-[4/3]">
-                  <Image src={frame.image || "/placeholder.svg"} alt={frame.name} fill className="object-cover" />
-                  {frame.bestseller && (
-                    <Badge className="absolute top-2 right-2 bg-yellow-500 hover:bg-yellow-600">Bestseller</Badge>
-                  )}
-                </div>
-                <CardContent className="p-4 flex-grow">
-                  <h3 className="font-medium text-lg">{frame.name}</h3>
-                  <p className="text-sm text-muted-foreground">{frame.description}</p>
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {frame.faceShapes.map((shape) => (
-                      <span key={shape} className="text-xs bg-muted px-2 py-1 rounded-full">
-                        {shape}
-                      </span>
-                    ))}
+            {filteredFrames.map((frame) => {
+              // Get the currently selected color or default to the first color
+              const currentColor = selectedColors[frame.id] || frame.colors[0]
+              // Get the image for the current color
+              const currentImage = frame.colorImages?.[currentColor] || frame.image
+
+              return (
+                <Card key={frame.id} className="overflow-hidden flex flex-col">
+                  <div className="relative aspect-[4/3]">
+                    <Image src={currentImage || "/placeholder.svg"} alt={frame.name} fill className="object-cover" />
+                    {frame.bestseller && (
+                      <Badge className="absolute top-2 right-2 bg-yellow-500 hover:bg-yellow-600">Bestseller</Badge>
+                    )}
                   </div>
-                  <div className="mt-3">
-                    <p className="text-sm font-medium">Available Colors:</p>
-                    <div className="flex gap-1 mt-1">
-                      {frame.colors.map((color) => (
-                        <div
-                          key={color}
-                          className="w-6 h-6 rounded-full border"
-                          style={{
-                            backgroundColor:
-                              color.toLowerCase() === "tortoise"
-                                ? "#8B4513"
-                                : color.toLowerCase() === "clear"
-                                  ? "#f8f9fa"
-                                  : color.toLowerCase(),
-                          }}
-                          title={color}
-                        />
+                  <CardContent className="p-4 flex-grow">
+                    <h3 className="font-medium text-lg">{frame.name}</h3>
+                    <p className="text-sm text-muted-foreground">{frame.description}</p>
+                    <div className="mt-2 flex flex-wrap gap-1">
+                      {frame.faceShapes.map((shape) => (
+                        <span key={shape} className="text-xs bg-muted px-2 py-1 rounded-full">
+                          {shape}
+                        </span>
                       ))}
                     </div>
-                  </div>
-                </CardContent>
-                <CardFooter className="p-4 pt-0 flex justify-between items-center">
-                  <span className="font-bold">{frame.price}</span>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" className="gap-2">
-                        <Glasses className="h-4 w-4" />
-                        Try with AR
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[600px] p-0">
-                      <ARTryOn frame={frame} />
-                    </DialogContent>
-                  </Dialog>
-                </CardFooter>
-              </Card>
-            ))}
+                    <div className="mt-3">
+                      <p className="text-sm font-medium">Available Colors:</p>
+                      <div className="flex gap-1 mt-1">
+                        {frame.colors.map((color) => (
+                          <div
+                            key={color}
+                            className={`w-6 h-6 rounded-full border cursor-pointer ${
+                              currentColor === color ? "border-primary border-2" : "border-gray-300"
+                            }`}
+                            style={{
+                              backgroundColor:
+                                color.toLowerCase() === "tortoise"
+                                  ? "#8B4513"
+                                  : color.toLowerCase() === "clear"
+                                    ? "#f8f9fa"
+                                    : color.toLowerCase(),
+                            }}
+                            title={color}
+                            onClick={() => setSelectedColors({ ...selectedColors, [frame.id]: color })}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </CardContent>
+                  <CardFooter className="p-4 pt-0 flex justify-between items-center">
+                    <span className="font-bold">{frame.price}</span>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="outline" className="gap-2">
+                          <Glasses className="h-4 w-4" />
+                          Try with AR
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[600px] p-0">
+                        <ARTryOn frame={{ ...frame, image: currentImage }} />
+                      </DialogContent>
+                    </Dialog>
+                  </CardFooter>
+                </Card>
+              )
+            })}
           </div>
         )}
       </div>

@@ -491,7 +491,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Classic, slightly angular frames that add definition to oval faces." +
             (symmetryFactor ? " Perfect for your highly symmetrical features." : ""),
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=5m9sv",
+          imageSrc: "/images/frames/wayfarer-black.png",
         },
         {
           name: "Aviator",
@@ -499,7 +499,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Timeless teardrop shape that complements oval face proportions." +
             (goldenRatioFactor ? " Enhances your natural golden ratio proportions." : ""),
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=bt196",
+          imageSrc: "/images/frames/aviator-gold.png",
         },
         {
           name: "Cat-Eye",
@@ -507,7 +507,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Upswept frames that add interesting contrast to oval faces." +
             (balancedThirds ? " Works well with your balanced facial thirds." : ""),
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=ud8i0",
+          imageSrc: "/images/frames/cat-eye-black.png",
         },
         {
           name: "Round",
@@ -515,7 +515,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Creates a stylish contrast with the natural oval shape." +
             (measurements.widthToHeightRatio < 0.7 ? " Helps balance your longer face proportions." : ""),
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=i0hrs",
+          imageSrc: "/images/frames/round-gold.png",
         },
         {
           name: "Oversized",
@@ -523,7 +523,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Bold statement frames that can work well with balanced oval proportions." +
             (measurements.eyeSpacingRatio > 2.5 ? " Complements your wider-set eyes." : ""),
           suitability: "Fair",
-          imageSrc: "/placeholder.svg?key=hmb0l",
+          imageSrc: "/images/frames/square-clear.png",
         },
       ]
 
@@ -535,7 +535,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Angular frames that add definition and make round faces appear longer and thinner." +
             (measurements.widthToHeightRatio > 0.9 ? " Ideal for balancing your equal face width and height." : ""),
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=mzmvp",
+          imageSrc: "/images/frames/rectangle-black.png",
         },
         {
           name: "Square",
@@ -543,7 +543,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Sharp angles contrast with soft features to add definition." +
             (measurements.jawToFaceWidthRatio > 0.8 ? " Creates structure for your softer jawline." : ""),
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=puuec",
+          imageSrc: "/images/frames/square-black.png",
         },
         {
           name: "Wayfarer",
@@ -551,7 +551,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Classic style with straight browlines that add structure." +
             (balancedThirds ? " Complements your balanced facial proportions." : ""),
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=u6cmp",
+          imageSrc: "/images/frames/wayfarer-black.png",
         },
         {
           name: "Cat-Eye",
@@ -559,7 +559,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Upswept frames create the illusion of higher cheekbones." +
             (measurements.cheekToJawRatio < 1.1 ? " Adds definition to your cheek area." : ""),
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=rmnej",
+          imageSrc: "/images/frames/cat-eye-black.png",
         },
         {
           name: "Round",
@@ -567,7 +567,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Similar shapes tend to emphasize roundness rather than contrast with it." +
             (symmetryFactor ? " Though your facial symmetry can support this style if desired." : ""),
           suitability: "Fair",
-          imageSrc: "/placeholder.svg?key=lk8by",
+          imageSrc: "/images/frames/round-gold.png",
         },
       ]
 
@@ -579,7 +579,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Soft curves contrast with angular features to create balance." +
             (measurements.jawToFaceWidthRatio > 0.85 ? " Perfect for softening your strong jawline." : ""),
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=qv8t2",
+          imageSrc: "/images/frames/round-gold.png",
         },
         {
           name: "Oval",
@@ -587,7 +587,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Softens angular features while maintaining a classic look." +
             (measurements.widthToHeightRatio > 0.9 ? " Helps elongate your face's equal proportions." : ""),
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=mabod",
+          imageSrc: "/images/frames/cat-eye-black.png",
         },
         {
           name: "Browline",
@@ -595,7 +595,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Semi-rimless styles soften the jawline while emphasizing the upper face." +
             (measurements.facialThirds.upper < measurements.facialThirds.lower ? " Balances your facial thirds." : ""),
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=mcj9y",
+          imageSrc: "/images/frames/browline-black.png",
         },
         {
           name: "Aviator",
@@ -603,7 +603,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Curved edges help soften square facial features." +
             (goldenRatioFactor ? " Enhances your natural proportions." : ""),
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=jt51s",
+          imageSrc: "/images/frames/aviator-gold.png",
         },
         {
           name: "Rectangle",
@@ -611,7 +611,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Similar angular shapes can emphasize rather than complement square features." +
             (symmetryFactor ? " Though your facial symmetry allows you to pull off this style if desired." : ""),
           suitability: "Fair",
-          imageSrc: "/placeholder.svg?key=crpby",
+          imageSrc: "/images/frames/rectangle-black.png",
         },
       ]
 
@@ -623,7 +623,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Frames that are wider at the bottom balance a wider forehead." +
             (measurements.foreheadToChinRatio > 1.2 ? " Ideal for balancing your proportions." : ""),
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=07gsa",
+          imageSrc: "/images/frames/wayfarer-black.png",
         },
         {
           name: "Oval",
@@ -631,7 +631,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Softens the forehead while adding width to the chin area." +
             (measurements.jawToFaceWidthRatio < 0.7 ? " Perfect for balancing your narrower jawline." : ""),
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=hbpkw",
+          imageSrc: "/images/frames/cat-eye-black.png",
         },
         {
           name: "Round",
@@ -639,7 +639,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Soft curves balance the pointed chin of heart-shaped faces." +
             (balancedThirds ? " Works well with your balanced facial proportions." : ""),
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=2vb9f",
+          imageSrc: "/images/frames/round-gold.png",
         },
         {
           name: "Rectangle",
@@ -649,7 +649,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
               ? " Helps balance your facial thirds."
               : ""),
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=v4msq",
+          imageSrc: "/images/frames/rectangle-black.png",
         },
         {
           name: "Cat-Eye",
@@ -657,7 +657,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Upswept styles can emphasize the wider upper face." +
             (symmetryFactor ? " Though your facial symmetry can make this work if desired." : ""),
           suitability: "Fair",
-          imageSrc: "/placeholder.svg?key=4yb06",
+          imageSrc: "/images/frames/cat-eye-purple.png",
         },
       ]
 
@@ -669,7 +669,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Upswept frames highlight cheekbones and balance a narrow forehead." +
             (measurements.cheekToJawRatio > 1.2 ? " Perfect for your prominent cheekbones." : ""),
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=zoiby",
+          imageSrc: "/images/frames/cat-eye-purple.png",
         },
         {
           name: "Oval",
@@ -677,7 +677,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Softens angular features and complements high cheekbones." +
             (measurements.widthToHeightRatio < 0.8 ? " Adds width to balance your face proportions." : ""),
           suitability: "Excellent",
-          imageSrc: "/placeholder.svg?key=gqlea",
+          imageSrc: "/images/frames/cat-eye-tortoise.png",
         },
         {
           name: "Browline",
@@ -685,7 +685,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Adds width to the forehead while complementing cheekbones." +
             (measurements.facialThirds.upper < measurements.facialThirds.middle ? " Balances your facial thirds." : ""),
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=jsnh6",
+          imageSrc: "/images/frames/browline-black.png",
         },
         {
           name: "Rimless",
@@ -693,7 +693,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Minimalist style that doesn't compete with distinctive diamond features." +
             (goldenRatioFactor ? " Showcases your naturally balanced proportions." : ""),
           suitability: "Good",
-          imageSrc: "/placeholder.svg?key=jyz16",
+          imageSrc: "/images/frames/rimless-clear.png",
         },
         {
           name: "Rectangle",
@@ -701,7 +701,7 @@ function getRecommendations(faceShape: string, measurements: FacialMeasurements)
             "Can make the face appear longer rather than balancing width." +
             (symmetryFactor ? " Though your facial symmetry allows you to experiment with this style." : ""),
           suitability: "Fair",
-          imageSrc: "/placeholder.svg?key=k43e6",
+          imageSrc: "/images/frames/rectangle-black.png",
         },
       ]
 
