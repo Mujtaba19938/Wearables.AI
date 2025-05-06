@@ -28,7 +28,7 @@ export function AnimatedBackground({ reducedMotion = false, lowPowerMode = false
     let animationFrameId: number
     let particles: Particle[] = []
     let isDarkTheme = theme === "dark"
-    const isLowPower = isLowPowerDevice()
+    const isLowPower = lowPowerMode || isLowPowerDevice()
 
     // Track if animation is currently running
     let isAnimating = true
@@ -106,24 +106,12 @@ export function AnimatedBackground({ reducedMotion = false, lowPowerMode = false
 
       // Honor user preferences for reduced motion
       if (reducedMotion) {
-        console.log("Respecting reduced motion preference - using minimal animations")
         // Override animation style to minimal
         particleCount = 5 // Very few particles
       }
 
-      // For low power devices, reduce animation complexity
-      let speedFactor = isLowPower ? 0.05 : 0.1
-
-      if (lowPowerMode && !reducedMotion) {
-        console.log("Low power device detected - optimizing animations")
-        // Reduce particle count and animation complexity
-        particleCount = Math.floor(particleCount * 0.5)
-        // Slow down animations
-        speedFactor *= 0.7
-      }
-
       for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle(isDarkTheme, speedFactor))
+        particles.push(new Particle(isDarkTheme))
       }
     }
 
@@ -140,7 +128,7 @@ export function AnimatedBackground({ reducedMotion = false, lowPowerMode = false
       rotationSpeed: number
       size: number
 
-      constructor(isDark: boolean, speedFactor: number) {
+      constructor(isDark: boolean) {
         this.x = Math.random() * window.innerWidth
         this.y = Math.random() * window.innerHeight
 
@@ -148,6 +136,7 @@ export function AnimatedBackground({ reducedMotion = false, lowPowerMode = false
         this.radius = isDark ? Math.random() * 1.5 + 0.5 : Math.random() * 2.5 + 1
 
         // Adjust velocity based on animation style
+        let speedFactor = isLowPower ? 0.05 : 0.1
 
         if (animationStyle === "waves") {
           speedFactor = isLowPower ? 0.03 : 0.06

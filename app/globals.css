@@ -186,6 +186,18 @@ body {
   padding-bottom: 5rem;
 }
 
+/* Ensure proper spacing for bottom navbar on mobile */
+@media (max-width: 640px) {
+  body {
+    padding-bottom: 5rem; /* Ensure content doesn't get hidden behind the navbar */
+  }
+
+  /* Add safe area inset for notched devices */
+  .fixed.bottom-4 {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+}
+
 /* Preloader animations */
 .glasses-animation {
   animation: float 3s ease-in-out infinite;
