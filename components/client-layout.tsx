@@ -34,7 +34,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         <ServiceWorkerRegistration />
         <OfflineDetector />
         <ThemeToggleCorner />
-        <div className="pb-20">{children}</div>
+        <div className="pb-16 sm:pb-14">{children}</div>
         <BottomNavbar />
       </div>
     </ThemeProvider>

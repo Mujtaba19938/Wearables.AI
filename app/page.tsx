@@ -2,9 +2,9 @@ import { AnimationStyleButton } from "@/components/animation-style-button"
 
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
-      <div className="flex flex-col items-center justify-center gap-4 sm:gap-6 max-w-3xl w-full text-center">
-        <div className="mb-2">
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 pt-4 pb-0">
+      <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 max-w-3xl w-full text-center">
+        <div className="mb-1 sm:mb-2">
           <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18H14V16H10C6.68629 16 4 13.3137 4 10C4 6.68629 6.68629 4 10 4H14V2H10Z"
@@ -24,14 +24,14 @@ export default function HomePage() {
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">wearables.ai</h1>
         <p className="text-lg sm:text-xl dark:text-gray-400 text-gray-600">Find your perfect eyewear match</p>
 
-        <div className="grid grid-cols-1 gap-6 w-full max-w-md mt-4 sm:mt-8">
-          <div className="bg-card p-4 sm:p-6 rounded-xl border border-border">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-3 sm:mb-4">Face Shape Analyzer</h2>
-            <p className="text-sm sm:text-base dark:text-gray-400 text-gray-600 mb-4 sm:mb-6">
+        <div className="grid grid-cols-1 gap-4 w-full max-w-md mt-2 sm:mt-4">
+          <div className="bg-card p-4 sm:p-5 rounded-xl border border-border">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-2 sm:mb-3">Face Shape Analyzer</h2>
+            <p className="text-sm sm:text-base dark:text-gray-400 text-gray-600 mb-3 sm:mb-4">
               Discover eyeglasses that complement your unique facial features
             </p>
 
-            <div className="bg-muted p-3 sm:p-4 rounded-lg mb-4 sm:mb-6 flex items-center gap-2 sm:gap-3">
+            <div className="bg-muted p-3 sm:p-4 rounded-lg mb-3 sm:mb-4 flex items-center gap-2 sm:gap-3">
               <svg
                 width="20"
                 height="20"
@@ -50,7 +50,7 @@ export default function HomePage() {
               </p>
             </div>
 
-            <p className="text-sm sm:text-base dark:text-gray-400 text-gray-600 mb-4 sm:mb-6">
+            <p className="text-sm sm:text-base dark:text-gray-400 text-gray-600 mb-3 sm:mb-4">
               Our AI will analyze your face shape and recommend the most suitable eyeglasses styles that enhance your
               appearance and boost your confidence.
             </p>
@@ -65,7 +65,7 @@ export default function HomePage() {
         </div>
 
         {/* Animation style button positioned outside the card */}
-        <div className="mt-6">
+        <div className="mt-4">
           <AnimationStyleButton />
         </div>
       </div>

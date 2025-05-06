@@ -67,7 +67,7 @@
   }
   body {
     @apply bg-background text-foreground transition-colors duration-300;
-    padding-bottom: 80px; /* Ensure content doesn't get hidden behind the navbar */
+    padding-bottom: 60px; /* Reduced padding to minimize scrolling */
   }
 }
 
@@ -395,7 +395,7 @@ body {
 /* Tablets */
 @media (min-width: 641px) and (max-width: 1024px) {
   body {
-    padding-bottom: 5rem;
+    padding-bottom: 4rem;
   }
 }
 
@@ -439,8 +439,8 @@ body {
 }
 
 /* Fix for iOS safe areas */
-.fixed.bottom-0 {
-  padding-bottom: env(safe-area-inset-bottom, 16px);
+.fixed.bottom-6 {
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 /* Ensure preloader is centered */
@@ -448,4 +448,34 @@ body {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
+}
+
+/* Optimize content layout to reduce scrolling */
+.min-h-screen {
+  min-height: calc(100vh - 70px); /* Reduce minimum height to avoid unnecessary scrolling */
+}
+
+/* Adjust main content to reduce scrolling */
+main.flex.min-h-screen {
+  min-height: calc(100vh - 80px);
+  padding-bottom: 0;
+}
+
+/* Compact layout for content */
+.p-4.sm\:p-6 {
+  padding-bottom: 0;
+}
+
+/* Adjust card spacing */
+.gap-6.w-full.max-w-md.mt-4.sm\:mt-8 {
+  margin-top: 1rem;
+}
+
+/* Make content more compact */
+.mb-4.sm\:mb-6 {
+  margin-bottom: 0.75rem;
+}
+
+.mb-3.sm\:mb-4 {
+  margin-bottom: 0.5rem;
 }

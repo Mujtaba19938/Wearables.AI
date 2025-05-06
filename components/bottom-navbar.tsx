@@ -29,7 +29,7 @@ export function BottomNavbar() {
 
   // Make the navbar responsive
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 sm:pb-5">
+    <div className="fixed bottom-6 sm:bottom-8 left-0 right-0 z-50 flex justify-center">
       <div className="flex items-center gap-2 sm:gap-2">
         {/* Bottom Navbar - smaller on desktop */}
         <nav className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-1.5 dark:bg-black/60 bg-white/60 backdrop-blur-lg rounded-full gap-2 sm:gap-6 shadow-lg border dark:border-white/10 border-black/10">
