@@ -1,4 +1,7 @@
 export function isLowPowerDevice(): boolean {
+  // Check if we're in a browser environment
+  if (typeof window === "undefined") return false
+
   // Check if it's a mobile device
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     typeof navigator !== "undefined" ? navigator.userAgent : "",
@@ -8,16 +11,14 @@ export function isLowPowerDevice(): boolean {
   const hasLowCPU =
     typeof navigator !== "undefined" && navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency < 4
 
-  // Check if the device has requested battery saving mode (if available)
-  const hasBatterySaving =
+  // Check for low memory devices
+  const hasLowMemory =
     typeof navigator !== "undefined" &&
-    "getBattery" in navigator &&
-    // @ts-ignore - getBattery is not in the standard navigator type
-    navigator.getBattery &&
+    // @ts-ignore - deviceMemory is not in the standard navigator type
+    navigator.deviceMemory !== undefined &&
     // @ts-ignore
-    navigator
-      .getBattery()
-      .then((battery: any) => battery.charging === false && battery.level < 0.2)
+    navigator.deviceMemory < 4
 
-  return isMobile || hasLowCPU || !!hasBatterySaving
+  // For mobile devices, always use low power mode
+  return isMobile || hasLowCPU || hasLowMemory
 }

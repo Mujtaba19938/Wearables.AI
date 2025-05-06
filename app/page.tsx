@@ -1,3 +1,5 @@
+import { AnimationStyleButton } from "@/components/animation-style-button"
+
 export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
@@ -60,6 +62,11 @@ export default function HomePage() {
               Start Analysis
             </a>
           </div>
+        </div>
+
+        {/* Animation style button positioned outside the card */}
+        <div className="mt-6">
+          <AnimationStyleButton />
         </div>
       </div>
     </main>

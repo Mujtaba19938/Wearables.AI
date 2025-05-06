@@ -126,7 +126,7 @@ h2,
 h3,
 h4,
 h5,
-h6,
+h5,
 p,
 span,
 svg,
@@ -251,4 +251,90 @@ body {
   100% {
     top: 100%;
   }
+}
+
+/* Canvas performance optimizations */
+canvas {
+  image-rendering: optimizeSpeed;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+/* Ensure smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent content jump during scrolling */
+body {
+  overflow-y: scroll;
+  overscroll-behavior-y: none;
+}
+
+/* Add these animation-specific styles at the end of the file */
+
+/* Animation style transitions */
+.animation-transition {
+  transition: all 0.5s ease-in-out;
+}
+
+/* Particle animations */
+@keyframes float-particle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Wave animations */
+@keyframes wave-flow {
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+  50% {
+    transform: translateX(-10px) translateY(5px);
+  }
+  100% {
+    transform: translateX(0) translateY(0);
+  }
+}
+
+/* Geometric animations */
+@keyframes rotate-shape {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Constellation animations */
+@keyframes pulse-star {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Animation style button */
+.animation-style-button {
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.animation-style-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Animation style label transition */
+.style-label {
+  transition: max-width 0.3s ease, opacity 0.3s ease;
 }
