@@ -6,6 +6,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Eye, EyeOff, ArrowLeft, Loader2 } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { SocialLoginButtons } from "@/components/social-login-buttons"
 
 export default function SignupPage() {
   const [name, setName] = useState("")
@@ -211,6 +212,23 @@ export default function SignupPage() {
               </button>
             </div>
           </form>
+
+          <div className="mt-6 pt-6 border-t border-border relative">
+            <p className="text-center text-sm text-muted-foreground mb-4">Or sign up with</p>
+
+            <SocialLoginButtons
+              onSocialLogin={(provider) => {
+                setIsLoading(true)
+                // In a real app, this would authenticate with the selected provider
+                setTimeout(() => {
+                  router.push("/login?signup=success")
+                  setIsLoading(false)
+                }, 1500)
+              }}
+              isLoading={isLoading}
+              type="signup"
+            />
+          </div>
         </div>
 
         <div className="text-center">
