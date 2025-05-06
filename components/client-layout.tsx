@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { BottomNavbar } from "@/components/bottom-navbar"
 import { ThemeToggleCorner } from "@/components/theme-toggle-corner"
 import { Preloader } from "@/components/preloader"
+import { AnimatedBackground } from "@/components/animated-background"
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
@@ -25,8 +26,9 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     <ThemeProvider attribute="class" defaultTheme="dark" enableSystem storageKey="face-analyzer-theme">
       <Preloader onLoadingComplete={() => setLoading(false)} />
       <div
-        className={`min-h-screen bg-background text-foreground transition-all duration-500 ${loading ? "opacity-0" : "opacity-100"}`}
+        className={`min-h-screen bg-transparent text-foreground transition-all duration-500 ${loading ? "opacity-0" : "opacity-100"}`}
       >
+        <AnimatedBackground />
         <ThemeToggleCorner />
         {children}
         <BottomNavbar />
