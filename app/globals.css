@@ -80,6 +80,36 @@
   }
 }
 
+/* Add shadow pulse animation */
+@keyframes shadow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  }
+  50% {
+    box-shadow: 0 15px 30px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.animate-shadow-pulse {
+  animation: shadow-pulse 3s ease-in-out infinite;
+}
+
+/* Add glow pulse animation for dark mode */
+@keyframes glow-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 15px 0 rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px 5px rgba(59, 130, 246, 0.5);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3s ease-in-out infinite;
+}
+
 .hover-bounce:hover {
   animation: subtle-bounce 0.5s ease-in-out;
 }
