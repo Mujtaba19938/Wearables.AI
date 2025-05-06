@@ -67,6 +67,7 @@
   }
   body {
     @apply bg-background text-foreground transition-colors duration-300;
+    padding-bottom: 80px; /* Ensure content doesn't get hidden behind the navbar */
   }
 }
 
@@ -178,23 +179,6 @@ path {
   .sm-px-2 {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
-  }
-}
-
-/* Ensure content doesn't get hidden behind the navbar */
-body {
-  padding-bottom: 5rem;
-}
-
-/* Ensure proper spacing for bottom navbar on mobile */
-@media (max-width: 640px) {
-  body {
-    padding-bottom: 5rem; /* Ensure content doesn't get hidden behind the navbar */
-  }
-
-  /* Add safe area inset for notched devices */
-  .fixed.bottom-4 {
-    padding-bottom: env(safe-area-inset-bottom, 0);
   }
 }
 
@@ -400,10 +384,6 @@ body {
 
 /* Device-specific styles */
 @media (max-width: 640px) {
-  body {
-    padding-bottom: 5.5rem; /* Extra space for bottom navigation */
-  }
-
   input,
   select,
   textarea,
@@ -456,4 +436,16 @@ body {
   * {
     forced-color-adjust: none;
   }
+}
+
+/* Fix for iOS safe areas */
+.fixed.bottom-0 {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+/* Ensure preloader is centered */
+.fixed.inset-0.z-\[100\] {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }

@@ -1,19 +1,16 @@
 "use client"
 
-import { usePathname, useRouter } from "next/navigation"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Home, BookOpen, Glasses, Info, User } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
-import { triggerHaptic, hapticPatterns } from "@/utils/haptic-feedback"
-import { useHaptic } from "@/contexts/haptic-context"
 
 export function BottomNavbar() {
   const pathname = usePathname()
-  const router = useRouter()
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const { isEnabled, isSupported } = useHaptic()
 
   // Avoid hydration mismatch
   useEffect(() => {
@@ -30,38 +27,20 @@ export function BottomNavbar() {
   // Determine which animation to use based on theme
   const shadowAnimation = mounted && theme === "dark" ? "animate-glow-pulse" : "animate-shadow-pulse"
 
-  // Handle navigation with haptic feedback
-  const handleNavigation = (href: string) => {
-    if (pathname !== href) {
-      if (isSupported && isEnabled) {
-        triggerHaptic(hapticPatterns.light)
-      }
-      router.push(href)
-    }
-  }
-
-  // Handle profile navigation with haptic feedback
-  const handleProfileNavigation = () => {
-    if (isSupported && isEnabled) {
-      triggerHaptic(hapticPatterns.medium)
-    }
-    router.push("/profile")
-  }
-
-  // Make the navbar responsive but keep the rounded shape on all devices
+  // Make the navbar responsive
   return (
-    <div className="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center">
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Bottom Navbar - always rounded */}
-        <nav className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3 dark:bg-black/60 bg-white/60 backdrop-blur-lg rounded-full gap-2 sm:gap-8 shadow-lg border dark:border-white/10 border-black/10">
+    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 sm:pb-5">
+      <div className="flex items-center gap-2 sm:gap-2">
+        {/* Bottom Navbar - smaller on desktop */}
+        <nav className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-1.5 dark:bg-black/60 bg-white/60 backdrop-blur-lg rounded-full gap-2 sm:gap-6 shadow-lg border dark:border-white/10 border-black/10">
           {navItems.map(({ href, icon: Icon, label }) => {
             const isActive = pathname === href
             return (
-              <button
+              <Link
                 key={href}
-                onClick={() => handleNavigation(href)}
+                href={href}
                 className={cn(
-                  "flex flex-col items-center justify-center min-w-[40px] sm:min-w-[60px] relative group transition-all duration-300 ease-in-out bg-transparent border-0",
+                  "flex flex-col items-center justify-center min-w-[40px] sm:min-w-[50px] relative group transition-all duration-300 ease-in-out",
                   isActive
                     ? "dark:text-white text-black"
                     : "dark:text-gray-400 text-gray-600 dark:hover:text-white hover:text-black",
@@ -76,7 +55,7 @@ export function BottomNavbar() {
 
                 <Icon
                   className={cn(
-                    "h-5 w-5 sm:h-6 sm:w-6 transition-all duration-300 ease-in-out",
+                    "h-5 w-5 sm:h-4 sm:w-4 transition-all duration-300 ease-in-out",
                     isActive
                       ? "dark:text-white text-black"
                       : "dark:text-gray-400 text-gray-600 dark:group-hover:text-white group-hover:text-black dark:group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.5)] group-hover:drop-shadow-[0_0_8px_rgba(0,0,0,0.3)]",
@@ -85,7 +64,7 @@ export function BottomNavbar() {
                 />
                 <span
                   className={cn(
-                    "text-[10px] sm:text-xs mt-1 transition-all duration-300 ease-in-out",
+                    "text-[10px] sm:text-[9px] mt-1 transition-all duration-300 ease-in-out",
                     isActive ? "" : "group-hover:font-medium group-hover:scale-105",
                   )}
                 >
@@ -93,27 +72,27 @@ export function BottomNavbar() {
                 </span>
                 {isActive && (
                   <span
-                    className="absolute -bottom-1 w-1 h-1 sm:w-1.5 sm:h-1.5 dark:bg-white bg-black rounded-full 
+                    className="absolute -bottom-1 w-1 h-1 sm:w-1 sm:h-1 dark:bg-white bg-black rounded-full 
                   transition-all duration-300 ease-in-out animate-in fade-in zoom-in"
                   />
                 )}
-              </button>
+              </Link>
             )
           })}
         </nav>
 
-        {/* Profile Button with Shadow Animation */}
-        <button
-          onClick={handleProfileNavigation}
+        {/* Profile Button with Shadow Animation - smaller on desktop */}
+        <Link
+          href="/profile"
           className={cn(
-            "flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary text-white hover:bg-primary/90 transition-all duration-300 border border-primary/20",
+            "flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-full bg-primary text-white hover:bg-primary/90 transition-all duration-300 border border-primary/20",
             shadowAnimation,
             pathname === "/profile" ? "ring-2 ring-white" : "",
           )}
           aria-label="Profile"
         >
-          <User className="h-5 w-5 sm:h-6 sm:w-6" />
-        </button>
+          <User className="h-5 w-5 sm:h-4 sm:w-4" />
+        </Link>
       </div>
     </div>
   )

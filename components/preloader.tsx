@@ -28,11 +28,21 @@ export function Preloader({ className, duration = 2000, onLoadingComplete }: Pre
   return (
     <div
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center bg-background transition-opacity duration-500",
+        "fixed inset-0 z-[100] flex items-center justify-center bg-background transition-opacity duration-500",
         className,
       )}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        width: "100vw",
+        position: "fixed",
+        top: 0,
+        left: 0,
+      }}
     >
-      <div className="flex flex-col items-center">
+      <div className="flex flex-col items-center justify-center">
         <div className="relative">
           {/* Glasses SVG with animation */}
           <svg
