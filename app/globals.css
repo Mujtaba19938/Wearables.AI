@@ -155,3 +155,100 @@ path {
 body {
   padding-bottom: 5rem;
 }
+
+/* Preloader animations */
+.glasses-animation {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.lens {
+  stroke-dasharray: 160;
+  stroke-dashoffset: 160;
+  animation: draw-circle 2s ease forwards;
+}
+
+.left-lens {
+  animation-delay: 0.2s;
+}
+
+.right-lens {
+  animation-delay: 0.4s;
+}
+
+.bridge,
+.temple {
+  stroke-dasharray: 20;
+  stroke-dashoffset: 20;
+  animation: draw-line 1s ease forwards;
+}
+
+.bridge {
+  animation-delay: 0.8s;
+}
+
+.left-temple {
+  animation-delay: 1s;
+}
+
+.right-temple {
+  animation-delay: 1.2s;
+}
+
+.eye {
+  opacity: 0;
+  animation: fade-in 0.5s ease forwards;
+}
+
+.left-eye {
+  animation-delay: 1.4s;
+}
+
+.right-eye {
+  animation-delay: 1.6s;
+}
+
+@keyframes draw-circle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes draw-line {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes fade-in {
+  to {
+    opacity: 1;
+  }
+}
+
+.scan-line {
+  position: absolute;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary)), transparent);
+  top: 0;
+  animation: scan 2s linear infinite;
+}
+
+@keyframes scan {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
