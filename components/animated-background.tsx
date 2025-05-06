@@ -7,7 +7,13 @@ import { useAnimationStore } from "@/store/animation-store"
 
 export type AnimationStyle = "particles" | "waves" | "geometric" | "constellation" | "minimal"
 
-export function AnimatedBackground() {
+// Update the component props at the top
+interface AnimatedBackgroundProps {
+  reducedMotion?: boolean
+  lowPowerMode?: boolean
+}
+
+export function AnimatedBackground({ reducedMotion = false, lowPowerMode = false }: AnimatedBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { theme } = useTheme()
   const { animationStyle } = useAnimationStore()
@@ -96,10 +102,28 @@ export function AnimatedBackground() {
         maxParticles = Math.floor(maxParticles * 1.5)
       }
 
-      const particleCount = Math.min(Math.floor((window.innerWidth * window.innerHeight) / baseCount), maxParticles)
+      let particleCount = Math.min(Math.floor((window.innerWidth * window.innerHeight) / baseCount), maxParticles)
+
+      // Honor user preferences for reduced motion
+      if (reducedMotion) {
+        console.log("Respecting reduced motion preference - using minimal animations")
+        // Override animation style to minimal
+        particleCount = 5 // Very few particles
+      }
+
+      // For low power devices, reduce animation complexity
+      let speedFactor = isLowPower ? 0.05 : 0.1
+
+      if (lowPowerMode && !reducedMotion) {
+        console.log("Low power device detected - optimizing animations")
+        // Reduce particle count and animation complexity
+        particleCount = Math.floor(particleCount * 0.5)
+        // Slow down animations
+        speedFactor *= 0.7
+      }
 
       for (let i = 0; i < particleCount; i++) {
-        particles.push(new Particle(isDarkTheme))
+        particles.push(new Particle(isDarkTheme, speedFactor))
       }
     }
 
@@ -116,7 +140,7 @@ export function AnimatedBackground() {
       rotationSpeed: number
       size: number
 
-      constructor(isDark: boolean) {
+      constructor(isDark: boolean, speedFactor: number) {
         this.x = Math.random() * window.innerWidth
         this.y = Math.random() * window.innerHeight
 
@@ -124,7 +148,6 @@ export function AnimatedBackground() {
         this.radius = isDark ? Math.random() * 1.5 + 0.5 : Math.random() * 2.5 + 1
 
         // Adjust velocity based on animation style
-        let speedFactor = isLowPower ? 0.05 : 0.1
 
         if (animationStyle === "waves") {
           speedFactor = isLowPower ? 0.03 : 0.06
@@ -535,7 +558,7 @@ export function AnimatedBackground() {
       document.removeEventListener("visibilitychange", handleVisibilityChange)
       cancelAnimationFrame(animationFrameId)
     }
-  }, [theme, animationStyle])
+  }, [theme, animationStyle, reducedMotion, lowPowerMode])
 
   return (
     <canvas

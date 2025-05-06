@@ -152,17 +152,45 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
     }
   }, [mode, stream])
 
+  // Handle orientation changes
+  useEffect(() => {
+    const handleOrientationChange = () => {
+      if (videoRef.current && stream) {
+        // Briefly stop and restart camera to adjust to new orientation
+        const tracks = stream.getTracks()
+        tracks.forEach((track) => track.stop())
+
+        setTimeout(() => {
+          startCamera()
+        }, 300)
+      }
+    }
+
+    window.addEventListener("orientationchange", handleOrientationChange)
+
+    return () => {
+      window.removeEventListener("orientationchange", handleOrientationChange)
+    }
+  }, [stream])
+
   const startCamera = async () => {
     try {
       setError(null)
       setErrorType(null)
-      const mediaStream = await navigator.mediaDevices.getUserMedia({
+
+      // Check if we're on mobile and use appropriate camera
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+      const constraints = {
         video: {
           facingMode: "user",
-          width: { ideal: 640 },
-          height: { ideal: 480 },
+          width: { ideal: isMobile ? 1280 : 640 },
+          height: { ideal: isMobile ? 720 : 480 },
+          aspectRatio: { ideal: 4 / 3 },
         },
-      })
+      }
+
+      const mediaStream = await navigator.mediaDevices.getUserMedia(constraints)
 
       setStream(mediaStream)
 
@@ -171,7 +199,22 @@ export function FaceAnalyzer({ onAnalysisComplete }: FaceAnalyzerProps) {
       }
     } catch (err) {
       console.error("Error accessing camera:", err)
-      setError("Unable to access camera. Please check permissions and try again.")
+
+      // More specific error messages
+      if (err instanceof DOMException) {
+        if (err.name === "NotAllowedError") {
+          setError("Camera access denied. Please check your browser permissions.")
+        } else if (err.name === "NotFoundError") {
+          setError("No camera detected on your device.")
+        } else if (err.name === "NotReadableError") {
+          setError("Camera is already in use by another application.")
+        } else {
+          setError("Unable to access camera. Please check permissions and try again.")
+        }
+      } else {
+        setError("Unable to access camera. Please check permissions and try again.")
+      }
+
       setErrorType("other")
     }
   }

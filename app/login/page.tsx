@@ -129,9 +129,11 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 className={`w-full bg-muted border ${
                   errors.email ? "border-red-500" : "border-border"
-                } rounded-lg py-2 px-3 text-foreground text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary`}
+                } rounded-lg py-3 px-3 text-foreground text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary`}
                 placeholder="your.email@example.com"
                 disabled={isLoading}
+                autoComplete="email"
+                inputMode="email"
               />
               {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email}</p>}
             </div>
@@ -153,9 +155,10 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   className={`w-full bg-muted border ${
                     errors.password ? "border-red-500" : "border-border"
-                  } rounded-lg py-2 px-3 text-foreground text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary pr-10`}
+                  } rounded-lg py-3 px-3 text-foreground text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-primary pr-10`}
                   placeholder="••••••••"
                   disabled={isLoading}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"

@@ -6,6 +6,38 @@
   "display": "standalone",
   "background_color": "#0a0a1a",
   "theme_color": "#0a0a1a",
+  "orientation": "portrait",
+  "categories": ["lifestyle", "fashion", "utilities"],
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile-home.jpg",
+      "sizes": "750x1334",
+      "type": "image/jpeg",
+      "platform": "narrow",
+      "label": "Home screen of wearables.ai"
+    },
+    {
+      "src": "/screenshots/mobile-analyzer.jpg",
+      "sizes": "750x1334",
+      "type": "image/jpeg",
+      "platform": "narrow",
+      "label": "Face analyzer screen"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Face Analyzer",
+      "url": "/analyzer",
+      "description": "Analyze your face shape",
+      "icons": [{ "src": "/icons/analyzer-icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Browse Frames",
+      "url": "/frames",
+      "description": "Browse eyeglass frames",
+      "icons": [{ "src": "/icons/frames-icon-192.png", "sizes": "192x192" }]
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-192.png",

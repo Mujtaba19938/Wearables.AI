@@ -7,7 +7,13 @@ import { cn } from "@/lib/utils"
 import { useTheme } from "next-themes"
 import { useEffect, useState } from "react"
 
-export function BottomNavbar() {
+// Update the component props
+interface BottomNavbarProps {
+  isIOS?: boolean
+  hasNotch?: boolean
+}
+
+export function BottomNavbar({ isIOS = false, hasNotch = false }: BottomNavbarProps) {
   const pathname = usePathname()
   const { theme } = useTheme()
   const [mounted, setMounted] = useState(false)
@@ -29,10 +35,12 @@ export function BottomNavbar() {
 
   // Make the navbar responsive
   return (
-    <div className="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center">
+    <div
+      className={`fixed bottom-0 left-0 right-0 z-50 flex justify-center ${hasNotch ? "pb-[env(safe-area-inset-bottom)]" : "pb-4"} ${isIOS ? "pt-1" : ""}`}
+    >
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Bottom Navbar */}
-        <nav className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3 dark:bg-black/60 bg-white/60 backdrop-blur-lg rounded-full gap-2 sm:gap-8 shadow-lg border dark:border-white/10 border-black/10">
+        <nav className="flex items-center justify-between px-3 sm:px-6 py-3 sm:py-3 dark:bg-black/90 bg-white/90 backdrop-blur-lg sm:rounded-full gap-4 sm:gap-8 shadow-lg border dark:border-white/10 border-black/10 w-full sm:w-auto">
           {navItems.map(({ href, icon: Icon, label }) => {
             const isActive = pathname === href
             return (
@@ -40,7 +48,7 @@ export function BottomNavbar() {
                 key={href}
                 href={href}
                 className={cn(
-                  "flex flex-col items-center justify-center min-w-[40px] sm:min-w-[60px] relative group transition-all duration-300 ease-in-out",
+                  "flex flex-col items-center justify-center py-2 min-w-[48px] sm:min-w-[60px] relative group transition-all duration-300 ease-in-out touch-target",
                   isActive
                     ? "dark:text-white text-black"
                     : "dark:text-gray-400 text-gray-600 dark:hover:text-white hover:text-black",

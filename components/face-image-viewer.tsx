@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { FaceLandmarksVisualization } from "./face-landmarks-visualization"
 import { Eye, EyeOff } from "lucide-react"
 import { shouldUseStandaloneAnalyzer } from "@/utils/mobile-detector"
@@ -22,6 +22,44 @@ interface FaceImageViewerProps {
 export function FaceImageViewer({ imageData, landmarks, measurements }: FaceImageViewerProps) {
   const [showLandmarks, setShowLandmarks] = useState(false)
   const usingStandaloneMode = shouldUseStandaloneAnalyzer()
+  const [touchStart, setTouchStart] = useState(0)
+  const [touchEnd, setTouchEnd] = useState(0)
+  const touchStartRef = useRef(0)
+  const touchEndRef = useRef(0)
+
+  useEffect(() => {
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartRef.current = e.targetTouches[0].clientX
+      setTouchStart(e.targetTouches[0].clientX)
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      touchEndRef.current = e.targetTouches[0].clientX
+      setTouchEnd(e.targetTouches[0].clientX)
+    }
+
+    const handleTouchEnd = () => {
+      if (touchStartRef.current - touchEndRef.current > 100) {
+        // Left swipe - show landmarks
+        setShowLandmarks(true)
+      }
+
+      if (touchStartRef.current - touchEndRef.current < -100) {
+        // Right swipe - hide landmarks
+        setShowLandmarks(false)
+      }
+    }
+
+    document.addEventListener("touchstart", handleTouchStart)
+    document.addEventListener("touchmove", handleTouchMove)
+    document.addEventListener("touchend", handleTouchEnd)
+
+    return () => {
+      document.removeEventListener("touchstart", handleTouchStart)
+      document.removeEventListener("touchmove", handleTouchMove)
+      document.removeEventListener("touchend", handleTouchEnd)
+    }
+  }, [])
 
   return (
     <div className="relative">
@@ -38,7 +76,8 @@ export function FaceImageViewer({ imageData, landmarks, measurements }: FaceImag
       </div>
       <button
         onClick={() => setShowLandmarks(!showLandmarks)}
-        className="absolute bottom-2 right-2 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full transition-colors"
+        onTouchStart={() => {}} // This prevents delay on mobile touch
+        className="absolute bottom-2 right-2 bg-black/70 hover:bg-black/90 text-white p-3 rounded-full transition-colors touch-target"
         aria-label={showLandmarks ? "Hide landmarks" : "Show landmarks"}
       >
         {showLandmarks ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
