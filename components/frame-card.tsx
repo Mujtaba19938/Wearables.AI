@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { TryOnModal } from "@/components/try-on-modal"
-import { Glasses } from "lucide-react"
+import { Frame3DCaptureModal } from "@/components/frame-3d-capture-modal"
+import { Glasses, CameraIcon as Camera3d } from "lucide-react"
 
 interface FrameCardProps {
   id: string
@@ -16,6 +17,7 @@ interface FrameCardProps {
   colors: string[]
   defaultMaterial: string
   defaultColor: string
+  modelUrl?: string
 }
 
 export function FrameCard({
@@ -30,9 +32,13 @@ export function FrameCard({
   colors,
   defaultMaterial,
   defaultColor,
+  modelUrl,
 }: FrameCardProps) {
   const [selectedMaterial, setSelectedMaterial] = useState(defaultMaterial)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [is3DModalOpen, setIs3DModalOpen] = useState(false)
+  const [frameModelUrl, setFrameModelUrl] = useState<string | undefined>(modelUrl)
+  const [has3DModel, setHas3DModel] = useState(!!modelUrl)
 
   const colorObjects = colors.map((color) => {
     switch (color.toLowerCase()) {
@@ -55,6 +61,11 @@ export function FrameCard({
     }
   })
 
+  const handle3DUploadComplete = (modelUrl: string) => {
+    setFrameModelUrl(modelUrl)
+    setHas3DModel(true)
+  }
+
   return (
     <>
       <div className="bg-card rounded-xl border border-border overflow-hidden">
@@ -63,6 +74,12 @@ export function FrameCard({
           {bestseller && (
             <div className="absolute top-2 right-2 bg-[#EAB308] text-black text-xs font-bold px-2 py-1 rounded">
               Bestseller
+            </div>
+          )}
+          {has3DModel && (
+            <div className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
+              <Camera3d className="w-3 h-3" />
+              <span>3D</span>
             </div>
           )}
         </div>
@@ -121,13 +138,23 @@ export function FrameCard({
             </div>
           </div>
 
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="w-full flex items-center justify-center gap-2 bg-black text-white py-2 rounded-lg hover:bg-black/80 transition-colors"
-          >
-            <Glasses className="w-4 h-4" />
-            Try with AR
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center justify-center gap-1 bg-black text-white py-2 rounded-lg hover:bg-black/80 transition-colors"
+            >
+              <Glasses className="w-4 h-4" />
+              <span className="text-sm">Try On</span>
+            </button>
+
+            <button
+              onClick={() => setIs3DModalOpen(true)}
+              className="flex items-center justify-center gap-1 bg-primary text-white py-2 rounded-lg hover:bg-primary/90 transition-colors"
+            >
+              <Camera3d className="w-4 h-4" />
+              <span className="text-sm">{has3DModel ? "View 3D" : "Add 3D"}</span>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -140,7 +167,15 @@ export function FrameCard({
           material: selectedMaterial,
           image,
           colors: colorObjects,
+          modelUrl: frameModelUrl,
         }}
+      />
+
+      <Frame3DCaptureModal
+        isOpen={is3DModalOpen}
+        onClose={() => setIs3DModalOpen(false)}
+        frameName={name}
+        onUploadComplete={handle3DUploadComplete}
       />
     </>
   )

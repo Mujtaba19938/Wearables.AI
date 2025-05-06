@@ -1,11 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { FrameCard } from "@/components/frame-card"
 import { Search, SlidersHorizontal } from "lucide-react"
+import { FrameFilterModal, type FilterState } from "@/components/frame-filter-modal"
 
 export default function FramesPage() {
   const [searchQuery, setSearchQuery] = useState("")
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
+  const [activeFilters, setActiveFilters] = useState<FilterState>({
+    faceShapes: [],
+    materials: [],
+    priceRange: [0, 500],
+    colors: [],
+  })
+  const [filtersApplied, setFiltersApplied] = useState(false)
 
   const frames = [
     {
@@ -75,12 +84,56 @@ export default function FramesPage() {
     },
   ]
 
-  const filteredFrames = frames.filter(
-    (frame) =>
-      frame.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      frame.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      frame.faceShapes.some((shape) => shape.toLowerCase().includes(searchQuery.toLowerCase())),
-  )
+  const filteredFrames = useMemo(() => {
+    return frames.filter((frame) => {
+      // Text search filter
+      const matchesSearch =
+        searchQuery === "" ||
+        frame.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        frame.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        frame.faceShapes.some((shape) => shape.toLowerCase().includes(searchQuery.toLowerCase()))
+
+      // Face shape filter
+      const matchesFaceShape =
+        activeFilters.faceShapes.length === 0 ||
+        frame.faceShapes.some((shape) => activeFilters.faceShapes.includes(shape.toLowerCase()))
+
+      // Material filter
+      const matchesMaterial =
+        activeFilters.materials.length === 0 ||
+        frame.materials.some((material) => activeFilters.materials.includes(material.toLowerCase()))
+
+      // Price filter
+      const matchesPrice = frame.price >= activeFilters.priceRange[0] && frame.price <= activeFilters.priceRange[1]
+
+      // Color filter
+      const matchesColor =
+        activeFilters.colors.length === 0 ||
+        frame.colors.some((color) => activeFilters.colors.includes(color.toLowerCase()))
+
+      return matchesSearch && matchesFaceShape && matchesMaterial && matchesPrice && matchesColor
+    })
+  }, [frames, searchQuery, activeFilters])
+
+  const handleApplyFilters = (filters: FilterState) => {
+    setActiveFilters(filters)
+    setFiltersApplied(
+      filters.faceShapes.length > 0 ||
+        filters.materials.length > 0 ||
+        filters.colors.length > 0 ||
+        filters.priceRange[0] > 0 ||
+        filters.priceRange[1] < 500,
+    )
+  }
+
+  const getActiveFilterCount = () => {
+    let count = 0
+    if (activeFilters.faceShapes.length > 0) count += 1
+    if (activeFilters.materials.length > 0) count += 1
+    if (activeFilters.colors.length > 0) count += 1
+    if (activeFilters.priceRange[0] > 0 || activeFilters.priceRange[1] < 500) count += 1
+    return count
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-start p-4 sm:p-6 max-w-6xl mx-auto">
@@ -102,16 +155,52 @@ export default function FramesPage() {
           />
           <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
         </div>
-        <button className="bg-card border border-border rounded-lg p-2">
-          <SlidersHorizontal className="w-5 h-5" />
+        <button
+          className={`bg-card border ${filtersApplied ? "border-primary" : "border-border"} rounded-lg p-2 relative`}
+          onClick={() => setIsFilterModalOpen(true)}
+        >
+          <SlidersHorizontal className={`w-5 h-5 ${filtersApplied ? "text-primary" : ""}`} />
+          {filtersApplied && (
+            <span className="absolute -top-2 -right-2 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+              {getActiveFilterCount()}
+            </span>
+          )}
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
-        {filteredFrames.map((frame) => (
-          <FrameCard key={frame.id} {...frame} />
-        ))}
-      </div>
+      {filteredFrames.length === 0 ? (
+        <div className="w-full py-12 text-center">
+          <p className="text-lg text-muted-foreground">No frames match your search criteria.</p>
+          <button
+            onClick={() => {
+              setSearchQuery("")
+              setActiveFilters({
+                faceShapes: [],
+                materials: [],
+                priceRange: [0, 500],
+                colors: [],
+              })
+              setFiltersApplied(false)
+            }}
+            className="mt-4 px-4 py-2 bg-primary text-white rounded-md"
+          >
+            Clear Filters
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
+          {filteredFrames.map((frame) => (
+            <FrameCard key={frame.id} {...frame} />
+          ))}
+        </div>
+      )}
+
+      <FrameFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        initialFilters={activeFilters}
+      />
     </main>
   )
 }

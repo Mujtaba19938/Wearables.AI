@@ -13,12 +13,21 @@ export function BottomNavbar() {
     { href: "/guide", icon: BookOpen, label: "Guide" },
     { href: "/frames", icon: Glasses, label: "Frames" },
     { href: "/about", icon: Info, label: "About" },
-    { href: "/profile", icon: User, label: "Profile" },
   ]
 
   // Make the navbar responsive
   return (
-    <div className="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex justify-center">
+    <div className="fixed bottom-4 sm:bottom-6 left-0 right-0 z-50 flex flex-col items-center justify-center">
+      {/* Floating Profile Button */}
+      <Link
+        href="/profile"
+        className="flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-primary text-white mb-3 shadow-lg hover:bg-primary/90 transition-all duration-300 border border-primary/20"
+        aria-label="Profile"
+      >
+        <User className="h-5 w-5 sm:h-6 sm:w-6" />
+      </Link>
+
+      {/* Bottom Navbar */}
       <nav className="flex items-center justify-between px-3 sm:px-6 py-2 sm:py-3 mx-auto dark:bg-black/60 bg-white/60 backdrop-blur-lg rounded-full w-auto gap-2 sm:gap-8 shadow-lg border dark:border-white/10 border-black/10">
         {navItems.map(({ href, icon: Icon, label }) => {
           const isActive = pathname === href
