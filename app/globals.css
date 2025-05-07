@@ -6,30 +6,43 @@
   /* Light mode colors */
   --background: 0 0% 100%;
   --foreground: 240 10% 3.9%;
-  --card: 0 0% 98%;
+  --card: 0 0% 100%;
   --card-foreground: 240 10% 3.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 240 10% 3.9%;
   --primary: 217.2 91.2% 59.8%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 240 3.7% 90%;
+  --secondary: 240 4.8% 95.9%;
   --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 3.7% 90%;
-  --muted-foreground: 240 5% 34.9%;
-  --accent: 240 3.7% 90%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
   --accent-foreground: 240 5.9% 10%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 3.7% 90%;
-  --input: 240 3.7% 90%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
   --ring: 217.2 91.2% 59.8%;
   --radius: 0.5rem;
 
   /* Custom colors for our app */
-  --card-bg: 0 0% 98%;
-  --card-border: 240 10% 90%;
+  --card-bg: 0 0% 100%;
+  --card-border: 240 5.9% 90%;
   --card-inner-bg: 0 0% 100%;
   --card-input-bg: 0 0% 95%;
+
+  /* Badge colors */
+  --badge-new-bg: 217.2 91.2% 59.8%;
+  --badge-new-text: 0 0% 100%;
+  --badge-bestseller-bg: 35 91.2% 59.8%;
+  --badge-bestseller-text: 0 0% 100%;
+
+  /* Social icon colors */
+  --social-twitter: 203 89% 53%;
+  --social-facebook: 221 44% 41%;
+  --social-instagram: 340 75% 54%;
+  --social-linkedin: 201 100% 35%;
+  --social-github: 210 12% 16%;
 }
 
 .dark {
@@ -59,6 +72,12 @@
   --card-border: 240 10% 10%;
   --card-inner-bg: 240 10% 4%;
   --card-input-bg: 240 10% 2%;
+
+  /* Badge colors - same as light mode for consistency */
+  --badge-new-bg: 217.2 91.2% 59.8%;
+  --badge-new-text: 0 0% 100%;
+  --badge-bestseller-bg: 35 91.2% 59.8%;
+  --badge-bestseller-text: 0 0% 100%;
 }
 
 @layer base {
@@ -71,6 +90,218 @@
   }
 }
 
+/* Theme transition */
+@layer components {
+  .theme-transition {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* Card styles */
+  .card-light {
+    @apply bg-white border border-gray-200 shadow-sm;
+  }
+
+  .card-dark {
+    @apply bg-gray-800 border border-gray-700;
+  }
+
+  /* Button styles */
+  .btn-primary-light {
+    @apply bg-blue-600 text-white hover:bg-blue-700;
+  }
+
+  .btn-primary-dark {
+    @apply bg-blue-500 text-white hover:bg-blue-600;
+  }
+
+  .btn-secondary-light {
+    @apply bg-gray-100 text-gray-800 border border-gray-300 hover:bg-gray-200;
+  }
+
+  .btn-secondary-dark {
+    @apply bg-gray-700 text-gray-200 border border-gray-600 hover:bg-gray-600;
+  }
+
+  /* Badge styles */
+  .badge-new {
+    @apply px-3 py-1 rounded-full text-xs font-medium;
+    background-color: hsl(var(--badge-new-bg));
+    color: hsl(var(--badge-new-text));
+  }
+
+  .badge-bestseller {
+    @apply px-3 py-1 rounded-full text-xs font-medium;
+    background-color: hsl(var(--badge-bestseller-bg));
+    color: hsl(var(--badge-bestseller-text));
+  }
+
+  /* Social icon styles */
+  .social-icon {
+    @apply p-3 rounded-lg transition-all duration-300;
+  }
+}
+
+/* Social icon hover styles - using direct CSS instead of @apply */
+.social-icon-twitter:hover {
+  color: #1da1f2;
+}
+
+.dark .social-icon-twitter:hover {
+  color: #1da1f2;
+}
+
+.social-icon-facebook:hover {
+  color: #4267b2;
+}
+
+.dark .social-icon-facebook:hover {
+  color: #4267b2;
+}
+
+.social-icon-instagram:hover {
+  color: #e1306c;
+}
+
+.dark .social-icon-instagram:hover {
+  color: #e1306c;
+}
+
+.social-icon-linkedin:hover {
+  color: #0077b5;
+}
+
+.dark .social-icon-linkedin:hover {
+  color: #0077b5;
+}
+
+.social-icon-github:hover {
+  color: #6e5494;
+}
+
+.dark .social-icon-github:hover {
+  color: #6e5494;
+}
+
+@layer components {
+  /* Light mode specific styles */
+  .light .text-primary-content {
+    @apply text-gray-900;
+  }
+
+  .light .text-secondary-content {
+    @apply text-gray-700;
+  }
+
+  .light .card-content {
+    @apply bg-white border border-gray-200 shadow-sm;
+  }
+
+  .light .faq-tab {
+    @apply bg-gray-100 text-gray-800 hover:bg-gray-200;
+  }
+
+  .light .faq-tab-active {
+    @apply bg-blue-600 text-white;
+  }
+
+  /* Dark mode specific styles */
+  .dark .text-primary-content {
+    @apply text-gray-100;
+  }
+
+  .dark .text-secondary-content {
+    @apply text-gray-300;
+  }
+
+  .dark .card-content {
+    @apply bg-gray-800 border border-gray-700;
+  }
+
+  .dark .faq-tab {
+    @apply bg-gray-800 text-gray-200 hover:bg-gray-700;
+  }
+
+  .dark .faq-tab-active {
+    @apply bg-blue-600 text-white;
+  }
+
+  /* Light mode specific overrides */
+  .light-mode-card {
+    @apply bg-white border border-gray-200 shadow-sm;
+  }
+
+  .light-mode-text-primary {
+    @apply text-gray-900;
+  }
+
+  .light-mode-text-secondary {
+    @apply text-gray-700;
+  }
+
+  .light-mode-bg-primary {
+    @apply bg-gray-50;
+  }
+
+  .light-mode-bg-secondary {
+    @apply bg-white;
+  }
+
+  .light-mode-border {
+    @apply border-gray-200;
+  }
+
+  /* Dark mode specific overrides */
+  .dark-mode-card {
+    @apply bg-gray-800 border border-gray-700;
+  }
+
+  .dark-mode-text-primary {
+    @apply text-gray-100;
+  }
+
+  .dark-mode-text-secondary {
+    @apply text-gray-300;
+  }
+
+  .dark-mode-bg-primary {
+    @apply bg-gray-900;
+  }
+
+  .dark-mode-bg-secondary {
+    @apply bg-gray-800;
+  }
+
+  .dark-mode-border {
+    @apply border-gray-700;
+  }
+}
+
+/* Apply transition to common elements */
+body,
+div,
+section,
+nav,
+header,
+footer,
+button,
+a,
+input,
+textarea,
+select,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+svg,
+path {
+  @apply theme-transition;
+}
+
+/* Keep existing animations and other styles */
 @keyframes subtle-bounce {
   0%,
   100% {
@@ -196,37 +427,6 @@
   .subheading-responsive {
     @apply text-xl sm:text-2xl md:text-3xl font-semibold;
   }
-}
-
-/* Custom theme transition */
-:root {
-  --theme-transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, fill 0.3s ease, stroke 0.3s
-    ease;
-}
-
-/* Apply transition to common elements */
-body,
-div,
-section,
-nav,
-header,
-footer,
-button,
-a,
-input,
-textarea,
-select,
-h1,
-h2,
-h3,
-h4,
-h5,
-h5,
-p,
-span,
-svg,
-path {
-  transition: var(--theme-transition);
 }
 
 /* Responsive adjustments */
@@ -360,8 +560,6 @@ body {
   overflow-y: scroll;
   overscroll-behavior-y: none;
 }
-
-/* Add these animation-specific styles at the end of the file */
 
 /* Animation style transitions */
 .animation-transition {
@@ -543,9 +741,6 @@ main.flex.min-h-screen {
 .mb-3.sm\:mb-4 {
   margin-bottom: 0.5rem;
 }
-
-/* Add these new styles for the improved About page accessibility */
-/* Add this after the existing CSS content */
 
 /* Improved About page accessibility styles */
 .faq-accordion-button {

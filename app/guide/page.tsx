@@ -1,63 +1,118 @@
+"use client"
+
+import { useTheme } from "next-themes"
+
 export default function GuidePage() {
+  const { theme } = useTheme()
+  const isLightMode = theme === "light"
+
   return (
     <main className="flex min-h-screen flex-col items-start p-4 sm:p-6 max-w-4xl mx-auto">
       <div className="w-full mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-1 sm:mb-2">Guide</h1>
-        <p className="text-gray-400 mb-2 sm:mb-4 text-sm sm:text-base">
+        <h1 className={`text-3xl sm:text-4xl font-bold mb-1 sm:mb-2 ${isLightMode ? "text-gray-900" : ""}`}>Guide</h1>
+        <p className={`mb-2 sm:mb-4 text-sm sm:text-base ${isLightMode ? "text-gray-600" : "text-gray-400"}`}>
           Learn how to use our app to find the perfect eyeglasses for your face shape
         </p>
 
         {/* Progress indicator */}
         <div className="flex items-center gap-2 mb-4">
-          <div className="h-2 w-8 rounded-full bg-primary"></div>
-          <div className="h-2 w-8 rounded-full bg-gray-600"></div>
-          <div className="h-2 w-8 rounded-full bg-gray-600"></div>
-          <span className="text-xs text-gray-400 ml-2">Step 1 of 3: Learn</span>
+          <div className={`h-2 w-8 rounded-full ${isLightMode ? "bg-blue-600" : "bg-primary"}`}></div>
+          <div className={`h-2 w-8 rounded-full ${isLightMode ? "bg-gray-200" : "bg-gray-600"}`}></div>
+          <div className={`h-2 w-8 rounded-full ${isLightMode ? "bg-gray-200" : "bg-gray-600"}`}></div>
+          <span className={`text-xs ml-2 ${isLightMode ? "text-gray-600" : "text-gray-400"}`}>Step 1 of 3: Learn</span>
         </div>
       </div>
 
-      <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-8">How to Use the App</h2>
+      <h2 className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-8 ${isLightMode ? "text-gray-900" : ""}`}>
+        How to Use the App
+      </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full mb-6 sm:mb-12">
-        <div className="bg-gray-800/80 p-4 sm:p-6 rounded-xl border border-gray-700 shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-primary/20 hover:border-primary/50">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center mb-4 shadow-md">
+        <div
+          className={`p-4 sm:p-6 rounded-xl shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl ${
+            isLightMode
+              ? "bg-white border border-gray-200 hover:border-blue-200 hover:shadow-blue-100"
+              : "bg-gray-800/80 border border-gray-700 hover:border-primary/50 hover:shadow-primary/20"
+          }`}
+        >
+          <div
+            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-4 shadow-md ${
+              isLightMode
+                ? "bg-gradient-to-br from-blue-400 to-blue-600"
+                : "bg-gradient-to-br from-blue-500 to-blue-700"
+            }`}
+          >
             <span className="text-white font-bold text-lg">1</span>
           </div>
-          <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Take a Photo</h3>
-          <p className="text-sm sm:text-base text-gray-300">
+          <h3 className={`text-lg sm:text-xl font-bold mb-2 sm:mb-3 ${isLightMode ? "text-gray-900" : ""}`}>
+            Take a Photo
+          </h3>
+          <p className={`text-sm sm:text-base ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
             Use your camera or upload a photo that clearly shows your face from the front.
           </p>
         </div>
 
-        <div className="bg-gray-800/80 p-4 sm:p-6 rounded-xl border border-gray-700 shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-primary/20 hover:border-primary/50">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center mb-4 shadow-md">
+        <div
+          className={`p-4 sm:p-6 rounded-xl shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl ${
+            isLightMode
+              ? "bg-white border border-gray-200 hover:border-blue-200 hover:shadow-blue-100"
+              : "bg-gray-800/80 border border-gray-700 hover:border-primary/50 hover:shadow-primary/20"
+          }`}
+        >
+          <div
+            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-4 shadow-md ${
+              isLightMode
+                ? "bg-gradient-to-br from-blue-400 to-blue-600"
+                : "bg-gradient-to-br from-blue-500 to-blue-700"
+            }`}
+          >
             <span className="text-white font-bold text-lg">2</span>
           </div>
-          <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Analyze</h3>
-          <p className="text-sm sm:text-base text-gray-300">
+          <h3 className={`text-lg sm:text-xl font-bold mb-2 sm:mb-3 ${isLightMode ? "text-gray-900" : ""}`}>Analyze</h3>
+          <p className={`text-sm sm:text-base ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
             Our AI will analyze your facial features to determine your face shape.
           </p>
         </div>
 
-        <div className="bg-gray-800/80 p-4 sm:p-6 rounded-xl border border-gray-700 shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-primary/20 hover:border-primary/50">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center mb-4 shadow-md">
+        <div
+          className={`p-4 sm:p-6 rounded-xl shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl ${
+            isLightMode
+              ? "bg-white border border-gray-200 hover:border-blue-200 hover:shadow-blue-100"
+              : "bg-gray-800/80 border border-gray-700 hover:border-primary/50 hover:shadow-primary/20"
+          }`}
+        >
+          <div
+            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-4 shadow-md ${
+              isLightMode
+                ? "bg-gradient-to-br from-blue-400 to-blue-600"
+                : "bg-gradient-to-br from-blue-500 to-blue-700"
+            }`}
+          >
             <span className="text-white font-bold text-lg">3</span>
           </div>
-          <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3">Get Recommendations</h3>
-          <p className="text-sm sm:text-base text-gray-300">
+          <h3 className={`text-lg sm:text-xl font-bold mb-2 sm:mb-3 ${isLightMode ? "text-gray-900" : ""}`}>
+            Get Recommendations
+          </h3>
+          <p className={`text-sm sm:text-base ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
             View personalized eyeglass style recommendations based on your face shape.
           </p>
         </div>
       </div>
 
       {/* Tips section with individual cards */}
-      <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Tips for Best Results</h2>
+      <h2 className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 ${isLightMode ? "text-gray-900" : ""}`}>
+        Tips for Best Results
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mb-8">
-        <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700 shadow-md transition-all duration-300 hover:bg-gray-800">
+        <div
+          className={`p-4 rounded-xl shadow-md transition-all duration-300 hover:bg-opacity-90 ${
+            isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"
+          }`}
+        >
           <div className="flex items-start gap-3">
-            <div className="bg-blue-500/20 p-2 rounded-lg">
+            <div className={`p-2 rounded-lg ${isLightMode ? "bg-blue-100" : "bg-blue-500/20"}`}>
               <svg
-                className="w-5 h-5 text-blue-400"
+                className={`w-5 h-5 ${isLightMode ? "text-blue-600" : "text-blue-400"}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -72,17 +127,23 @@ export default function GuidePage() {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold mb-1">Good Lighting</h3>
-              <p className="text-sm text-gray-300">Ensure your face is well-lit with even lighting from the front</p>
+              <h3 className={`font-semibold mb-1 ${isLightMode ? "text-gray-900" : ""}`}>Good Lighting</h3>
+              <p className={`text-sm ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
+                Ensure your face is well-lit with even lighting from the front
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700 shadow-md transition-all duration-300 hover:bg-gray-800">
+        <div
+          className={`p-4 rounded-xl shadow-md transition-all duration-300 hover:bg-opacity-90 ${
+            isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"
+          }`}
+        >
           <div className="flex items-start gap-3">
-            <div className="bg-blue-500/20 p-2 rounded-lg">
+            <div className={`p-2 rounded-lg ${isLightMode ? "bg-blue-100" : "bg-blue-500/20"}`}>
               <svg
-                className="w-5 h-5 text-blue-400"
+                className={`w-5 h-5 ${isLightMode ? "text-blue-600" : "text-blue-400"}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -103,19 +164,23 @@ export default function GuidePage() {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold mb-1">Remove Obstructions</h3>
-              <p className="text-sm text-gray-300">
+              <h3 className={`font-semibold mb-1 ${isLightMode ? "text-gray-900" : ""}`}>Remove Obstructions</h3>
+              <p className={`text-sm ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
                 Remove glasses, hats, or anything that might obscure your face shape
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700 shadow-md transition-all duration-300 hover:bg-gray-800">
+        <div
+          className={`p-4 rounded-xl shadow-md transition-all duration-300 hover:bg-opacity-90 ${
+            isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"
+          }`}
+        >
           <div className="flex items-start gap-3">
-            <div className="bg-blue-500/20 p-2 rounded-lg">
+            <div className={`p-2 rounded-lg ${isLightMode ? "bg-blue-100" : "bg-blue-500/20"}`}>
               <svg
-                className="w-5 h-5 text-blue-400"
+                className={`w-5 h-5 ${isLightMode ? "text-blue-600" : "text-blue-400"}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -130,17 +195,23 @@ export default function GuidePage() {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold mb-1">Neutral Expression</h3>
-              <p className="text-sm text-gray-300">Look directly at the camera with a neutral expression</p>
+              <h3 className={`font-semibold mb-1 ${isLightMode ? "text-gray-900" : ""}`}>Neutral Expression</h3>
+              <p className={`text-sm ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
+                Look directly at the camera with a neutral expression
+              </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700 shadow-md transition-all duration-300 hover:bg-gray-800">
+        <div
+          className={`p-4 rounded-xl shadow-md transition-all duration-300 hover:bg-opacity-90 ${
+            isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"
+          }`}
+        >
           <div className="flex items-start gap-3">
-            <div className="bg-blue-500/20 p-2 rounded-lg">
+            <div className={`p-2 rounded-lg ${isLightMode ? "bg-blue-100" : "bg-blue-500/20"}`}>
               <svg
-                className="w-5 h-5 text-blue-400"
+                className={`w-5 h-5 ${isLightMode ? "text-blue-600" : "text-blue-400"}`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -155,18 +226,24 @@ export default function GuidePage() {
               </svg>
             </div>
             <div>
-              <h3 className="font-semibold mb-1">Clear Jawline</h3>
-              <p className="text-sm text-gray-300">Pull your hair back to reveal your entire face shape and jawline</p>
+              <h3 className={`font-semibold mb-1 ${isLightMode ? "text-gray-900" : ""}`}>Clear Jawline</h3>
+              <p className={`text-sm ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
+                Pull your hair back to reveal your entire face shape and jawline
+              </p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Good vs Bad Photo Examples */}
-      <h2 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6">Photo Examples</h2>
+      <h2 className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 ${isLightMode ? "text-gray-900" : ""}`}>
+        Photo Examples
+      </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full mb-8">
-        <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700">
-          <h3 className="font-semibold mb-3 flex items-center">
+        <div
+          className={`p-4 rounded-xl ${isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"}`}
+        >
+          <h3 className={`font-semibold mb-3 flex items-center ${isLightMode ? "text-gray-900" : ""}`}>
             <svg
               className="w-5 h-5 text-green-500 mr-2"
               fill="none"
@@ -181,7 +258,7 @@ export default function GuidePage() {
           <div className="aspect-square bg-gray-700 rounded-lg overflow-hidden mb-3 flex items-center justify-center">
             <img src="/neutral-portrait.png" alt="Good photo example" className="w-full h-full object-cover" />
           </div>
-          <ul className="text-sm text-gray-300 space-y-1">
+          <ul className={`text-sm space-y-1 ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
             <li className="flex items-center">
               <svg
                 className="w-4 h-4 text-green-500 mr-2 flex-shrink-0"
@@ -221,8 +298,10 @@ export default function GuidePage() {
           </ul>
         </div>
 
-        <div className="bg-gray-800/80 p-4 rounded-xl border border-gray-700">
-          <h3 className="font-semibold mb-3 flex items-center">
+        <div
+          className={`p-4 rounded-xl ${isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"}`}
+        >
+          <h3 className={`font-semibold mb-3 flex items-center ${isLightMode ? "text-gray-900" : ""}`}>
             <svg
               className="w-5 h-5 text-red-500 mr-2"
               fill="none"
@@ -237,7 +316,7 @@ export default function GuidePage() {
           <div className="aspect-square bg-gray-700 rounded-lg overflow-hidden mb-3 flex items-center justify-center">
             <img src="/dimly-lit-person.png" alt="Bad photo example" className="w-full h-full object-cover" />
           </div>
-          <ul className="text-sm text-gray-300 space-y-1">
+          <ul className={`text-sm space-y-1 ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
             <li className="flex items-center">
               <svg
                 className="w-4 h-4 text-red-500 mr-2 flex-shrink-0"
@@ -279,10 +358,14 @@ export default function GuidePage() {
       </div>
 
       {/* Video Tutorial */}
-      <div className="w-full bg-gray-800/80 p-4 sm:p-6 rounded-xl border border-gray-700 shadow-lg mb-8">
-        <h2 className="text-xl sm:text-2xl font-bold mb-3 flex items-center">
+      <div
+        className={`w-full p-4 sm:p-6 rounded-xl shadow-lg mb-8 ${
+          isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"
+        }`}
+      >
+        <h2 className={`text-xl sm:text-2xl font-bold mb-3 flex items-center ${isLightMode ? "text-gray-900" : ""}`}>
           <svg
-            className="w-6 h-6 text-blue-400 mr-2"
+            className={`w-6 h-6 mr-2 ${isLightMode ? "text-blue-600" : "text-blue-400"}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -297,20 +380,26 @@ export default function GuidePage() {
           </svg>
           Video Walkthrough
         </h2>
-        <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden mb-4 flex items-center justify-center">
+        <div
+          className={`aspect-video rounded-lg overflow-hidden mb-4 flex items-center justify-center ${
+            isLightMode ? "bg-gray-100" : "bg-gray-900"
+          }`}
+        >
           <div className="text-center p-6">
             <svg
-              className="w-16 h-16 text-blue-500 mx-auto mb-4 opacity-70"
+              className={`w-16 h-16 mx-auto mb-4 opacity-70 ${isLightMode ? "text-blue-600" : "text-blue-500"}`}
               fill="currentColor"
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
               <path d="M8 5v14l11-7z" />
             </svg>
-            <p className="text-gray-400">Tutorial video showing how to use the face analyzer</p>
+            <p className={`${isLightMode ? "text-gray-600" : "text-gray-400"}`}>
+              Tutorial video showing how to use the face analyzer
+            </p>
           </div>
         </div>
-        <p className="text-sm text-gray-300">
+        <p className={`text-sm ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
           This video demonstrates how to take the perfect photo for analysis, navigate the app, and understand your
           results.
         </p>
@@ -320,7 +409,11 @@ export default function GuidePage() {
       <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
         <a
           href="/analyzer"
-          className="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center"
+          className={`w-full sm:w-auto font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center ${
+            isLightMode
+              ? "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white"
+              : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white"
+          }`}
         >
           <svg
             className="w-5 h-5 mr-2"
@@ -341,7 +434,11 @@ export default function GuidePage() {
         </a>
         <a
           href="#"
-          className="w-full sm:w-auto bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-500/10 font-bold py-3 px-8 rounded-lg transition-all duration-300 flex items-center justify-center"
+          className={`w-full sm:w-auto font-bold py-3 px-8 rounded-lg transition-all duration-300 flex items-center justify-center ${
+            isLightMode
+              ? "bg-transparent border border-blue-500 text-blue-600 hover:bg-blue-50"
+              : "bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-500/10"
+          }`}
         >
           <svg
             className="w-5 h-5 mr-2"

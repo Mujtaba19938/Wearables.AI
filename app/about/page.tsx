@@ -5,6 +5,7 @@ import type React from "react"
 import { useState } from "react"
 import { ChevronDown, ChevronUp, Mail, Send, Twitter, Facebook, Instagram, Linkedin, Github } from "lucide-react"
 import Link from "next/link"
+import { useTheme } from "next-themes"
 
 export default function AboutPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -15,6 +16,8 @@ export default function AboutPage() {
     message: "",
   })
   const [formStatus, setFormStatus] = useState<"idle" | "submitting" | "success" | "error">("idle")
+  const { theme } = useTheme()
+  const isLightMode = theme === "light"
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index)
@@ -157,48 +160,52 @@ export default function AboutPage() {
       name: "Twitter",
       icon: <Twitter className="h-5 w-5" />,
       url: "https://twitter.com/wearablesai",
-      color: "hover:text-[#1DA1F2]",
+      color: "social-icon-twitter",
     },
     {
       name: "Facebook",
       icon: <Facebook className="h-5 w-5" />,
       url: "https://facebook.com/wearablesai",
-      color: "hover:text-[#4267B2]",
+      color: "social-icon-facebook",
     },
     {
       name: "Instagram",
       icon: <Instagram className="h-5 w-5" />,
       url: "https://instagram.com/wearablesai",
-      color: "hover:text-[#E1306C]",
+      color: "social-icon-instagram",
     },
     {
       name: "LinkedIn",
       icon: <Linkedin className="h-5 w-5" />,
       url: "https://linkedin.com/company/wearablesai",
-      color: "hover:text-[#0077B5]",
+      color: "social-icon-linkedin",
     },
     {
       name: "GitHub",
       icon: <Github className="h-5 w-5" />,
       url: "https://github.com/wearablesai",
-      color: "hover:text-[#6e5494]",
+      color: "social-icon-github",
     },
   ]
 
   return (
-    <main className="flex min-h-screen flex-col items-start p-4 sm:p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-8 sm:mb-12 text-white">About wearables.ai</h1>
+    <main
+      className={`flex min-h-screen flex-col items-start p-4 sm:p-6 max-w-4xl mx-auto ${isLightMode ? "text-gray-900" : "text-white"}`}
+    >
+      <h1 className="text-3xl sm:text-4xl font-bold mb-8 sm:mb-12">About wearables.ai</h1>
 
       {/* Our Mission Section - Collapsible on mobile */}
-      <div className="bg-card p-5 sm:p-7 rounded-xl border border-border w-full mb-8 sm:mb-10">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-white">Our Mission</h2>
+      <div
+        className={`p-5 sm:p-7 rounded-xl w-full mb-8 sm:mb-10 ${isLightMode ? "bg-white border border-gray-200 shadow-sm" : "bg-card border border-border"}`}
+      >
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5">Our Mission</h2>
 
-        <p className="text-sm sm:text-base text-white mb-4 sm:mb-5">
+        <p className="text-sm sm:text-base mb-4 sm:mb-5">
           wearables.ai was created to help people find eyeglasses that perfectly complement their unique facial
           features. We believe that the right pair of glasses can enhance your appearance and boost your confidence.
         </p>
 
-        <p className="text-sm sm:text-base text-white">
+        <p className="text-sm sm:text-base">
           Our AI-powered technology analyzes your face shape and provides personalized recommendations based on optical
           styling principles that have been refined over decades in the eyewear industry on optical styling principles
           that have been refined over decades in the eyewear industry.
@@ -206,24 +213,28 @@ export default function AboutPage() {
       </div>
 
       {/* How It Works Section - Collapsible on mobile */}
-      <div className="bg-card p-5 sm:p-7 rounded-xl border border-border w-full mb-8 sm:mb-10">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-white">How It Works</h2>
+      <div
+        className={`p-5 sm:p-7 rounded-xl w-full mb-8 sm:mb-10 ${isLightMode ? "bg-white border border-gray-200 shadow-sm" : "bg-card border border-border"}`}
+      >
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5">How It Works</h2>
 
-        <p className="text-sm sm:text-base text-white mb-4 sm:mb-5">
+        <p className="text-sm sm:text-base mb-4 sm:mb-5">
           Our application uses advanced facial recognition technology to analyze your face's proportions and determine
           your face shape. The AI identifies key facial landmarks and calculates ratios between different features to
           classify your face as oval, round, square, heart, or diamond-shaped.
         </p>
 
-        <p className="text-sm sm:text-base text-white">
+        <p className="text-sm sm:text-base">
           Based on this analysis, we recommend eyeglass styles that are known to complement your specific face shape,
           following established principles of balance and proportion in eyewear selection.
         </p>
       </div>
 
       {/* FAQ Section */}
-      <div className="bg-card p-5 sm:p-7 rounded-xl border border-border w-full mb-8 sm:mb-10">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-white">Frequently Asked Questions</h2>
+      <div
+        className={`p-5 sm:p-7 rounded-xl w-full mb-8 sm:mb-10 ${isLightMode ? "bg-white border border-gray-200 shadow-sm" : "bg-card border border-border"}`}
+      >
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5">Frequently Asked Questions</h2>
 
         {/* Category Tabs */}
         <div className="mb-6 overflow-x-auto">
@@ -236,7 +247,13 @@ export default function AboutPage() {
                   setOpenFaq(null) // Close any open FAQ when switching categories
                 }}
                 className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
-                  activeCategory === category.id ? "bg-blue-600 text-white" : "bg-gray-800 hover:bg-gray-700 text-white"
+                  activeCategory === category.id
+                    ? isLightMode
+                      ? "bg-blue-600 text-white"
+                      : "bg-blue-600 text-white"
+                    : isLightMode
+                      ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                      : "bg-gray-800 hover:bg-gray-700 text-white"
                 }`}
                 aria-selected={activeCategory === category.id}
               >
@@ -254,22 +271,31 @@ export default function AboutPage() {
           {faqCategories
             .find((category) => category.id === activeCategory)
             ?.questions.map((faq, index) => (
-              <div key={index} className="border border-border rounded-lg overflow-hidden">
+              <div
+                key={index}
+                className={`rounded-lg overflow-hidden ${isLightMode ? "border border-gray-200" : "border border-border"}`}
+              >
                 <button
-                  className="w-full flex justify-between items-center p-4 sm:p-5 text-left hover:bg-opacity-50 hover:bg-gray-700 transition-colors"
+                  className={`w-full flex justify-between items-center p-4 sm:p-5 text-left transition-colors ${
+                    isLightMode ? "hover:bg-gray-50" : "hover:bg-opacity-50 hover:bg-gray-700"
+                  }`}
                   onClick={() => toggleFaq(index)}
                   aria-expanded={openFaq === index}
                 >
-                  <span className="font-medium text-sm sm:text-base text-white pr-8">{faq.question}</span>
+                  <span className="font-medium text-sm sm:text-base pr-8">{faq.question}</span>
                   {openFaq === index ? (
-                    <ChevronUp className="h-5 w-5 flex-shrink-0 text-white transition-transform duration-200" />
+                    <ChevronUp className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                   ) : (
-                    <ChevronDown className="h-5 w-5 flex-shrink-0 text-white transition-transform duration-200" />
+                    <ChevronDown className="h-5 w-5 flex-shrink-0 transition-transform duration-200" />
                   )}
                 </button>
 
                 {openFaq === index && (
-                  <div className="p-4 sm:p-5 border-t border-border bg-gray-800 bg-opacity-30 text-sm sm:text-base text-white">
+                  <div
+                    className={`p-4 sm:p-5 border-t text-sm sm:text-base ${
+                      isLightMode ? "border-gray-200 bg-gray-50" : "border-border bg-gray-800 bg-opacity-30"
+                    }`}
+                  >
                     {faq.answer}
                   </div>
                 )}
@@ -279,16 +305,18 @@ export default function AboutPage() {
       </div>
 
       {/* Contact Us Section */}
-      <div className="bg-card p-5 sm:p-7 rounded-xl border border-border w-full mb-8 sm:mb-10">
-        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-white">Contact Us</h2>
+      <div
+        className={`p-5 sm:p-7 rounded-xl w-full mb-8 sm:mb-10 ${isLightMode ? "bg-white border border-gray-200 shadow-sm" : "bg-card border border-border"}`}
+      >
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5">Contact Us</h2>
 
-        <p className="text-sm sm:text-base text-white mb-5">
+        <p className="text-sm sm:text-base mb-5">
           Have questions or feedback? We'd love to hear from you! Fill out the form below or reach out through our
           social media channels.
         </p>
 
         {/* Email Contact */}
-        <div className="flex items-center gap-2 mb-5 text-blue-400">
+        <div className="flex items-center gap-2 mb-5 text-blue-600 dark:text-blue-400">
           <Mail className="h-5 w-5" />
           <a href="mailto:support@wearables.ai" className="text-sm sm:text-base hover:underline">
             support@wearables.ai
@@ -297,7 +325,7 @@ export default function AboutPage() {
 
         {/* Social Media Section */}
         <div className="mb-6">
-          <h3 className="text-sm font-medium mb-4 text-white">Connect with us:</h3>
+          <h3 className="text-sm font-medium mb-4">Connect with us:</h3>
           <div className="flex flex-wrap gap-5">
             {socialMedia.map((platform) => (
               <a
@@ -305,11 +333,13 @@ export default function AboutPage() {
                 href={platform.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-gray-800 transition-all ${platform.color} group`}
+                className={`flex items-center gap-3 p-3 rounded-lg group social-icon ${platform.color} ${
+                  isLightMode ? "border border-gray-200 hover:bg-gray-50" : "border border-border hover:bg-gray-800"
+                }`}
                 aria-label={`Follow us on ${platform.name}`}
               >
                 <span className="transition-transform group-hover:scale-125 duration-200">{platform.icon}</span>
-                <span className="text-sm text-white">{platform.name}</span>
+                <span className="text-sm">{platform.name}</span>
               </a>
             ))}
           </div>
@@ -318,7 +348,7 @@ export default function AboutPage() {
         {/* Contact Form */}
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-2 text-white">
+            <label htmlFor="name" className="block text-sm font-medium mb-2">
               Name
             </label>
             <input
@@ -329,12 +359,16 @@ export default function AboutPage() {
               onChange={handleInputChange}
               placeholder="Your name"
               required
-              className="w-full p-3 sm:p-4 bg-gray-800 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+              className={`w-full p-3 sm:p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isLightMode
+                  ? "bg-gray-50 border border-gray-300 text-gray-900"
+                  : "bg-gray-800 border border-border text-white"
+              }`}
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-2 text-white">
+            <label htmlFor="email" className="block text-sm font-medium mb-2">
               Email
             </label>
             <input
@@ -345,12 +379,16 @@ export default function AboutPage() {
               onChange={handleInputChange}
               placeholder="your.email@example.com"
               required
-              className="w-full p-3 sm:p-4 bg-gray-800 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+              className={`w-full p-3 sm:p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isLightMode
+                  ? "bg-gray-50 border border-gray-300 text-gray-900"
+                  : "bg-gray-800 border border-border text-white"
+              }`}
             />
           </div>
 
           <div>
-            <label htmlFor="message" className="block text-sm font-medium mb-2 text-white">
+            <label htmlFor="message" className="block text-sm font-medium mb-2">
               Message
             </label>
             <textarea
@@ -361,7 +399,11 @@ export default function AboutPage() {
               placeholder="Your message here..."
               required
               rows={4}
-              className="w-full p-3 sm:p-4 bg-gray-800 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
+              className={`w-full p-3 sm:p-4 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                isLightMode
+                  ? "bg-gray-50 border border-gray-300 text-gray-900"
+                  : "bg-gray-800 border border-border text-white"
+              }`}
             />
           </div>
 
@@ -369,7 +411,9 @@ export default function AboutPage() {
             <button
               type="submit"
               disabled={formStatus === "submitting"}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+              className={`px-6 py-3 rounded-lg flex items-center gap-2 transition-all duration-200 disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
+                isLightMode ? "bg-blue-600 text-white hover:bg-blue-700" : "bg-blue-600 text-white hover:bg-blue-700"
+              }`}
             >
               {formStatus === "submitting" ? (
                 <>Sending...</>
@@ -383,13 +427,25 @@ export default function AboutPage() {
           </div>
 
           {formStatus === "success" && (
-            <div className="p-4 bg-green-900 bg-opacity-30 border border-green-700 rounded-lg text-green-400 text-sm text-center">
+            <div
+              className={`p-4 text-sm text-center rounded-lg ${
+                isLightMode
+                  ? "bg-green-100 border border-green-200 text-green-800"
+                  : "bg-green-900 bg-opacity-30 border border-green-700 text-green-400"
+              }`}
+            >
               Thank you! Your message has been sent successfully.
             </div>
           )}
 
           {formStatus === "error" && (
-            <div className="p-4 bg-red-900 bg-opacity-30 border border-red-700 rounded-lg text-red-400 text-sm text-center">
+            <div
+              className={`p-4 text-sm text-center rounded-lg ${
+                isLightMode
+                  ? "bg-red-100 border border-red-200 text-red-800"
+                  : "bg-red-900 bg-opacity-30 border border-red-700 text-red-400"
+              }`}
+            >
               There was an error sending your message. Please try again.
             </div>
           )}
@@ -398,12 +454,14 @@ export default function AboutPage() {
 
       {/* Footer with Privacy Policy */}
       <footer className="w-full mt-auto pt-8 pb-4">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-white">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-sm">
           <p>© {new Date().getFullYear()} wearables.ai. All rights reserved.</p>
           <div className="flex items-center">
             <Link
               href="/privacy-policy"
-              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-white"
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                isLightMode ? "bg-gray-100 hover:bg-gray-200 text-gray-800" : "bg-gray-800 hover:bg-gray-700 text-white"
+              }`}
             >
               Privacy Policy
             </Link>

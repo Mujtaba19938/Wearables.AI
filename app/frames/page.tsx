@@ -5,6 +5,7 @@ import { FrameCard } from "@/components/frame-card"
 import { FrameFilterModal, type FilterState } from "@/components/frame-filter-modal"
 import { Filter, SlidersHorizontal, Grid, List, ArrowUpDown, Search } from "lucide-react"
 import { useSearchParams } from "next/navigation"
+import { useTheme } from "next-themes"
 
 type SortOption = "featured" | "price-low" | "price-high" | "newest"
 type ViewMode = "grid" | "list"
@@ -26,6 +27,8 @@ export default function FramesPage() {
   const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false)
 
   const searchParams = useSearchParams()
+  const { theme } = useTheme()
+  const isLightMode = theme === "light"
 
   // Get face shape from URL if available
   const faceShape = searchParams.get("faceShape") || ""
@@ -108,7 +111,7 @@ export default function FramesPage() {
       id: "6",
       name: "Clubmaster",
       price: 159,
-      image: "/placeholder.svg?height=300&width=300&query=clubmaster+glasses",
+      image: "/clubmaster-glasses.png",
       colors: ["#000000", "#8B4513", "#C0C0C0"],
       material: "Mixed",
       frameShape: "Browline",
@@ -181,7 +184,7 @@ export default function FramesPage() {
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Eyeglass Frames</h1>
+        <h1 className={`text-2xl font-bold ${isLightMode ? "text-gray-900" : ""}`}>Eyeglass Frames</h1>
 
         {/* Search bar */}
         <div className="relative w-full max-w-xs mx-4">
@@ -190,16 +193,24 @@ export default function FramesPage() {
             placeholder="Search frames..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background"
+            className={`w-full pl-10 pr-4 py-2 rounded-lg ${
+              isLightMode ? "bg-white border border-gray-300 text-gray-900" : "bg-background border border-border"
+            }`}
           />
-          <Search className="absolute left-3 top-2.5 w-5 h-5 text-muted-foreground" />
+          <Search
+            className={`absolute left-3 top-2.5 w-5 h-5 ${isLightMode ? "text-gray-500" : "text-muted-foreground"}`}
+          />
         </div>
 
         <div className="flex items-center gap-2">
           {/* Sort dropdown */}
           <div className="relative">
             <button
-              className="flex items-center gap-1 px-3 py-2 border border-border rounded-lg bg-card hover:bg-muted transition-colors"
+              className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
+                isLightMode
+                  ? "bg-white border border-gray-300 hover:bg-gray-50 text-gray-800"
+                  : "border border-border bg-card hover:bg-muted"
+              }`}
               onClick={() => setIsSortDropdownOpen(!isSortDropdownOpen)}
             >
               <ArrowUpDown className="w-4 h-4" />
@@ -207,9 +218,21 @@ export default function FramesPage() {
             </button>
 
             {isSortDropdownOpen && (
-              <div className="absolute right-0 mt-1 w-48 bg-card border border-border rounded-lg shadow-lg z-10">
+              <div
+                className={`absolute right-0 mt-1 w-48 rounded-lg shadow-lg z-10 ${
+                  isLightMode ? "bg-white border border-gray-200" : "bg-card border border-border"
+                }`}
+              >
                 <button
-                  className={`w-full text-left px-4 py-2 hover:bg-muted transition-colors ${sortBy === "featured" ? "bg-muted" : ""}`}
+                  className={`w-full text-left px-4 py-2 transition-colors ${
+                    sortBy === "featured"
+                      ? isLightMode
+                        ? "bg-gray-100"
+                        : "bg-muted"
+                      : isLightMode
+                        ? "hover:bg-gray-50"
+                        : "hover:bg-muted"
+                  }`}
                   onClick={() => {
                     setSortBy("featured")
                     setIsSortDropdownOpen(false)
@@ -218,7 +241,15 @@ export default function FramesPage() {
                   Featured
                 </button>
                 <button
-                  className={`w-full text-left px-4 py-2 hover:bg-muted transition-colors ${sortBy === "price-low" ? "bg-muted" : ""}`}
+                  className={`w-full text-left px-4 py-2 transition-colors ${
+                    sortBy === "price-low"
+                      ? isLightMode
+                        ? "bg-gray-100"
+                        : "bg-muted"
+                      : isLightMode
+                        ? "hover:bg-gray-50"
+                        : "hover:bg-muted"
+                  }`}
                   onClick={() => {
                     setSortBy("price-low")
                     setIsSortDropdownOpen(false)
@@ -227,7 +258,15 @@ export default function FramesPage() {
                   Price: Low to High
                 </button>
                 <button
-                  className={`w-full text-left px-4 py-2 hover:bg-muted transition-colors ${sortBy === "price-high" ? "bg-muted" : ""}`}
+                  className={`w-full text-left px-4 py-2 transition-colors ${
+                    sortBy === "price-high"
+                      ? isLightMode
+                        ? "bg-gray-100"
+                        : "bg-muted"
+                      : isLightMode
+                        ? "hover:bg-gray-50"
+                        : "hover:bg-muted"
+                  }`}
                   onClick={() => {
                     setSortBy("price-high")
                     setIsSortDropdownOpen(false)
@@ -236,7 +275,15 @@ export default function FramesPage() {
                   Price: High to Low
                 </button>
                 <button
-                  className={`w-full text-left px-4 py-2 hover:bg-muted transition-colors ${sortBy === "newest" ? "bg-muted" : ""}`}
+                  className={`w-full text-left px-4 py-2 transition-colors ${
+                    sortBy === "newest"
+                      ? isLightMode
+                        ? "bg-gray-100"
+                        : "bg-muted"
+                      : isLightMode
+                        ? "hover:bg-gray-50"
+                        : "hover:bg-muted"
+                  }`}
                   onClick={() => {
                     setSortBy("newest")
                     setIsSortDropdownOpen(false)
@@ -249,16 +296,34 @@ export default function FramesPage() {
           </div>
 
           {/* View toggle */}
-          <div className="flex border border-border rounded-lg overflow-hidden">
+          <div
+            className={`flex rounded-lg overflow-hidden ${isLightMode ? "border border-gray-300" : "border border-border"}`}
+          >
             <button
-              className={`p-2 ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted"}`}
+              className={`p-2 ${
+                viewMode === "grid"
+                  ? isLightMode
+                    ? "bg-blue-600 text-white"
+                    : "bg-primary text-primary-foreground"
+                  : isLightMode
+                    ? "bg-white hover:bg-gray-50 text-gray-800"
+                    : "bg-card hover:bg-muted"
+              }`}
               onClick={() => setViewMode("grid")}
               aria-label="Grid view"
             >
               <Grid className="w-4 h-4" />
             </button>
             <button
-              className={`p-2 ${viewMode === "list" ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted"}`}
+              className={`p-2 ${
+                viewMode === "list"
+                  ? isLightMode
+                    ? "bg-blue-600 text-white"
+                    : "bg-primary text-primary-foreground"
+                  : isLightMode
+                    ? "bg-white hover:bg-gray-50 text-gray-800"
+                    : "bg-card hover:bg-muted"
+              }`}
               onClick={() => setViewMode("list")}
               aria-label="List view"
             >
@@ -270,13 +335,23 @@ export default function FramesPage() {
           <button
             onClick={() => setIsFilterModalOpen(true)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg shadow-md transition-colors ${
-              filtersApplied ? "bg-primary text-primary-foreground" : "bg-card border border-border hover:bg-muted"
+              filtersApplied
+                ? isLightMode
+                  ? "bg-blue-600 text-white"
+                  : "bg-primary text-primary-foreground"
+                : isLightMode
+                  ? "bg-white border border-gray-300 hover:bg-gray-50 text-gray-800"
+                  : "bg-card border border-border hover:bg-muted"
             }`}
           >
             <Filter className="w-5 h-5" />
             <span className="hidden sm:inline">Filter Options</span>
             {filtersApplied && (
-              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold bg-white text-primary rounded-full">
+              <span
+                className={`inline-flex items-center justify-center w-5 h-5 text-xs font-bold rounded-full ${
+                  isLightMode ? "bg-white text-blue-600" : "bg-white text-primary"
+                }`}
+              >
                 {getActiveFilterCount()}
               </span>
             )}
@@ -285,13 +360,13 @@ export default function FramesPage() {
       </div>
 
       {faceShape && (
-        <div className="mb-6 p-4 bg-primary/10 rounded-lg">
+        <div className={`mb-6 p-4 rounded-lg ${isLightMode ? "bg-blue-50 border border-blue-100" : "bg-primary/10"}`}>
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-5 h-5 text-primary" />
+            <SlidersHorizontal className={`w-5 h-5 ${isLightMode ? "text-blue-600" : "text-primary"}`} />
             <h2 className="font-medium">Showing frames recommended for {faceShape} face shape</h2>
           </div>
           {faceAnalysisResults && (
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className={`text-sm mt-1 ${isLightMode ? "text-gray-600" : "text-muted-foreground"}`}>
               Based on your face analysis, these frames should complement your features.
             </p>
           )}
@@ -300,7 +375,9 @@ export default function FramesPage() {
 
       {filteredFrames.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <p className="text-xl font-medium mb-4">No frames match your criteria</p>
+          <p className={`text-xl font-medium mb-4 ${isLightMode ? "text-gray-900" : ""}`}>
+            No frames match your criteria
+          </p>
           <button
             onClick={() => {
               setSearchQuery("")
@@ -312,7 +389,7 @@ export default function FramesPage() {
               })
               setFiltersApplied(false)
             }}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+            className={`px-4 py-2 rounded-md ${isLightMode ? "bg-blue-600 text-white" : "bg-primary text-primary-foreground"}`}
           >
             Clear All Filters
           </button>
@@ -339,7 +416,9 @@ export default function FramesPage() {
           {filteredFrames.map((frame) => (
             <div
               key={frame.id}
-              className="flex flex-col sm:flex-row bg-card rounded-lg border border-border overflow-hidden hover:shadow-lg transition-all duration-300"
+              className={`flex flex-col sm:flex-row rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 ${
+                isLightMode ? "bg-white border border-gray-200" : "bg-card border border-border"
+              }`}
             >
               <div className="sm:w-1/3 aspect-square">
                 <img src={frame.image || "/placeholder.svg"} alt={frame.name} className="w-full h-full object-cover" />
@@ -347,27 +426,27 @@ export default function FramesPage() {
               <div className="p-4 sm:w-2/3 flex flex-col justify-between">
                 <div>
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-medium text-lg">{frame.name}</h3>
+                    <h3 className={`font-medium text-lg ${isLightMode ? "text-gray-900" : ""}`}>{frame.name}</h3>
                     <div className="flex gap-1">
-                      {frame.isNew && (
-                        <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-medium rounded-full shadow-md">
-                          New
-                        </span>
-                      )}
-                      {frame.isBestseller && (
-                        <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-medium rounded-full shadow-md">
-                          Bestseller
-                        </span>
-                      )}
+                      {frame.isNew && <span className="badge-new">New</span>}
+                      {frame.isBestseller && <span className="badge-bestseller">Bestseller</span>}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="font-bold text-xl text-primary">${frame.price}</span>
-                    <span className="text-xs px-3 py-1 bg-secondary text-secondary-foreground rounded-full">
+                    <span className={`font-bold text-xl ${isLightMode ? "text-blue-600" : "text-primary"}`}>
+                      ${frame.price}
+                    </span>
+                    <span
+                      className={`text-xs px-3 py-1 rounded-full ${
+                        isLightMode ? "bg-gray-100 text-gray-800" : "bg-secondary text-secondary-foreground"
+                      }`}
+                    >
                       {frame.material}
                     </span>
                   </div>
-                  <p className="text-muted-foreground mb-4">Perfect for {frame.faceShapes.join(", ")} face shapes</p>
+                  <p className={`mb-4 ${isLightMode ? "text-gray-600" : "text-muted-foreground"}`}>
+                    Perfect for {frame.faceShapes.join(", ")} face shapes
+                  </p>
                 </div>
                 <div className="flex justify-between items-center">
                   <div className="flex gap-2">
@@ -384,11 +463,21 @@ export default function FramesPage() {
                   <div className="flex gap-2">
                     <button
                       onClick={() => setIsTryOnModalOpen(true)}
-                      className="px-3 py-1.5 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors text-sm"
+                      className={`px-3 py-1.5 rounded-md text-sm ${
+                        isLightMode
+                          ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                          : "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                      }`}
                     >
                       Try On
                     </button>
-                    <button className="px-3 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm">
+                    <button
+                      className={`px-3 py-1.5 rounded-md text-sm ${
+                        isLightMode
+                          ? "bg-blue-600 text-white hover:bg-blue-700"
+                          : "bg-primary text-primary-foreground hover:bg-primary/90"
+                      }`}
+                    >
                       Add to Cart
                     </button>
                   </div>

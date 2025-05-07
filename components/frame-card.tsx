@@ -5,6 +5,7 @@ import { Heart, ShoppingCart, Maximize2, CuboidIcon as CubeIcon } from "lucide-r
 import { TryOnModal } from "./try-on-modal"
 import { Frame3DCaptureModal } from "./frame-3d-capture-modal"
 import type { FrameMeasurements } from "./frame-measurements-display"
+import { useTheme } from "next-themes"
 
 interface FrameCardProps {
   name: string
@@ -54,6 +55,8 @@ export function FrameCard({
   const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false)
   const [is3DCaptureModalOpen, setIs3DCaptureModalOpen] = useState(false)
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
+  const { theme } = useTheme()
+  const isLightMode = theme === "light"
 
   // Sample frame measurements - in a real app, this would come from your database
   const frameMeasurements: FrameMeasurements = {
@@ -70,7 +73,9 @@ export function FrameCard({
   return (
     <>
       <div
-        className="group relative bg-card rounded-lg overflow-hidden border border-border transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px]"
+        className={`group relative rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px] ${
+          isLightMode ? "bg-white border border-gray-200 shadow-sm" : "bg-card border border-border"
+        }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -87,7 +92,11 @@ export function FrameCard({
           >
             <button
               onClick={() => setIsTryOnModalOpen(true)}
-              className="w-9 h-9 rounded-full bg-white/90 dark:bg-gray-800/90 flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                isLightMode
+                  ? "bg-white/90 text-gray-700 hover:bg-white"
+                  : "bg-gray-800/90 text-gray-200 hover:bg-gray-800"
+              }`}
               aria-label="Try on"
             >
               <Maximize2 className="w-5 h-5" />
@@ -95,7 +104,11 @@ export function FrameCard({
 
             <button
               onClick={onAddToWishlist}
-              className="w-9 h-9 rounded-full bg-white/90 dark:bg-gray-800/90 flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                isLightMode
+                  ? "bg-white/90 text-gray-700 hover:bg-white"
+                  : "bg-gray-800/90 text-gray-200 hover:bg-gray-800"
+              }`}
               aria-label="Add to wishlist"
             >
               <Heart className="w-5 h-5" />
@@ -104,16 +117,8 @@ export function FrameCard({
 
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {isNew && (
-              <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-medium rounded-full shadow-md">
-                New
-              </span>
-            )}
-            {isBestseller && (
-              <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-medium rounded-full shadow-md">
-                Bestseller
-              </span>
-            )}
+            {isNew && <span className="badge-new">New</span>}
+            {isBestseller && <span className="badge-bestseller">Bestseller</span>}
           </div>
 
           {/* 3D model badge */}
@@ -128,11 +133,17 @@ export function FrameCard({
         </div>
 
         <div className="p-4">
-          <h3 className="font-medium text-lg mb-1">{name}</h3>
+          <h3 className={`font-medium text-lg mb-1 ${isLightMode ? "text-gray-900" : ""}`}>{name}</h3>
 
           <div className="flex justify-between items-center mb-3">
-            <span className="font-bold text-xl text-primary">${price}</span>
-            <span className="text-xs px-3 py-1 bg-secondary text-secondary-foreground rounded-full">{material}</span>
+            <span className={`font-bold text-xl ${isLightMode ? "text-blue-600" : "text-primary"}`}>${price}</span>
+            <span
+              className={`text-xs px-3 py-1 rounded-full ${
+                isLightMode ? "bg-gray-100 text-gray-800" : "bg-secondary text-secondary-foreground"
+              }`}
+            >
+              {material}
+            </span>
           </div>
 
           <div className="flex justify-between items-center">
@@ -141,7 +152,9 @@ export function FrameCard({
                 <div key={color} className="relative">
                   <button
                     className={`w-7 h-7 rounded-full ${
-                      selectedColor === color ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
+                      selectedColor === color
+                        ? `ring-2 ${isLightMode ? "ring-blue-600" : "ring-primary"} ring-offset-2 ring-offset-background`
+                        : ""
                     }`}
                     style={{ backgroundColor: color }}
                     onClick={() => setSelectedColor(color)}
@@ -150,7 +163,11 @@ export function FrameCard({
                     aria-label={`Select ${getColorName(color)} color`}
                   />
                   {showTooltip === color && (
-                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 text-white text-xs rounded whitespace-nowrap">
+                    <div
+                      className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 text-xs rounded whitespace-nowrap z-10 ${
+                        isLightMode ? "bg-gray-800 text-white" : "bg-black/80 text-white"
+                      }`}
+                    >
                       {getColorName(color)}
                     </div>
                   )}
@@ -160,7 +177,11 @@ export function FrameCard({
 
             <button
               onClick={onAddToCart}
-              className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium shadow-sm"
+              className={`flex items-center gap-1 px-4 py-2 rounded-md text-sm font-medium shadow-sm ${
+                isLightMode
+                  ? "bg-blue-600 text-white hover:bg-blue-700"
+                  : "bg-primary text-primary-foreground hover:bg-primary/90"
+              }`}
             >
               <ShoppingCart className="w-4 h-4" />
               Add to Cart
@@ -171,7 +192,11 @@ export function FrameCard({
           {!modelUrl && (
             <button
               onClick={() => setIs3DCaptureModalOpen(true)}
-              className="w-full mt-3 flex items-center justify-center gap-1 px-3 py-2 bg-secondary/70 text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors text-sm"
+              className={`w-full mt-3 flex items-center justify-center gap-1 px-3 py-2 rounded-md text-sm ${
+                isLightMode
+                  ? "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                  : "bg-secondary/70 text-secondary-foreground hover:bg-secondary/90"
+              }`}
             >
               <CubeIcon className="w-4 h-4" />
               Add 3D Model

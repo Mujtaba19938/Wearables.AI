@@ -11,6 +11,30 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
 
   useEffect(() => {
     setMounted(true)
+
+    // Add transition class to body for smooth theme changes
+    document.body.classList.add("theme-transition")
+
+    // Apply appropriate theme class to body
+    const updateBodyClass = () => {
+      if (localStorage.getItem("theme") === "dark") {
+        document.documentElement.classList.add("dark")
+        document.documentElement.classList.remove("light")
+      } else {
+        document.documentElement.classList.add("light")
+        document.documentElement.classList.remove("dark")
+      }
+    }
+
+    // Initial setup
+    updateBodyClass()
+
+    // Listen for theme changes
+    window.addEventListener("storage", updateBodyClass)
+
+    return () => {
+      window.removeEventListener("storage", updateBodyClass)
+    }
   }, [])
 
   return (
