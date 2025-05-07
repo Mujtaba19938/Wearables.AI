@@ -21,6 +21,19 @@ interface FrameCardProps {
   onAddToWishlist?: () => void
 }
 
+// Helper function to get color names
+const getColorName = (colorCode: string): string => {
+  const colorMap: Record<string, string> = {
+    "#000000": "Matte Black",
+    "#8B4513": "Tortoise Shell",
+    "#3B82F6": "Ocean Blue",
+    "#C0C0C0": "Silver",
+    "#FFD700": "Gold",
+    "#FF0000": "Ruby Red",
+  }
+  return colorMap[colorCode] || "Custom Color"
+}
+
 export function FrameCard({
   name,
   price,
@@ -40,6 +53,7 @@ export function FrameCard({
   const [isHovered, setIsHovered] = useState(false)
   const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false)
   const [is3DCaptureModalOpen, setIs3DCaptureModalOpen] = useState(false)
+  const [showTooltip, setShowTooltip] = useState<string | null>(null)
 
   // Sample frame measurements - in a real app, this would come from your database
   const frameMeasurements: FrameMeasurements = {
@@ -56,7 +70,7 @@ export function FrameCard({
   return (
     <>
       <div
-        className="group relative bg-card rounded-lg overflow-hidden border border-border transition-all duration-300 hover:shadow-lg"
+        className="group relative bg-card rounded-lg overflow-hidden border border-border transition-all duration-300 hover:shadow-xl hover:translate-y-[-4px]"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -90,16 +104,22 @@ export function FrameCard({
 
           {/* Badges */}
           <div className="absolute top-2 left-2 flex flex-col gap-1">
-            {isNew && <span className="px-2 py-1 bg-blue-500 text-white text-xs font-medium rounded">New</span>}
+            {isNew && (
+              <span className="px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-medium rounded-full shadow-md">
+                New
+              </span>
+            )}
             {isBestseller && (
-              <span className="px-2 py-1 bg-amber-500 text-white text-xs font-medium rounded">Bestseller</span>
+              <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-medium rounded-full shadow-md">
+                Bestseller
+              </span>
             )}
           </div>
 
           {/* 3D model badge */}
           {modelUrl && (
             <div className="absolute bottom-2 left-2">
-              <span className="px-2 py-1 bg-purple-500 text-white text-xs font-medium rounded flex items-center gap-1">
+              <span className="px-3 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs font-medium rounded-full shadow-md flex items-center gap-1">
                 <CubeIcon className="w-3 h-3" />
                 3D
               </span>
@@ -111,29 +131,39 @@ export function FrameCard({
           <h3 className="font-medium text-lg mb-1">{name}</h3>
 
           <div className="flex justify-between items-center mb-3">
-            <span className="font-bold text-lg">${price}</span>
-            <span className="text-sm text-muted-foreground">{material}</span>
+            <span className="font-bold text-xl text-primary">${price}</span>
+            <span className="text-xs px-3 py-1 bg-secondary text-secondary-foreground rounded-full">{material}</span>
           </div>
 
           <div className="flex justify-between items-center">
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               {colors.map((color) => (
-                <button
-                  key={color}
-                  className={`w-6 h-6 rounded-full ${selectedColor === color ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
-                  style={{ backgroundColor: color }}
-                  onClick={() => setSelectedColor(color)}
-                  aria-label={`Select ${color} color`}
-                />
+                <div key={color} className="relative">
+                  <button
+                    className={`w-7 h-7 rounded-full ${
+                      selectedColor === color ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
+                    }`}
+                    style={{ backgroundColor: color }}
+                    onClick={() => setSelectedColor(color)}
+                    onMouseEnter={() => setShowTooltip(color)}
+                    onMouseLeave={() => setShowTooltip(null)}
+                    aria-label={`Select ${getColorName(color)} color`}
+                  />
+                  {showTooltip === color && (
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black/80 text-white text-xs rounded whitespace-nowrap">
+                      {getColorName(color)}
+                    </div>
+                  )}
+                </div>
               ))}
             </div>
 
             <button
               onClick={onAddToCart}
-              className="flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm"
+              className="flex items-center gap-1 px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm font-medium shadow-sm"
             >
               <ShoppingCart className="w-4 h-4" />
-              Add
+              Add to Cart
             </button>
           </div>
 
@@ -141,7 +171,7 @@ export function FrameCard({
           {!modelUrl && (
             <button
               onClick={() => setIs3DCaptureModalOpen(true)}
-              className="w-full mt-3 flex items-center justify-center gap-1 px-3 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors text-sm"
+              className="w-full mt-3 flex items-center justify-center gap-1 px-3 py-2 bg-secondary/70 text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors text-sm"
             >
               <CubeIcon className="w-4 h-4" />
               Add 3D Model

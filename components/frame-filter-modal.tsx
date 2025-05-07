@@ -97,9 +97,31 @@ export function FrameFilterModal({ isOpen, onClose, onApplyFilters, initialFilte
     })
   }
 
+  // Helper function to get color hex values
+  function getColorHex(colorId: string): string {
+    switch (colorId.toLowerCase()) {
+      case "gold":
+      case "yellow":
+        return "#EAB308"
+      case "silver":
+      case "gray":
+        return "#CBD5E1"
+      case "black":
+        return "#000000"
+      case "tortoise":
+        return "#8B4513"
+      case "blue":
+        return "#3B82F6"
+      case "red":
+        return "#EF4444"
+      default:
+        return "#CBD5E1"
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div className="bg-card rounded-lg max-w-md w-full overflow-hidden border border-border">
+      <div className="bg-card rounded-lg max-w-md w-full overflow-hidden border border-border shadow-xl">
         <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-xl font-bold">Filter Frames</h2>
           <button onClick={onClose} className="p-1 rounded-full hover:bg-white/10" aria-label="Close">
@@ -117,7 +139,9 @@ export function FrameFilterModal({ isOpen, onClose, onApplyFilters, initialFilte
                   key={option.id}
                   onClick={() => toggleFaceShape(option.id)}
                   className={`flex items-center justify-between p-2 rounded-md border ${
-                    filters.faceShapes.includes(option.id) ? "bg-primary/20 border-primary" : "bg-muted border-border"
+                    filters.faceShapes.includes(option.id)
+                      ? "bg-primary/20 border-primary shadow-sm"
+                      : "bg-muted border-border"
                   }`}
                 >
                   <span>{option.label}</span>
@@ -136,7 +160,9 @@ export function FrameFilterModal({ isOpen, onClose, onApplyFilters, initialFilte
                   key={option.id}
                   onClick={() => toggleMaterial(option.id)}
                   className={`flex items-center justify-between p-2 rounded-md border ${
-                    filters.materials.includes(option.id) ? "bg-primary/20 border-primary" : "bg-muted border-border"
+                    filters.materials.includes(option.id)
+                      ? "bg-primary/20 border-primary shadow-sm"
+                      : "bg-muted border-border"
                   }`}
                 >
                   <span>{option.label}</span>
@@ -172,12 +198,29 @@ export function FrameFilterModal({ isOpen, onClose, onApplyFilters, initialFilte
                 />
               </div>
             </div>
+
+            {/* Price range slider visualization */}
+            <div className="mt-4 px-2">
+              <div className="h-2 bg-muted rounded-full relative">
+                <div
+                  className="absolute h-2 bg-primary rounded-full"
+                  style={{
+                    left: `${(filters.priceRange[0] / 500) * 100}%`,
+                    right: `${100 - (filters.priceRange[1] / 500) * 100}%`,
+                  }}
+                ></div>
+              </div>
+              <div className="flex justify-between mt-1 text-xs text-muted-foreground">
+                <span>$0</span>
+                <span>$500</span>
+              </div>
+            </div>
           </div>
 
           {/* Color Filter */}
           <div className="mb-6">
             <h3 className="text-lg font-medium mb-3">Color</h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {colorOptions.map((option) => {
                 const colorHex = getColorHex(option.id)
                 return (
@@ -185,7 +228,9 @@ export function FrameFilterModal({ isOpen, onClose, onApplyFilters, initialFilte
                     key={option.id}
                     onClick={() => toggleColor(option.id)}
                     className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      filters.colors.includes(option.id) ? "ring-2 ring-primary" : ""
+                      filters.colors.includes(option.id)
+                        ? "ring-2 ring-primary ring-offset-2 ring-offset-background"
+                        : ""
                     }`}
                     style={{ backgroundColor: colorHex }}
                     aria-label={`Filter by ${option.label}`}
@@ -206,7 +251,7 @@ export function FrameFilterModal({ isOpen, onClose, onApplyFilters, initialFilte
           </button>
           <button
             onClick={handleApply}
-            className="px-4 py-2 bg-primary text-white hover:bg-primary/90 rounded-md transition-colors"
+            className="px-4 py-2 bg-primary text-white hover:bg-primary/90 rounded-md transition-colors shadow-sm"
           >
             Apply Filters
           </button>
@@ -214,26 +259,4 @@ export function FrameFilterModal({ isOpen, onClose, onApplyFilters, initialFilte
       </div>
     </div>
   )
-}
-
-// Helper function to get color hex values
-function getColorHex(colorId: string): string {
-  switch (colorId.toLowerCase()) {
-    case "gold":
-    case "yellow":
-      return "#EAB308"
-    case "silver":
-    case "gray":
-      return "#CBD5E1"
-    case "black":
-      return "#000000"
-    case "tortoise":
-      return "#8B4513"
-    case "blue":
-      return "#3B82F6"
-    case "red":
-      return "#EF4444"
-    default:
-      return "#CBD5E1"
-  }
 }
