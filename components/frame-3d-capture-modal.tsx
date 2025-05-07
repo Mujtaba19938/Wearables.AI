@@ -25,7 +25,10 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
 
   const totalAngles = 4 // Number of angles to capture for 3D reconstruction
 
-  if (!isOpen) return null
+  // Early return moved inside the component body
+  if (!isOpen) {
+    return null
+  }
 
   const handleCapture = () => {
     if (!videoRef.current) return
@@ -162,32 +165,26 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
     }
   }
 
+  // Effect for handling camera initialization and cleanup
   useEffect(() => {
-    let isMounted = true // Add a flag to track component mount status
+    let isMounted = false
 
     if (isOpen) {
+      isMounted = true
       if (captureStage === "capture" && !isCameraInitialized) {
         initializeCamera()
       }
-    } else {
-      // Clean up camera stream when modal closes
-      if (cameraStream) {
+    }
+
+    // Clean up camera stream when modal closes or component unmounts
+    return () => {
+      if (isMounted && cameraStream) {
         cameraStream.getTracks().forEach((track) => track.stop())
         setCameraStream(null)
         setIsCameraInitialized(false)
       }
     }
-
-    // Clean up camera stream when component unmounts
-    return () => {
-      isMounted = false // Set the flag to false when component unmounts
-      if (cameraStream) {
-        cameraStream.getTracks().forEach((track) => track.stop())
-        setCameraStream(null)
-      }
-      setIsCameraInitialized(false)
-    }
-  }, [cameraStream, isOpen, captureStage, isCameraInitialized])
+  }, [isOpen, captureStage, isCameraInitialized, cameraStream])
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
@@ -209,9 +206,7 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
 
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => {
-                    setCaptureStage("capture")
-                  }}
+                  onClick={() => setCaptureStage("capture")}
                   className="flex flex-col items-center justify-center gap-2 p-6 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
                 >
                   <Camera className="h-8 w-8 text-primary" />
@@ -246,7 +241,7 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
           {captureStage === "capture" && (
             <div className="space-y-4">
               <div className="aspect-square bg-black relative rounded-lg overflow-hidden flex items-center justify-center">
-                {cameraError && (
+                {cameraError ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-4 text-center">
                     <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
                     <p className="text-red-400 font-medium mb-2">Camera Error</p>
@@ -258,32 +253,29 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
                       Go Back
                     </button>
                   </div>
-                )}
-                {
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    playsInline
-                    className="max-w-full max-h-full"
-                    style={{ display: currentAngle === 0 || capturedImages.length === 0 ? "block" : "none" }}
-                  />
-                }
+                ) : (
+                  <>
+                    {(currentAngle === 0 || capturedImages.length === 0) && (
+                      <video ref={videoRef} autoPlay playsInline className="max-w-full max-h-full" />
+                    )}
 
-                {capturedImages.length > 0 && currentAngle > 0 && (
-                  <img
-                    src={capturedImages[capturedImages.length - 1] || "/placeholder.svg"}
-                    alt={`Frame from angle ${currentAngle - 1}`}
-                    className="max-w-full max-h-full"
-                  />
-                )}
+                    {capturedImages.length > 0 && currentAngle > 0 && (
+                      <img
+                        src={capturedImages[capturedImages.length - 1] || "/placeholder.svg"}
+                        alt={`Frame from angle ${currentAngle - 1}`}
+                        className="max-w-full max-h-full"
+                      />
+                    )}
 
-                {!cameraStream && (
-                  <div className="text-center p-4 absolute inset-0 flex flex-col items-center justify-center bg-black/80">
-                    <Camera className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-                    <p className="text-gray-400">
-                      Position your frame for angle {currentAngle + 1}/{totalAngles}
-                    </p>
-                  </div>
+                    {!cameraStream && !cameraError && (
+                      <div className="text-center p-4 absolute inset-0 flex flex-col items-center justify-center bg-black/80">
+                        <Camera className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+                        <p className="text-gray-400">
+                          Position your frame for angle {currentAngle + 1}/{totalAngles}
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
 
@@ -305,9 +297,9 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
 
                   <button
                     onClick={handleCapture}
-                    disabled={!cameraStream}
+                    disabled={!cameraStream || !!cameraError}
                     className={`px-4 py-2 rounded-lg text-primary-foreground hover:bg-primary/90 transition-colors ${
-                      cameraStream ? "bg-primary" : "bg-gray-700 cursor-not-allowed"
+                      cameraStream && !cameraError ? "bg-primary" : "bg-gray-700 cursor-not-allowed"
                     }`}
                   >
                     Capture
