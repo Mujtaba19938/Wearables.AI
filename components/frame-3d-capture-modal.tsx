@@ -2,8 +2,8 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
-import { X, Camera, Upload, RotateCw, Check, Loader2 } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { X, Camera, Upload, RotateCw, Check, Loader2, AlertCircle } from "lucide-react"
 
 interface Frame3DCaptureModalProps {
   isOpen: boolean
@@ -18,30 +18,51 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
   const [currentAngle, setCurrentAngle] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null)
+  const [isCameraInitialized, setIsCameraInitialized] = useState(false)
+  const [cameraError, setCameraError] = useState<string | null>(null)
 
   const totalAngles = 4 // Number of angles to capture for 3D reconstruction
 
   if (!isOpen) return null
 
   const handleCapture = () => {
-    // In a real implementation, this would access the camera and take a photo
-    // For this demo, we'll simulate capturing images
+    if (!videoRef.current) return
 
-    // Simulate a new captured image
-    const newImage = `/placeholder.svg?height=300&width=300&query=eyeglasses from angle ${currentAngle}`
+    // Create a canvas to capture the current video frame
+    const canvas = document.createElement("canvas")
+    canvas.width = videoRef.current.videoWidth
+    canvas.height = videoRef.current.videoHeight
 
-    setCapturedImages([...capturedImages, newImage])
+    // Draw the current video frame to the canvas
+    const ctx = canvas.getContext("2d")
+    if (ctx && videoRef.current) {
+      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height)
 
-    if (currentAngle < totalAngles - 1) {
-      setCurrentAngle(currentAngle + 1)
-    } else {
-      // All angles captured, move to processing
-      setCaptureStage("processing")
+      // Convert the canvas to an image URL
+      const imageUrl = canvas.toDataURL("image/jpeg")
 
-      // Simulate processing time
-      setTimeout(() => {
-        setCaptureStage("complete")
-      }, 2000)
+      // Add to captured images
+      setCapturedImages([...capturedImages, imageUrl])
+
+      if (currentAngle < totalAngles - 1) {
+        setCurrentAngle(currentAngle + 1)
+      } else {
+        // All angles captured, move to processing
+        setCaptureStage("processing")
+
+        // Stop the camera stream
+        if (cameraStream) {
+          cameraStream.getTracks().forEach((track) => track.stop())
+          setCameraStream(null)
+        }
+
+        // Simulate processing time
+        setTimeout(() => {
+          setCaptureStage("complete")
+        }, 2000)
+      }
     }
   }
 
@@ -72,6 +93,12 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
   }
 
   const resetCapture = () => {
+    // Stop the camera if it's active
+    if (cameraStream) {
+      cameraStream.getTracks().forEach((track) => track.stop())
+      setCameraStream(null)
+    }
+
     setCapturedImages([])
     setCurrentAngle(0)
     setCaptureStage("intro")
@@ -88,6 +115,79 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
   const triggerFileInput = () => {
     fileInputRef.current?.click()
   }
+
+  const initializeCamera = async () => {
+    try {
+      setCameraError(null)
+
+      // Check if mediaDevices API is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setCameraError("Camera access is not supported in your browser. Please try using a different browser.")
+        return
+      }
+
+      // Request camera access
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: "environment", // Use back camera if available
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      })
+
+      setCameraStream(stream)
+
+      // Set the stream to the video element
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream
+      }
+      setIsCameraInitialized(true)
+    } catch (error) {
+      console.error("Error accessing camera:", error)
+
+      // Provide more specific error messages based on error type
+      if (error instanceof DOMException) {
+        if (error.name === "NotAllowedError") {
+          setCameraError("Camera access denied. Please allow camera permissions in your browser settings.")
+        } else if (error.name === "NotFoundError") {
+          setCameraError("No camera detected. Please ensure your device has a working camera.")
+        } else if (error.name === "NotReadableError" || error.name === "AbortError") {
+          setCameraError("Cannot access camera. It may be in use by another application.")
+        } else {
+          setCameraError(`Camera error: ${error.message}`)
+        }
+      } else {
+        setCameraError("Failed to access camera. Please check your device and try again.")
+      }
+    }
+  }
+
+  useEffect(() => {
+    let isMounted = true // Add a flag to track component mount status
+
+    if (isOpen) {
+      if (captureStage === "capture" && !isCameraInitialized) {
+        initializeCamera()
+      }
+    } else {
+      // Clean up camera stream when modal closes
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop())
+        setCameraStream(null)
+        setIsCameraInitialized(false)
+      }
+    }
+
+    // Clean up camera stream when component unmounts
+    return () => {
+      isMounted = false // Set the flag to false when component unmounts
+      if (cameraStream) {
+        cameraStream.getTracks().forEach((track) => track.stop())
+        setCameraStream(null)
+      }
+      setIsCameraInitialized(false)
+    }
+  }, [cameraStream, isOpen, captureStage, isCameraInitialized])
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
@@ -109,7 +209,9 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
 
               <div className="grid grid-cols-2 gap-3">
                 <button
-                  onClick={() => setCaptureStage("capture")}
+                  onClick={() => {
+                    setCaptureStage("capture")
+                  }}
                   className="flex flex-col items-center justify-center gap-2 p-6 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
                 >
                   <Camera className="h-8 w-8 text-primary" />
@@ -144,14 +246,39 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
           {captureStage === "capture" && (
             <div className="space-y-4">
               <div className="aspect-square bg-black relative rounded-lg overflow-hidden flex items-center justify-center">
-                {capturedImages.length > 0 && currentAngle > 0 ? (
+                {cameraError && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-4 text-center">
+                    <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
+                    <p className="text-red-400 font-medium mb-2">Camera Error</p>
+                    <p className="text-gray-300 text-sm">{cameraError}</p>
+                    <button
+                      onClick={() => setCaptureStage("intro")}
+                      className="mt-4 px-4 py-2 bg-primary rounded-md text-white"
+                    >
+                      Go Back
+                    </button>
+                  </div>
+                )}
+                {
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    className="max-w-full max-h-full"
+                    style={{ display: currentAngle === 0 || capturedImages.length === 0 ? "block" : "none" }}
+                  />
+                }
+
+                {capturedImages.length > 0 && currentAngle > 0 && (
                   <img
                     src={capturedImages[capturedImages.length - 1] || "/placeholder.svg"}
                     alt={`Frame from angle ${currentAngle - 1}`}
                     className="max-w-full max-h-full"
                   />
-                ) : (
-                  <div className="text-center p-4">
+                )}
+
+                {!cameraStream && (
+                  <div className="text-center p-4 absolute inset-0 flex flex-col items-center justify-center bg-black/80">
                     <Camera className="h-12 w-12 mx-auto mb-2 text-gray-400" />
                     <p className="text-gray-400">
                       Position your frame for angle {currentAngle + 1}/{totalAngles}
@@ -178,7 +305,10 @@ export function Frame3DCaptureModal({ isOpen, onClose, frameName, onUploadComple
 
                   <button
                     onClick={handleCapture}
-                    className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                    disabled={!cameraStream}
+                    className={`px-4 py-2 rounded-lg text-primary-foreground hover:bg-primary/90 transition-colors ${
+                      cameraStream ? "bg-primary" : "bg-gray-700 cursor-not-allowed"
+                    }`}
                   >
                     Capture
                   </button>
