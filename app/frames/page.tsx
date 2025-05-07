@@ -1,206 +1,155 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useEffect } from "react"
 import { FrameCard } from "@/components/frame-card"
-import { Search, SlidersHorizontal } from "lucide-react"
-import { FrameFilterModal, type FilterState } from "@/components/frame-filter-modal"
+import { FrameFilterModal } from "@/components/frame-filter-modal"
+import { Filter, SlidersHorizontal } from "lucide-react"
+import { useSearchParams } from "next/navigation"
 
 export default function FramesPage() {
-  const [searchQuery, setSearchQuery] = useState("")
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false)
-  const [activeFilters, setActiveFilters] = useState<FilterState>({
-    faceShapes: [],
-    materials: [],
-    priceRange: [0, 500],
-    colors: [],
-  })
-  const [filtersApplied, setFiltersApplied] = useState(false)
+  const [faceAnalysisResults, setFaceAnalysisResults] = useState<any>(null)
+  const searchParams = useSearchParams()
 
+  // Get face shape from URL if available
+  const faceShape = searchParams.get("faceShape") || "Oval"
+
+  // Load face analysis results from localStorage on component mount
+  useEffect(() => {
+    try {
+      const savedAnalysis = localStorage.getItem("faceAnalysisResults")
+      if (savedAnalysis) {
+        setFaceAnalysisResults(JSON.parse(savedAnalysis))
+      }
+    } catch (error) {
+      console.error("Error loading face analysis results:", error)
+    }
+  }, [])
+
+  // Sample frame data
   const frames = [
     {
-      id: "round-vintage",
-      name: "Round Vintage",
-      description: "Circular frames with a vintage feel",
-      image: "/frames/round-vintage.png",
-      price: 119,
-      bestseller: false,
-      faceShapes: ["Square", "Heart"],
-      materials: ["Metal", "Acetate", "Plastic"],
-      colors: ["Gold", "Silver", "Black"],
-      defaultMaterial: "Metal",
-      defaultColor: "Gold",
-    },
-    {
-      id: "wayfarer-classic",
+      id: "1",
       name: "Classic Wayfarer",
-      description: "Timeless design with a slightly angular frame",
-      image: "/frames/wayfarer-classic.png",
+      price: 129,
+      image: "/placeholder.svg?key=l0rmu",
+      colors: ["#000000", "#8B4513", "#3B82F6"],
+      material: "Acetate",
+      frameShape: "Wayfarer",
+      isNew: true,
+      isBestseller: true,
+      faceShapes: ["Square", "Round", "Oval"],
+    },
+    {
+      id: "2",
+      name: "Round Metal",
       price: 149,
-      bestseller: true,
-      faceShapes: ["Oval", "Round"],
-      materials: ["Acetate", "Plastic"],
-      colors: ["Black", "Tortoise", "Blue"],
-      defaultMaterial: "Acetate",
-      defaultColor: "Black",
+      image: "/placeholder.svg?key=soi4o",
+      colors: ["#C0C0C0", "#FFD700", "#000000"],
+      material: "Metal",
+      frameShape: "Round",
+      isNew: false,
+      isBestseller: false,
+      faceShapes: ["Square", "Heart", "Diamond"],
     },
     {
-      id: "cat-eye-elegance",
-      name: "Cat-Eye Elegance",
-      description: "Upswept frames with a retro vibe",
-      image: "/frames/cat-eye-elegance.png",
-      price: 129,
-      bestseller: true,
-      faceShapes: ["Diamond", "Oval"],
-      materials: ["Acetate", "Metal", "Plastic"],
-      colors: ["Black", "Red", "Tortoise"],
-      defaultMaterial: "Acetate",
-      defaultColor: "Black",
-    },
-    {
-      id: "aviator-metal",
+      id: "3",
       name: "Aviator Classic",
-      description: "Timeless aviator style with double bridge",
-      image: "/frames/aviator-metal.png",
-      price: 139,
-      bestseller: false,
-      faceShapes: ["Heart", "Oval", "Square"],
-      materials: ["Metal"],
-      colors: ["Gold", "Silver", "Black"],
-      defaultMaterial: "Metal",
-      defaultColor: "Gold",
+      price: 169,
+      image: "/placeholder.svg?key=3a3wr",
+      colors: ["#C0C0C0", "#FFD700", "#8B4513"],
+      material: "Metal",
+      frameShape: "Aviator",
+      isNew: false,
+      isBestseller: true,
+      faceShapes: ["Oval", "Heart", "Square"],
     },
     {
-      id: "rectangle-acetate",
-      name: "Modern Rectangle",
-      description: "Contemporary rectangular frames with clean lines",
-      image: "/frames/rectangle-acetate.png",
-      price: 129,
-      bestseller: false,
-      faceShapes: ["Round", "Oval"],
-      materials: ["Acetate", "Plastic"],
-      colors: ["Black", "Tortoise", "Blue"],
-      defaultMaterial: "Acetate",
-      defaultColor: "Black",
+      id: "4",
+      name: "Cat-Eye Vintage",
+      price: 139,
+      image: "/placeholder.svg?key=6algy",
+      colors: ["#000000", "#8B4513", "#FF0000"],
+      material: "Acetate",
+      frameShape: "Cat-Eye",
+      isNew: true,
+      isBestseller: false,
+      faceShapes: ["Round", "Oval", "Square"],
+    },
+    {
+      id: "5",
+      name: "Rectangle Classic",
+      price: 119,
+      image: "/placeholder.svg?key=og6jb",
+      colors: ["#000000", "#8B4513", "#3B82F6"],
+      material: "Acetate",
+      frameShape: "Rectangle",
+      isNew: false,
+      isBestseller: false,
+      faceShapes: ["Round", "Oval", "Heart"],
+    },
+    {
+      id: "6",
+      name: "Clubmaster",
+      price: 159,
+      image: "/placeholder.svg?height=300&width=300&query=clubmaster+glasses",
+      colors: ["#000000", "#8B4513", "#C0C0C0"],
+      material: "Mixed",
+      frameShape: "Browline",
+      isNew: false,
+      isBestseller: true,
+      faceShapes: ["Diamond", "Oval", "Heart"],
     },
   ]
 
-  const filteredFrames = useMemo(() => {
-    return frames.filter((frame) => {
-      // Text search filter
-      const matchesSearch =
-        searchQuery === "" ||
-        frame.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        frame.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        frame.faceShapes.some((shape) => shape.toLowerCase().includes(searchQuery.toLowerCase()))
-
-      // Face shape filter
-      const matchesFaceShape =
-        activeFilters.faceShapes.length === 0 ||
-        frame.faceShapes.some((shape) => activeFilters.faceShapes.includes(shape.toLowerCase()))
-
-      // Material filter
-      const matchesMaterial =
-        activeFilters.materials.length === 0 ||
-        frame.materials.some((material) => activeFilters.materials.includes(material.toLowerCase()))
-
-      // Price filter
-      const matchesPrice = frame.price >= activeFilters.priceRange[0] && frame.price <= activeFilters.priceRange[1]
-
-      // Color filter
-      const matchesColor =
-        activeFilters.colors.length === 0 ||
-        frame.colors.some((color) => activeFilters.colors.includes(color.toLowerCase()))
-
-      return matchesSearch && matchesFaceShape && matchesMaterial && matchesPrice && matchesColor
-    })
-  }, [frames, searchQuery, activeFilters])
-
-  const handleApplyFilters = (filters: FilterState) => {
-    setActiveFilters(filters)
-    setFiltersApplied(
-      filters.faceShapes.length > 0 ||
-        filters.materials.length > 0 ||
-        filters.colors.length > 0 ||
-        filters.priceRange[0] > 0 ||
-        filters.priceRange[1] < 500,
-    )
-  }
-
-  const getActiveFilterCount = () => {
-    let count = 0
-    if (activeFilters.faceShapes.length > 0) count += 1
-    if (activeFilters.materials.length > 0) count += 1
-    if (activeFilters.colors.length > 0) count += 1
-    if (activeFilters.priceRange[0] > 0 || activeFilters.priceRange[1] < 500) count += 1
-    return count
-  }
+  // Filter frames based on face shape if available
+  const filteredFrames = faceShape ? frames.filter((frame) => frame.faceShapes.includes(faceShape)) : frames
 
   return (
-    <main className="flex min-h-screen flex-col items-start p-4 sm:p-6 max-w-6xl mx-auto">
-      <div className="w-full mb-4 sm:mb-8">
-        <h1 className="text-3xl sm:text-4xl font-bold mb-1 sm:mb-2">Eyeglass Frames</h1>
-        <p className="text-sm sm:text-base text-gray-400">
-          Find the perfect frames for your face shape and style preference
-        </p>
-      </div>
-
-      <div className="w-full flex gap-2 sm:gap-4 mb-4 sm:mb-8">
-        <div className="relative flex-1">
-          <input
-            type="text"
-            placeholder="Search frames..."
-            className="w-full bg-card border border-border rounded-lg py-2 px-4 pl-9 sm:pl-10 text-foreground text-sm sm:text-base"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-          <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-        </div>
+    <main className="container mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Eyeglass Frames</h1>
         <button
-          className={`bg-card border ${filtersApplied ? "border-primary" : "border-border"} rounded-lg p-2 relative`}
           onClick={() => setIsFilterModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-secondary rounded-lg hover:bg-secondary/90 transition-colors"
         >
-          <SlidersHorizontal className={`w-5 h-5 ${filtersApplied ? "text-primary" : ""}`} />
-          {filtersApplied && (
-            <span className="absolute -top-2 -right-2 bg-primary text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-              {getActiveFilterCount()}
-            </span>
-          )}
+          <Filter className="w-4 h-4" />
+          <span>Filter</span>
         </button>
       </div>
 
-      {filteredFrames.length === 0 ? (
-        <div className="w-full py-12 text-center">
-          <p className="text-lg text-muted-foreground">No frames match your search criteria.</p>
-          <button
-            onClick={() => {
-              setSearchQuery("")
-              setActiveFilters({
-                faceShapes: [],
-                materials: [],
-                priceRange: [0, 500],
-                colors: [],
-              })
-              setFiltersApplied(false)
-            }}
-            className="mt-4 px-4 py-2 bg-primary text-white rounded-md"
-          >
-            Clear Filters
-          </button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
-          {filteredFrames.map((frame) => (
-            <FrameCard key={frame.id} {...frame} />
-          ))}
+      {faceShape && (
+        <div className="mb-6 p-4 bg-primary/10 rounded-lg">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-5 h-5 text-primary" />
+            <h2 className="font-medium">Showing frames recommended for {faceShape} face shape</h2>
+          </div>
+          {faceAnalysisResults && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Based on your face analysis, these frames should complement your features.
+            </p>
+          )}
         </div>
       )}
 
-      <FrameFilterModal
-        isOpen={isFilterModalOpen}
-        onClose={() => setIsFilterModalOpen(false)}
-        onApplyFilters={handleApplyFilters}
-        initialFilters={activeFilters}
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredFrames.map((frame) => (
+          <FrameCard
+            key={frame.id}
+            name={frame.name}
+            price={frame.price}
+            image={frame.image}
+            colors={frame.colors}
+            material={frame.material}
+            frameShape={frame.frameShape}
+            isNew={frame.isNew}
+            isBestseller={frame.isBestseller}
+            faceAnalysisResults={faceAnalysisResults}
+          />
+        ))}
+      </div>
+
+      <FrameFilterModal isOpen={isFilterModalOpen} onClose={() => setIsFilterModalOpen(false)} />
     </main>
   )
 }

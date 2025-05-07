@@ -1,183 +1,177 @@
 "use client"
 
 import { useState } from "react"
-import { TryOnModal } from "@/components/try-on-modal"
-import { Frame3DCaptureModal } from "@/components/frame-3d-capture-modal"
-import { Glasses, CameraIcon as Camera3d } from "lucide-react"
+import { Heart, ShoppingCart, Maximize2, CuboidIcon as CubeIcon } from "lucide-react"
+import { TryOnModal } from "./try-on-modal"
+import { Frame3DCaptureModal } from "./frame-3d-capture-modal"
+import type { FrameMeasurements } from "./frame-measurements-display"
 
 interface FrameCardProps {
-  id: string
   name: string
-  description: string
-  image: string
   price: number
-  bestseller?: boolean
-  faceShapes: string[]
-  materials: string[]
+  image: string
   colors: string[]
-  defaultMaterial: string
-  defaultColor: string
+  material: string
+  frameShape: string
+  isNew?: boolean
+  isBestseller?: boolean
   modelUrl?: string
+  faceAnalysisResults?: any
+  onAddToCart?: () => void
+  onAddToWishlist?: () => void
 }
 
 export function FrameCard({
-  id,
   name,
-  description,
-  image,
   price,
-  bestseller = false,
-  faceShapes,
-  materials,
+  image,
   colors,
-  defaultMaterial,
-  defaultColor,
+  material,
+  frameShape,
+  isNew = false,
+  isBestseller = false,
   modelUrl,
+  faceAnalysisResults,
+  onAddToCart,
+  onAddToWishlist,
 }: FrameCardProps) {
-  const [selectedMaterial, setSelectedMaterial] = useState(defaultMaterial)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [is3DModalOpen, setIs3DModalOpen] = useState(false)
-  const [frameModelUrl, setFrameModelUrl] = useState<string | undefined>(modelUrl)
-  const [has3DModel, setHas3DModel] = useState(!!modelUrl)
+  const [selectedColor, setSelectedColor] = useState(colors[0])
+  const [selectedMaterial, setSelectedMaterial] = useState(material)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false)
+  const [is3DCaptureModalOpen, setIs3DCaptureModalOpen] = useState(false)
 
-  const colorObjects = colors.map((color) => {
-    switch (color.toLowerCase()) {
-      case "gold":
-      case "yellow":
-        return "#EAB308"
-      case "silver":
-      case "gray":
-        return "#CBD5E1"
-      case "black":
-        return "#000000"
-      case "tortoise":
-        return "#8B4513"
-      case "blue":
-        return "#3B82F6"
-      case "red":
-        return "#EF4444"
-      default:
-        return "#CBD5E1"
-    }
-  })
-
-  const handle3DUploadComplete = (modelUrl: string) => {
-    setFrameModelUrl(modelUrl)
-    setHas3DModel(true)
+  // Sample frame measurements - in a real app, this would come from your database
+  const frameMeasurements: FrameMeasurements = {
+    lensWidth: 52,
+    bridgeWidth: 18,
+    templeLength: 140,
+    lensHeight: 42,
+    totalWidth: 138,
+    frameWeight: 28,
+    frameDepth: 38,
+    rimThickness: 5,
   }
 
   return (
     <>
-      <div className="bg-card rounded-xl border border-border overflow-hidden">
-        <div className="relative">
-          <img src={image || "/placeholder.svg"} alt={name} className="w-full h-40 sm:h-48 object-cover" />
-          {bestseller && (
-            <div className="absolute top-2 right-2 bg-[#EAB308] text-black text-xs font-bold px-2 py-1 rounded">
-              Bestseller
-            </div>
-          )}
-          {has3DModel && (
-            <div className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded flex items-center gap-1">
-              <Camera3d className="w-3 h-3" />
-              <span>3D</span>
+      <div
+        className="group relative bg-card rounded-lg overflow-hidden border border-border transition-all duration-300 hover:shadow-lg"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <div className="relative aspect-square overflow-hidden">
+          <img
+            src={image || "/placeholder.svg"}
+            alt={name}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+
+          {/* Quick action buttons */}
+          <div
+            className={`absolute top-2 right-2 flex flex-col gap-2 transition-opacity duration-300 ${isHovered ? "opacity-100" : "opacity-0"}`}
+          >
+            <button
+              onClick={() => setIsTryOnModalOpen(true)}
+              className="w-9 h-9 rounded-full bg-white/90 dark:bg-gray-800/90 flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+              aria-label="Try on"
+            >
+              <Maximize2 className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={onAddToWishlist}
+              className="w-9 h-9 rounded-full bg-white/90 dark:bg-gray-800/90 flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-800 transition-colors"
+              aria-label="Add to wishlist"
+            >
+              <Heart className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Badges */}
+          <div className="absolute top-2 left-2 flex flex-col gap-1">
+            {isNew && <span className="px-2 py-1 bg-blue-500 text-white text-xs font-medium rounded">New</span>}
+            {isBestseller && (
+              <span className="px-2 py-1 bg-amber-500 text-white text-xs font-medium rounded">Bestseller</span>
+            )}
+          </div>
+
+          {/* 3D model badge */}
+          {modelUrl && (
+            <div className="absolute bottom-2 left-2">
+              <span className="px-2 py-1 bg-purple-500 text-white text-xs font-medium rounded flex items-center gap-1">
+                <CubeIcon className="w-3 h-3" />
+                3D
+              </span>
             </div>
           )}
         </div>
-        <div className="p-3 sm:p-4">
-          <div className="flex justify-between items-start mb-1">
-            <h3 className="text-lg sm:text-xl font-bold">{name}</h3>
-            <span className="text-lg font-bold">${price}</span>
-          </div>
-          <p className="text-gray-400 text-xs sm:text-sm mb-2 sm:mb-3">{description}</p>
 
-          <div className="flex gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-            {faceShapes.map((shape) => (
-              <span key={shape} className="bg-secondary text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
-                {shape}
-              </span>
-            ))}
+        <div className="p-4">
+          <h3 className="font-medium text-lg mb-1">{name}</h3>
+
+          <div className="flex justify-between items-center mb-3">
+            <span className="font-bold text-lg">${price}</span>
+            <span className="text-sm text-muted-foreground">{material}</span>
           </div>
 
-          <div className="mb-3">
-            <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-400 mb-1">Material:</div>
-            <div className="relative">
-              <select
-                className="w-full appearance-none bg-muted border border-border rounded py-1.5 sm:py-2 px-2 sm:px-3 text-foreground text-sm"
-                value={selectedMaterial}
-                onChange={(e) => setSelectedMaterial(e.target.value)}
-              >
-                {materials.map((material) => (
-                  <option key={material} value={material}>
-                    {material}
-                  </option>
-                ))}
-              </select>
-              <svg
-                className="absolute right-2 sm:right-3 top-2 sm:top-3"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path d="M7 10L12 15L17 10H7Z" fill="white" />
-              </svg>
-            </div>
-          </div>
-
-          <div className="mb-3">
-            <div className="flex items-center gap-1 text-xs sm:text-sm text-gray-400 mb-1">Available Colors:</div>
-            <div className="flex gap-2">
-              {colorObjects.map((colorHex, index) => (
-                <div
-                  key={index}
-                  className="w-6 h-6 rounded-full border border-[#1a1c25]"
-                  style={{ backgroundColor: colorHex }}
-                ></div>
+          <div className="flex justify-between items-center">
+            <div className="flex gap-1">
+              {colors.map((color) => (
+                <button
+                  key={color}
+                  className={`w-6 h-6 rounded-full ${selectedColor === color ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => setSelectedColor(color)}
+                  aria-label={`Select ${color} color`}
+                />
               ))}
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center justify-center gap-1 bg-black text-white py-2 rounded-lg hover:bg-black/80 transition-colors"
-            >
-              <Glasses className="w-4 h-4" />
-              <span className="text-sm">Try On</span>
-            </button>
 
             <button
-              onClick={() => setIs3DModalOpen(true)}
-              className="flex items-center justify-center gap-1 bg-primary text-white py-2 rounded-lg hover:bg-primary/90 transition-colors"
+              onClick={onAddToCart}
+              className="flex items-center gap-1 px-3 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors text-sm"
             >
-              <Camera3d className="w-4 h-4" />
-              <span className="text-sm">{has3DModel ? "View 3D" : "Add 3D"}</span>
+              <ShoppingCart className="w-4 h-4" />
+              Add
             </button>
           </div>
+
+          {/* Add 3D button */}
+          {!modelUrl && (
+            <button
+              onClick={() => setIs3DCaptureModalOpen(true)}
+              className="w-full mt-3 flex items-center justify-center gap-1 px-3 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors text-sm"
+            >
+              <CubeIcon className="w-4 h-4" />
+              Add 3D Model
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Try On Modal */}
-      {isModalOpen && (
+      {/* Try-on Modal */}
+      {isTryOnModalOpen && (
         <TryOnModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
+          isOpen={isTryOnModalOpen}
+          onClose={() => setIsTryOnModalOpen(false)}
           frameName={name}
           frameImage={image}
-          modelUrl={frameModelUrl || null}
+          modelUrl={modelUrl || null}
           price={price}
           material={selectedMaterial}
+          measurements={frameMeasurements}
+          frameShape={frameShape}
+          faceAnalysisResults={faceAnalysisResults}
         />
       )}
 
       {/* 3D Capture Modal */}
-      {is3DModalOpen && (
+      {is3DCaptureModalOpen && (
         <Frame3DCaptureModal
-          isOpen={is3DModalOpen}
-          onClose={() => setIs3DModalOpen(false)}
+          isOpen={is3DCaptureModalOpen}
+          onClose={() => setIs3DCaptureModalOpen(false)}
           frameName={name}
-          onUploadComplete={handle3DUploadComplete}
         />
       )}
     </>

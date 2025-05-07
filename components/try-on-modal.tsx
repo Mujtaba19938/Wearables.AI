@@ -1,7 +1,11 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { X, Camera, ImageIcon, CuboidIcon as CubeIcon } from "lucide-react"
+import { X, Camera, ImageIcon, CuboidIcon as CubeIcon, Ruler, Brain } from "lucide-react"
+import { FrameMeasurementsDisplay, type FrameMeasurements } from "./frame-measurements-display"
+import { AiFitPrediction } from "./ai-fit-prediction"
+import { extractFaceMeasurementsFromAnalysis } from "@/utils/fit-prediction"
+import type { FaceMeasurements } from "@/utils/fit-prediction"
 
 interface TryOnModalProps {
   isOpen: boolean
@@ -11,6 +15,9 @@ interface TryOnModalProps {
   modelUrl: string | null
   price?: number
   material?: string
+  measurements?: FrameMeasurements
+  frameShape?: string
+  faceAnalysisResults?: any
 }
 
 export function TryOnModal({
@@ -21,14 +28,52 @@ export function TryOnModal({
   modelUrl,
   price = 129,
   material = "Acetate",
+  measurements,
+  frameShape = "Rectangle",
+  faceAnalysisResults,
 }: TryOnModalProps) {
-  const [activeTab, setActiveTab] = useState<"camera" | "sample" | "3d">("camera")
+  const [activeTab, setActiveTab] = useState<"camera" | "sample" | "3d" | "measurements" | "fit">("camera")
   const [selectedColor, setSelectedColor] = useState("#000000")
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [is3DLoading, setIs3DLoading] = useState(false)
+  const [faceMeasurements, setFaceMeasurements] = useState<FaceMeasurements | null>(null)
 
   // Default colors if none provided
   const colors = ["#000000", "#8B4513", "#3B82F6"]
+
+  // Default measurements if none provided
+  const defaultMeasurements: FrameMeasurements = {
+    lensWidth: 52,
+    bridgeWidth: 18,
+    templeLength: 140,
+    lensHeight: 42,
+    totalWidth: 138,
+    frameWeight: 28,
+    frameDepth: 38,
+    rimThickness: 5,
+  }
+
+  const frameMeasurements = measurements || defaultMeasurements
+
+  // Extract face measurements from analysis results if available
+  useEffect(() => {
+    if (faceAnalysisResults) {
+      const extractedMeasurements = extractFaceMeasurementsFromAnalysis(faceAnalysisResults)
+      setFaceMeasurements(extractedMeasurements)
+    } else {
+      // Use default face measurements if no analysis results are available
+      setFaceMeasurements({
+        faceWidth: 140,
+        faceHeight: 180,
+        noseBridgeWidth: 16,
+        templeToTempleDistance: 145,
+        faceShape: "Oval",
+        cheekboneWidth: 130,
+        jawWidth: 120,
+        foreheadWidth: 125,
+      })
+    }
+  }, [faceAnalysisResults])
 
   useEffect(() => {
     // If the frame has a 3D model, set the active tab to 3D
@@ -155,14 +200,14 @@ export function TryOnModal({
           </div>
         </div>
 
-        <div className="grid grid-cols-3 border-b border-[#1a1c25]">
+        <div className="grid grid-cols-5 border-b border-[#1a1c25]">
           <button
             className={`py-3 text-center ${activeTab === "camera" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"}`}
             onClick={() => setActiveTab("camera")}
           >
             <span className="flex items-center justify-center gap-2">
               <Camera className="w-4 h-4" />
-              Live Camera
+              <span className="hidden sm:inline">Camera</span>
             </span>
           </button>
           <button
@@ -171,7 +216,7 @@ export function TryOnModal({
           >
             <span className="flex items-center justify-center gap-2">
               <ImageIcon className="w-4 h-4" />
-              Sample Photo
+              <span className="hidden sm:inline">Sample</span>
             </span>
           </button>
           <button
@@ -181,7 +226,25 @@ export function TryOnModal({
           >
             <span className="flex items-center justify-center gap-2">
               <CubeIcon className="w-4 h-4" />
-              3D View
+              <span className="hidden sm:inline">3D</span>
+            </span>
+          </button>
+          <button
+            className={`py-3 text-center ${activeTab === "measurements" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"}`}
+            onClick={() => setActiveTab("measurements")}
+          >
+            <span className="flex items-center justify-center gap-2">
+              <Ruler className="w-4 h-4" />
+              <span className="hidden sm:inline">Size</span>
+            </span>
+          </button>
+          <button
+            className={`py-3 text-center ${activeTab === "fit" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"}`}
+            onClick={() => setActiveTab("fit")}
+          >
+            <span className="flex items-center justify-center gap-2">
+              <Brain className="w-4 h-4" />
+              <span className="hidden sm:inline">AI Fit</span>
             </span>
           </button>
         </div>
@@ -199,7 +262,7 @@ export function TryOnModal({
             <div className="w-full h-full flex items-center justify-center">
               <img src="/placeholder.svg?key=vt1n0" alt="Sample face" className="max-w-full max-h-full" />
             </div>
-          ) : (
+          ) : activeTab === "3d" ? (
             <div className="w-full h-full flex items-center justify-center">
               {is3DLoading ? (
                 <div className="text-gray-400 flex flex-col items-center">
@@ -210,12 +273,37 @@ export function TryOnModal({
                 <canvas ref={canvasRef} width={800} height={600} className="w-full h-full" />
               )}
             </div>
+          ) : activeTab === "measurements" ? (
+            <div className="w-full h-full bg-card p-4 overflow-auto">
+              <FrameMeasurementsDisplay measurements={frameMeasurements} />
+            </div>
+          ) : (
+            <div className="w-full h-full bg-card p-4 overflow-auto">
+              {faceMeasurements ? (
+                <AiFitPrediction
+                  frameMeasurements={frameMeasurements}
+                  faceMeasurements={faceMeasurements}
+                  frameShape={frameShape}
+                  frameName={frameName}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <Brain className="w-12 h-12 text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground">Face analysis required for AI fit prediction</p>
+                  <button className="mt-4 px-4 py-2 bg-[#3B82F6] hover:bg-[#2563EB] rounded-md text-white">
+                    Analyze Your Face
+                  </button>
+                </div>
+              )}
+            </div>
           )}
 
           {/* This would be where the AR glasses overlay would go in a real implementation */}
-          <div className="absolute inset-0 pointer-events-none">
-            {/* AR glasses overlay would be positioned here */}
-          </div>
+          {(activeTab === "camera" || activeTab === "sample") && (
+            <div className="absolute inset-0 pointer-events-none">
+              {/* AR glasses overlay would be positioned here */}
+            </div>
+          )}
         </div>
 
         <div className="p-4 flex items-center justify-between">
@@ -231,8 +319,27 @@ export function TryOnModal({
             ))}
           </div>
           <button className="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-md flex items-center gap-2">
-            <Camera className="w-4 h-4" />
-            {activeTab === "3d" ? "Save View" : "Capture"}
+            {activeTab === "measurements" ? (
+              <>
+                <Ruler className="w-4 h-4" />
+                Size Guide
+              </>
+            ) : activeTab === "fit" ? (
+              <>
+                <Brain className="w-4 h-4" />
+                Get Recommendations
+              </>
+            ) : activeTab === "3d" ? (
+              <>
+                <CubeIcon className="w-4 h-4" />
+                Save View
+              </>
+            ) : (
+              <>
+                <Camera className="w-4 h-4" />
+                Capture
+              </>
+            )}
           </button>
         </div>
       </div>
