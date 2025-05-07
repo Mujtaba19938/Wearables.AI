@@ -9,6 +9,7 @@ import { Preloader } from "@/components/preloader"
 import { AnimatedBackground } from "@/components/animated-background"
 import { ServiceWorkerRegistration } from "@/components/service-worker-registration"
 import { OfflineDetector } from "@/components/offline-detector"
+import { ScrollToTop } from "@/components/scroll-to-top"
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
@@ -34,6 +35,7 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
         <ServiceWorkerRegistration />
         <OfflineDetector />
         <ThemeToggleCorner />
+        <ScrollToTop />
         <div className="pb-16 sm:pb-14">{children}</div>
         <BottomNavbar />
       </div>

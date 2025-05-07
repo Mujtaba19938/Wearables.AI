@@ -115,6 +115,37 @@
   animation: subtle-bounce 0.5s ease-in-out;
 }
 
+/* Scroll to top button animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-out-down {
+  from {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.scroll-to-top-enter {
+  animation: fade-in-up 0.3s ease forwards;
+}
+
+.scroll-to-top-exit {
+  animation: fade-out-down 0.3s ease forwards;
+}
+
 /* Add these responsive utility classes at the end of the file */
 @layer utilities {
   .container-responsive {
