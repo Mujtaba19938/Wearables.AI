@@ -158,25 +158,28 @@ export function FrameCard({
         </div>
       </div>
 
-      <TryOnModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        frame={{
-          name,
-          price,
-          material: selectedMaterial,
-          image,
-          colors: colorObjects,
-          modelUrl: frameModelUrl,
-        }}
-      />
+      {/* Try On Modal */}
+      {isModalOpen && (
+        <TryOnModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          frameName={name}
+          frameImage={image}
+          modelUrl={frameModelUrl || null}
+          price={price}
+          material={selectedMaterial}
+        />
+      )}
 
-      <Frame3DCaptureModal
-        isOpen={is3DModalOpen}
-        onClose={() => setIs3DModalOpen(false)}
-        frameName={name}
-        onUploadComplete={handle3DUploadComplete}
-      />
+      {/* 3D Capture Modal */}
+      {is3DModalOpen && (
+        <Frame3DCaptureModal
+          isOpen={is3DModalOpen}
+          onClose={() => setIs3DModalOpen(false)}
+          frameName={name}
+          onUploadComplete={handle3DUploadComplete}
+        />
+      )}
     </>
   )
 }

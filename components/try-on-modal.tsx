@@ -6,32 +6,40 @@ import { X, Camera, ImageIcon, CuboidIcon as CubeIcon } from "lucide-react"
 interface TryOnModalProps {
   isOpen: boolean
   onClose: () => void
-  frame: {
-    name: string
-    price: number
-    material: string
-    image: string
-    colors: string[]
-    modelUrl?: string
-  }
+  frameName: string
+  frameImage: string
+  modelUrl: string | null
+  price?: number
+  material?: string
 }
 
-export function TryOnModal({ isOpen, onClose, frame }: TryOnModalProps) {
+export function TryOnModal({
+  isOpen,
+  onClose,
+  frameName,
+  frameImage,
+  modelUrl,
+  price = 129,
+  material = "Acetate",
+}: TryOnModalProps) {
   const [activeTab, setActiveTab] = useState<"camera" | "sample" | "3d">("camera")
-  const [selectedColor, setSelectedColor] = useState(frame.colors[0])
+  const [selectedColor, setSelectedColor] = useState("#000000")
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [is3DLoading, setIs3DLoading] = useState(false)
 
+  // Default colors if none provided
+  const colors = ["#000000", "#8B4513", "#3B82F6"]
+
   useEffect(() => {
     // If the frame has a 3D model, set the active tab to 3D
-    if (frame.modelUrl && activeTab !== "3d") {
+    if (modelUrl && activeTab !== "3d") {
       setActiveTab("3d")
     }
-  }, [frame.modelUrl])
+  }, [modelUrl, activeTab])
 
   useEffect(() => {
     // This would be where we'd initialize the 3D viewer if activeTab is "3d"
-    if (activeTab === "3d" && frame.modelUrl && canvasRef.current) {
+    if (activeTab === "3d" && modelUrl && canvasRef.current) {
       setIs3DLoading(true)
 
       // Simulate loading a 3D model
@@ -42,7 +50,7 @@ export function TryOnModal({ isOpen, onClose, frame }: TryOnModalProps) {
 
       return () => clearTimeout(timer)
     }
-  }, [activeTab, frame.modelUrl])
+  }, [activeTab, modelUrl])
 
   const renderMock3DModel = () => {
     // In a real implementation, this would use Three.js or another 3D library
@@ -136,10 +144,10 @@ export function TryOnModal({ isOpen, onClose, frame }: TryOnModalProps) {
       <div className="bg-card rounded-lg max-w-2xl w-full overflow-hidden border border-border">
         <div className="flex items-center justify-between p-4 border-b border-[#1a1c25]">
           <div className="flex items-center justify-between w-full">
-            <h2 className="text-xl font-bold">{frame.name}</h2>
+            <h2 className="text-xl font-bold">{frameName}</h2>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold">${frame.price}</span>
-              <span className="text-gray-400">{frame.material}</span>
+              <span className="text-xl font-bold">${price}</span>
+              <span className="text-gray-400">{material}</span>
               <button onClick={onClose} className="ml-2 p-1 rounded-full hover:bg-white/10" aria-label="Close">
                 <X className="h-5 w-5" />
               </button>
@@ -167,9 +175,9 @@ export function TryOnModal({ isOpen, onClose, frame }: TryOnModalProps) {
             </span>
           </button>
           <button
-            className={`py-3 text-center ${activeTab === "3d" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"} ${!frame.modelUrl ? "opacity-50" : ""}`}
-            onClick={() => frame.modelUrl && setActiveTab("3d")}
-            disabled={!frame.modelUrl}
+            className={`py-3 text-center ${activeTab === "3d" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"} ${!modelUrl ? "opacity-50" : ""}`}
+            onClick={() => modelUrl && setActiveTab("3d")}
+            disabled={!modelUrl}
           >
             <span className="flex items-center justify-center gap-2">
               <CubeIcon className="w-4 h-4" />
@@ -212,7 +220,7 @@ export function TryOnModal({ isOpen, onClose, frame }: TryOnModalProps) {
 
         <div className="p-4 flex items-center justify-between">
           <div className="flex gap-2">
-            {frame.colors.map((color) => (
+            {colors.map((color) => (
               <button
                 key={color}
                 className={`w-8 h-8 rounded-full ${selectedColor === color ? "ring-2 ring-white" : ""}`}
