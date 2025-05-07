@@ -543,3 +543,73 @@ main.flex.min-h-screen {
 .mb-3.sm\:mb-4 {
   margin-bottom: 0.5rem;
 }
+
+/* Add these new styles for the improved About page accessibility */
+/* Add this after the existing CSS content */
+
+/* Improved About page accessibility styles */
+.faq-accordion-button {
+  transition: background-color 0.2s ease;
+}
+
+.faq-accordion-button:hover .faq-icon {
+  transform: scale(1.2);
+}
+
+.faq-accordion-content {
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+}
+
+.social-link {
+  transition: all 0.2s ease-in-out;
+}
+
+.social-link:hover {
+  transform: translateY(-2px);
+}
+
+.contact-form-input:focus {
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+/* Collapsible sections for mobile */
+@media (max-width: 640px) {
+  .collapsible-section-header {
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .collapsible-section-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+  }
+
+  .collapsible-section-content.expanded {
+    max-height: 1000px;
+  }
+}
+
+/* Improved form button styles */
+.form-submit-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.form-submit-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-out;
+}
+
+.form-submit-button:hover::after {
+  transform: translateX(0);
+}

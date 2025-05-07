@@ -187,45 +187,47 @@ export default function AboutPage() {
 
   return (
     <main className="flex min-h-screen flex-col items-start p-4 sm:p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl sm:text-4xl font-bold mb-6 sm:mb-10">About wearables.ai</h1>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-8 sm:mb-12 text-white">About wearables.ai</h1>
 
-      <div className="bg-card p-4 sm:p-6 rounded-xl border border-border w-full mb-4 sm:mb-8">
-        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Our Mission</h2>
+      {/* Our Mission Section - Collapsible on mobile */}
+      <div className="bg-card p-5 sm:p-7 rounded-xl border border-border w-full mb-8 sm:mb-10">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-white">Our Mission</h2>
 
-        <p className="text-sm sm:text-base text-gray-300 mb-3 sm:mb-4">
+        <p className="text-sm sm:text-base text-white mb-4 sm:mb-5">
           wearables.ai was created to help people find eyeglasses that perfectly complement their unique facial
           features. We believe that the right pair of glasses can enhance your appearance and boost your confidence.
         </p>
 
-        <p className="text-sm sm:text-base text-gray-300">
+        <p className="text-sm sm:text-base text-white">
           Our AI-powered technology analyzes your face shape and provides personalized recommendations based on optical
           styling principles that have been refined over decades in the eyewear industry on optical styling principles
           that have been refined over decades in the eyewear industry.
         </p>
       </div>
 
-      <div className="bg-card p-4 sm:p-6 rounded-xl border border-border w-full mb-4 sm:mb-8">
-        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">How It Works</h2>
+      {/* How It Works Section - Collapsible on mobile */}
+      <div className="bg-card p-5 sm:p-7 rounded-xl border border-border w-full mb-8 sm:mb-10">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-white">How It Works</h2>
 
-        <p className="text-sm sm:text-base text-gray-300 mb-3 sm:mb-4">
+        <p className="text-sm sm:text-base text-white mb-4 sm:mb-5">
           Our application uses advanced facial recognition technology to analyze your face's proportions and determine
           your face shape. The AI identifies key facial landmarks and calculates ratios between different features to
           classify your face as oval, round, square, heart, or diamond-shaped.
         </p>
 
-        <p className="text-sm sm:text-base text-gray-300">
+        <p className="text-sm sm:text-base text-white">
           Based on this analysis, we recommend eyeglass styles that are known to complement your specific face shape,
           following established principles of balance and proportion in eyewear selection.
         </p>
       </div>
 
       {/* FAQ Section */}
-      <div className="bg-card p-4 sm:p-6 rounded-xl border border-border w-full mb-4 sm:mb-8">
-        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Frequently Asked Questions</h2>
+      <div className="bg-card p-5 sm:p-7 rounded-xl border border-border w-full mb-8 sm:mb-10">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-white">Frequently Asked Questions</h2>
 
         {/* Category Tabs */}
         <div className="mb-6 overflow-x-auto">
-          <div className="flex space-x-2 min-w-max pb-2">
+          <div className="flex space-x-3 min-w-max pb-3">
             {faqCategories.map((category) => (
               <button
                 key={category.id}
@@ -233,10 +235,8 @@ export default function AboutPage() {
                   setActiveCategory(category.id)
                   setOpenFaq(null) // Close any open FAQ when switching categories
                 }}
-                className={`px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
-                  activeCategory === category.id
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                className={`px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors ${
+                  activeCategory === category.id ? "bg-blue-600 text-white" : "bg-gray-800 hover:bg-gray-700 text-white"
                 }`}
                 aria-selected={activeCategory === category.id}
               >
@@ -250,26 +250,26 @@ export default function AboutPage() {
         </div>
 
         {/* FAQ Accordions */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {faqCategories
             .find((category) => category.id === activeCategory)
             ?.questions.map((faq, index) => (
               <div key={index} className="border border-border rounded-lg overflow-hidden">
                 <button
-                  className="w-full flex justify-between items-center p-3 sm:p-4 text-left hover:bg-opacity-50 hover:bg-gray-700 transition-colors"
+                  className="w-full flex justify-between items-center p-4 sm:p-5 text-left hover:bg-opacity-50 hover:bg-gray-700 transition-colors"
                   onClick={() => toggleFaq(index)}
                   aria-expanded={openFaq === index}
                 >
-                  <span className="font-medium text-sm sm:text-base">{faq.question}</span>
+                  <span className="font-medium text-sm sm:text-base text-white pr-8">{faq.question}</span>
                   {openFaq === index ? (
-                    <ChevronUp className="h-4 w-4 flex-shrink-0" />
+                    <ChevronUp className="h-5 w-5 flex-shrink-0 text-white transition-transform duration-200" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 flex-shrink-0" />
+                    <ChevronDown className="h-5 w-5 flex-shrink-0 text-white transition-transform duration-200" />
                   )}
                 </button>
 
                 {openFaq === index && (
-                  <div className="p-3 sm:p-4 border-t border-border bg-gray-800 bg-opacity-30 text-sm sm:text-base text-gray-300">
+                  <div className="p-4 sm:p-5 border-t border-border bg-gray-800 bg-opacity-30 text-sm sm:text-base text-white">
                     {faq.answer}
                   </div>
                 )}
@@ -279,17 +279,17 @@ export default function AboutPage() {
       </div>
 
       {/* Contact Us Section */}
-      <div className="bg-card p-4 sm:p-6 rounded-xl border border-border w-full mb-4 sm:mb-8">
-        <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">Contact Us</h2>
+      <div className="bg-card p-5 sm:p-7 rounded-xl border border-border w-full mb-8 sm:mb-10">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-5 text-white">Contact Us</h2>
 
-        <p className="text-sm sm:text-base text-gray-300 mb-4">
+        <p className="text-sm sm:text-base text-white mb-5">
           Have questions or feedback? We'd love to hear from you! Fill out the form below or reach out through our
           social media channels.
         </p>
 
         {/* Email Contact */}
-        <div className="flex items-center gap-2 mb-4 text-blue-400">
-          <Mail className="h-4 w-4" />
+        <div className="flex items-center gap-2 mb-5 text-blue-400">
+          <Mail className="h-5 w-5" />
           <a href="mailto:support@wearables.ai" className="text-sm sm:text-base hover:underline">
             support@wearables.ai
           </a>
@@ -297,28 +297,28 @@ export default function AboutPage() {
 
         {/* Social Media Section */}
         <div className="mb-6">
-          <h3 className="text-sm font-medium mb-3">Connect with us:</h3>
-          <div className="flex flex-wrap gap-4">
+          <h3 className="text-sm font-medium mb-4 text-white">Connect with us:</h3>
+          <div className="flex flex-wrap gap-5">
             {socialMedia.map((platform) => (
               <a
                 key={platform.name}
                 href={platform.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`flex items-center gap-2 p-2 rounded-lg border border-border hover:bg-gray-800 transition-all ${platform.color} group`}
+                className={`flex items-center gap-3 p-3 rounded-lg border border-border hover:bg-gray-800 transition-all ${platform.color} group`}
                 aria-label={`Follow us on ${platform.name}`}
               >
-                <span className="transition-transform group-hover:scale-110">{platform.icon}</span>
-                <span className="text-sm">{platform.name}</span>
+                <span className="transition-transform group-hover:scale-125 duration-200">{platform.icon}</span>
+                <span className="text-sm text-white">{platform.name}</span>
               </a>
             ))}
           </div>
         </div>
 
         {/* Contact Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium mb-1">
+            <label htmlFor="name" className="block text-sm font-medium mb-2 text-white">
               Name
             </label>
             <input
@@ -327,13 +327,14 @@ export default function AboutPage() {
               name="name"
               value={formData.name}
               onChange={handleInputChange}
+              placeholder="Your name"
               required
-              className="w-full p-2 sm:p-3 bg-gray-800 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full p-3 sm:p-4 bg-gray-800 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
             />
           </div>
 
           <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">
+            <label htmlFor="email" className="block text-sm font-medium mb-2 text-white">
               Email
             </label>
             <input
@@ -342,13 +343,14 @@ export default function AboutPage() {
               name="email"
               value={formData.email}
               onChange={handleInputChange}
+              placeholder="your.email@example.com"
               required
-              className="w-full p-2 sm:p-3 bg-gray-800 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full p-3 sm:p-4 bg-gray-800 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
             />
           </div>
 
           <div>
-            <label htmlFor="message" className="block text-sm font-medium mb-1">
+            <label htmlFor="message" className="block text-sm font-medium mb-2 text-white">
               Message
             </label>
             <textarea
@@ -356,35 +358,38 @@ export default function AboutPage() {
               name="message"
               value={formData.message}
               onChange={handleInputChange}
+              placeholder="Your message here..."
               required
               rows={4}
-              className="w-full p-2 sm:p-3 bg-gray-800 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full p-3 sm:p-4 bg-gray-800 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={formStatus === "submitting"}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50"
-          >
-            {formStatus === "submitting" ? (
-              <>Sending...</>
-            ) : (
-              <>
-                Send Message
-                <Send className="h-4 w-4" />
-              </>
-            )}
-          </button>
+          <div className="flex justify-center">
+            <button
+              type="submit"
+              disabled={formStatus === "submitting"}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-200"
+            >
+              {formStatus === "submitting" ? (
+                <>Sending...</>
+              ) : (
+                <>
+                  Send Message
+                  <Send className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </div>
 
           {formStatus === "success" && (
-            <div className="p-3 bg-green-900 bg-opacity-30 border border-green-700 rounded-lg text-green-400 text-sm">
+            <div className="p-4 bg-green-900 bg-opacity-30 border border-green-700 rounded-lg text-green-400 text-sm text-center">
               Thank you! Your message has been sent successfully.
             </div>
           )}
 
           {formStatus === "error" && (
-            <div className="p-3 bg-red-900 bg-opacity-30 border border-red-700 rounded-lg text-red-400 text-sm">
+            <div className="p-4 bg-red-900 bg-opacity-30 border border-red-700 rounded-lg text-red-400 text-sm text-center">
               There was an error sending your message. Please try again.
             </div>
           )}
@@ -393,12 +398,12 @@ export default function AboutPage() {
 
       {/* Footer with Privacy Policy */}
       <footer className="w-full mt-auto pt-8 pb-4">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-sm text-gray-400">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-3 text-sm text-white">
           <p>© {new Date().getFullYear()} wearables.ai. All rights reserved.</p>
           <div className="flex items-center">
             <Link
               href="/privacy-policy"
-              className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors text-white"
             >
               Privacy Policy
             </Link>
