@@ -25,7 +25,7 @@ export function ThemeToggleCorner() {
   return (
     <button
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="fixed top-4 right-4 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-300 border border-primary/20"
+      className="fixed top-4 left-4 z-50 flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 text-primary hover:bg-primary/20 transition-all duration-300 border border-primary/20"
       aria-label="Toggle theme"
     >
       {theme === "dark" ? (
