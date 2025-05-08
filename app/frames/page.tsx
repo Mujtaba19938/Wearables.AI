@@ -58,18 +58,20 @@ export default function FramesPage() {
       isNew: true,
       isBestseller: true,
       faceShapes: ["Square", "Round", "Oval"],
+      rating: 4.8,
     },
     {
       id: "2",
       name: "Round Metal",
       price: 149,
-      image: "/placeholder.svg?key=594gt",
+      image: "/placeholder.svg?key=bygrh",
       colors: ["#C0C0C0", "#FFD700", "#000000"],
       material: "Metal",
       frameShape: "Round",
       isNew: false,
       isBestseller: false,
       faceShapes: ["Square", "Heart", "Diamond"],
+      rating: 4.5,
     },
     {
       id: "3",
@@ -82,6 +84,7 @@ export default function FramesPage() {
       isNew: false,
       isBestseller: true,
       faceShapes: ["Oval", "Heart", "Square"],
+      rating: 4.9,
     },
     {
       id: "4",
@@ -94,6 +97,7 @@ export default function FramesPage() {
       isNew: true,
       isBestseller: false,
       faceShapes: ["Round", "Oval", "Square"],
+      rating: 4.6,
     },
     {
       id: "5",
@@ -106,6 +110,7 @@ export default function FramesPage() {
       isNew: false,
       isBestseller: false,
       faceShapes: ["Round", "Oval", "Heart"],
+      rating: 4.3,
     },
     {
       id: "6",
@@ -118,6 +123,7 @@ export default function FramesPage() {
       isNew: false,
       isBestseller: true,
       faceShapes: ["Diamond", "Oval", "Heart"],
+      rating: 4.7,
     },
   ]
 

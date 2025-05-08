@@ -33,7 +33,8 @@ export async function loadARFaceTrackingModels() {
       console.log("AR face tracking models loaded successfully")
     } catch (error) {
       console.error("Error loading AR face tracking models:", error)
-      throw error
+      // Don't throw the error, just log it
+      // This allows the app to continue functioning even if model loading fails
     } finally {
       arLoadingPromise = null
     }
@@ -44,24 +45,42 @@ export async function loadARFaceTrackingModels() {
 
 // Function to detect face landmarks for AR positioning
 export async function detectFaceLandmarksForAR(videoElement: HTMLVideoElement | HTMLCanvasElement) {
+  if (!videoElement || !videoElement.width || !videoElement.height) {
+    return null
+  }
+
   try {
+    // Check if models are loaded
+    if (!faceapi.nets.tinyFaceDetector.isLoaded || !faceapi.nets.faceLandmark68Net.isLoaded) {
+      console.warn("Face detection models not loaded yet")
+      return null
+    }
+
     // Detect all faces with landmarks
     const detections = await faceapi
       .detectAllFaces(videoElement, new faceapi.TinyFaceDetectorOptions({ scoreThreshold: 0.5 }))
       .withFaceLandmarks()
 
-    if (!detections.length) {
+    if (!detections || !detections.length) {
       return null
     }
 
     // Get the first face detected (we'll use the most prominent face)
     const face = detections[0]
+    if (!face || !face.landmarks) {
+      return null
+    }
+
     const landmarks = face.landmarks
 
     // Extract key points for glasses positioning
     const leftEye = landmarks.getLeftEye()
     const rightEye = landmarks.getRightEye()
     const nose = landmarks.getNose()
+
+    if (!leftEye || !rightEye || !nose || leftEye.length === 0 || rightEye.length === 0 || nose.length === 0) {
+      return null
+    }
 
     // Calculate eye midpoints
     const leftEyeMidpoint = {
@@ -156,42 +175,5 @@ export function calculateGlassesPosition(faceLandmarks: any, videoWidth: number,
     height: glassesHeight,
     rotation,
     scale,
-  }
-}
-
-// Function to draw debug visualization of face tracking
-export function drawFaceTrackingDebug(ctx: CanvasRenderingContext2D, faceLandmarks: any, glassesPosition: any) {
-  if (!faceLandmarks) return
-
-  // Draw face landmarks
-  ctx.fillStyle = "#00ff00"
-  faceLandmarks.landmarks.forEach((point: { x: number; y: number }) => {
-    ctx.beginPath()
-    ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI)
-    ctx.fill()
-  })
-
-  // Draw eye midpoints
-  ctx.fillStyle = "#ff0000"
-  ctx.beginPath()
-  ctx.arc(faceLandmarks.leftEye.x, faceLandmarks.leftEye.y, 4, 0, 2 * Math.PI)
-  ctx.fill()
-  ctx.beginPath()
-  ctx.arc(faceLandmarks.rightEye.x, faceLandmarks.rightEye.y, 4, 0, 2 * Math.PI)
-  ctx.fill()
-
-  // Draw bridge point
-  ctx.fillStyle = "#0000ff"
-  ctx.beginPath()
-  ctx.arc(faceLandmarks.bridge.x, faceLandmarks.bridge.y, 4, 0, 2 * Math.PI)
-  ctx.fill()
-
-  // Draw glasses bounding box
-  if (glassesPosition) {
-    ctx.strokeStyle = "#ffff00"
-    ctx.lineWidth = 2
-    ctx.beginPath()
-    ctx.rect(glassesPosition.x, glassesPosition.y, glassesPosition.width, glassesPosition.height)
-    ctx.stroke()
   }
 }

@@ -19,6 +19,7 @@ export function ARGlassesOverlay({ videoRef, frameImage, isDebugMode = false, on
   const [isFaceDetected, setIsFaceDetected] = useState(false)
   const animationFrameRef = useRef<number | null>(null)
   const lastPositionRef = useRef<any>(null)
+  const [hasError, setHasError] = useState(false)
 
   // Load face tracking models on component mount
   useEffect(() => {
@@ -37,6 +38,7 @@ export function ARGlassesOverlay({ videoRef, frameImage, isDebugMode = false, on
         console.error("Failed to load AR face tracking models:", error)
         if (isMounted) {
           setIsModelLoading(false)
+          setHasError(true)
         }
       }
     }
@@ -48,6 +50,12 @@ export function ARGlassesOverlay({ videoRef, frameImage, isDebugMode = false, on
     glassesImage.onload = () => {
       if (isMounted) {
         glassesImageRef.current = glassesImage
+      }
+    }
+    glassesImage.onerror = () => {
+      console.error("Failed to load glasses image:", frameImage)
+      if (isMounted) {
+        setHasError(true)
       }
     }
 
@@ -63,7 +71,7 @@ export function ARGlassesOverlay({ videoRef, frameImage, isDebugMode = false, on
 
   // Start face tracking when video is playing
   useEffect(() => {
-    if (!videoRef.current || !canvasRef.current || isModelLoading) return
+    if (!videoRef.current || !canvasRef.current || isModelLoading || hasError) return
 
     const video = videoRef.current
     const canvas = canvasRef.current
@@ -74,16 +82,26 @@ export function ARGlassesOverlay({ videoRef, frameImage, isDebugMode = false, on
     // Set canvas dimensions to match video
     const resizeCanvas = () => {
       if (video && canvas) {
-        canvas.width = video.videoWidth || video.clientWidth
-        canvas.height = video.videoHeight || video.clientHeight
+        const width = video.videoWidth || video.clientWidth
+        const height = video.videoHeight || video.clientHeight
+
+        if (width && height) {
+          canvas.width = width
+          canvas.height = height
+        }
       }
     }
 
     // Initialize canvas size
-    resizeCanvas()
+    const handleVideoMetadata = () => {
+      resizeCanvas()
+    }
 
     // Update canvas size when video dimensions change
-    video.addEventListener("loadedmetadata", resizeCanvas)
+    video.addEventListener("loadedmetadata", handleVideoMetadata)
+
+    // Also try to resize immediately in case the video is already loaded
+    resizeCanvas()
 
     // Function to track face and render glasses
     const trackFaceAndRender = async () => {
@@ -96,6 +114,12 @@ export function ARGlassesOverlay({ videoRef, frameImage, isDebugMode = false, on
       ctx.clearRect(0, 0, canvas.width, canvas.height)
 
       try {
+        // Only proceed if video is actually playing
+        if (video.readyState < 2 || video.paused || video.ended) {
+          animationFrameRef.current = requestAnimationFrame(trackFaceAndRender)
+          return
+        }
+
         // Detect face landmarks
         const faceLandmarks = await detectFaceLandmarksForAR(video)
 
@@ -183,9 +207,13 @@ export function ARGlassesOverlay({ videoRef, frameImage, isDebugMode = false, on
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
-      video.removeEventListener("loadedmetadata", resizeCanvas)
+      video.removeEventListener("loadedmetadata", handleVideoMetadata)
     }
-  }, [videoRef, canvasRef, isModelLoading, frameImage, isDebugMode, isFaceDetected, onFaceDetected])
+  }, [videoRef, canvasRef, isModelLoading, frameImage, isDebugMode, isFaceDetected, onFaceDetected, hasError])
+
+  if (hasError) {
+    return null
+  }
 
   return (
     <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-10" aria-hidden="true" />
