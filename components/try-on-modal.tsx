@@ -1,11 +1,12 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { X, Camera, ImageIcon, CuboidIcon as CubeIcon, Ruler, Brain } from "lucide-react"
+import { X, Camera, ImageIcon, CuboidIcon as CubeIcon, Ruler, Brain, Glasses } from "lucide-react"
 import { FrameMeasurementsDisplay, type FrameMeasurements } from "./frame-measurements-display"
 import { AiFitPrediction } from "./ai-fit-prediction"
 import { extractFaceMeasurementsFromAnalysis } from "@/utils/fit-prediction"
 import type { FaceMeasurements } from "@/utils/fit-prediction"
+import { useTheme } from "next-themes"
 
 interface TryOnModalProps {
   isOpen: boolean
@@ -32,11 +33,17 @@ export function TryOnModal({
   frameShape = "Rectangle",
   faceAnalysisResults,
 }: TryOnModalProps) {
-  const [activeTab, setActiveTab] = useState<"camera" | "sample" | "3d" | "measurements" | "fit">("camera")
+  const [activeTab, setActiveTab] = useState<"camera" | "sample" | "3d" | "measurements" | "fit" | "ar">("camera")
   const [selectedColor, setSelectedColor] = useState("#000000")
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const [is3DLoading, setIs3DLoading] = useState(false)
+  const [isARLoading, setIsARLoading] = useState(false)
+  const [isARActive, setIsARActive] = useState(false)
   const [faceMeasurements, setFaceMeasurements] = useState<FaceMeasurements | null>(null)
+  const [cameraPermission, setCameraPermission] = useState<boolean | null>(null)
+  const { theme } = useTheme()
+  const isLightMode = theme === "light"
 
   // Default colors if none provided
   const colors = ["#000000", "#8B4513", "#3B82F6"]
@@ -77,7 +84,7 @@ export function TryOnModal({
 
   useEffect(() => {
     // If the frame has a 3D model, set the active tab to 3D
-    if (modelUrl && activeTab !== "3d") {
+    if (modelUrl && activeTab !== "3d" && activeTab !== "ar") {
       setActiveTab("3d")
     }
   }, [modelUrl, activeTab])
@@ -96,6 +103,51 @@ export function TryOnModal({
       return () => clearTimeout(timer)
     }
   }, [activeTab, modelUrl])
+
+  useEffect(() => {
+    // Initialize camera for AR or camera tab
+    if ((activeTab === "camera" || activeTab === "ar") && videoRef.current) {
+      if (activeTab === "ar") {
+        setIsARLoading(true)
+      }
+
+      // Request camera access
+      navigator.mediaDevices
+        .getUserMedia({ video: { facingMode: "user" } })
+        .then((stream) => {
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream
+            setCameraPermission(true)
+
+            if (activeTab === "ar") {
+              // Simulate AR initialization
+              setTimeout(() => {
+                setIsARLoading(false)
+                setIsARActive(true)
+              }, 1500)
+            }
+          }
+        })
+        .catch((err) => {
+          console.error("Error accessing camera:", err)
+          setCameraPermission(false)
+        })
+
+      return () => {
+        // Clean up video stream when component unmounts or tab changes
+        if (videoRef.current && videoRef.current.srcObject) {
+          const tracks = (videoRef.current.srcObject as MediaStream).getTracks()
+          tracks.forEach((track) => track.stop())
+          videoRef.current.srcObject = null
+        }
+
+        if (activeTab === "ar") {
+          setIsARActive(false)
+          setIsARLoading(false)
+        }
+      }
+    }
+  }, [activeTab])
 
   const renderMock3DModel = () => {
     // In a real implementation, this would use Three.js or another 3D library
@@ -186,23 +238,43 @@ export function TryOnModal({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div className="bg-card rounded-lg max-w-2xl w-full overflow-hidden border border-border">
-        <div className="flex items-center justify-between p-4 border-b border-[#1a1c25]">
+      <div
+        className={`rounded-lg max-w-2xl w-full overflow-hidden ${
+          isLightMode ? "bg-white border border-gray-200" : "bg-card border border-border"
+        }`}
+      >
+        <div
+          className={`flex items-center justify-between p-4 ${
+            isLightMode ? "border-b border-gray-200" : "border-b border-[#1a1c25]"
+          }`}
+        >
           <div className="flex items-center justify-between w-full">
-            <h2 className="text-xl font-bold">{frameName}</h2>
+            <h2 className={`text-xl font-bold ${isLightMode ? "text-gray-900" : ""}`}>{frameName}</h2>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-bold">${price}</span>
-              <span className="text-gray-400">{material}</span>
-              <button onClick={onClose} className="ml-2 p-1 rounded-full hover:bg-white/10" aria-label="Close">
+              <span className={`text-xl font-bold ${isLightMode ? "text-blue-600" : ""}`}>${price}</span>
+              <span className={isLightMode ? "text-gray-600" : "text-gray-400"}>{material}</span>
+              <button
+                onClick={onClose}
+                className={`ml-2 p-1 rounded-full ${isLightMode ? "hover:bg-gray-100" : "hover:bg-white/10"}`}
+                aria-label="Close"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-5 border-b border-[#1a1c25]">
+        <div className={`grid grid-cols-6 ${isLightMode ? "border-b border-gray-200" : "border-b border-[#1a1c25]"}`}>
           <button
-            className={`py-3 text-center ${activeTab === "camera" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"}`}
+            className={`py-3 text-center ${
+              activeTab === "camera"
+                ? isLightMode
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-secondary text-foreground"
+                : isLightMode
+                  ? "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                  : "bg-muted text-muted-foreground"
+            }`}
             onClick={() => setActiveTab("camera")}
           >
             <span className="flex items-center justify-center gap-2">
@@ -211,7 +283,15 @@ export function TryOnModal({
             </span>
           </button>
           <button
-            className={`py-3 text-center ${activeTab === "sample" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"}`}
+            className={`py-3 text-center ${
+              activeTab === "sample"
+                ? isLightMode
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-secondary text-foreground"
+                : isLightMode
+                  ? "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                  : "bg-muted text-muted-foreground"
+            }`}
             onClick={() => setActiveTab("sample")}
           >
             <span className="flex items-center justify-center gap-2">
@@ -220,7 +300,15 @@ export function TryOnModal({
             </span>
           </button>
           <button
-            className={`py-3 text-center ${activeTab === "3d" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"} ${!modelUrl ? "opacity-50" : ""}`}
+            className={`py-3 text-center ${
+              activeTab === "3d"
+                ? isLightMode
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-secondary text-foreground"
+                : isLightMode
+                  ? "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                  : "bg-muted text-muted-foreground"
+            } ${!modelUrl ? "opacity-50" : ""}`}
             onClick={() => modelUrl && setActiveTab("3d")}
             disabled={!modelUrl}
           >
@@ -230,7 +318,32 @@ export function TryOnModal({
             </span>
           </button>
           <button
-            className={`py-3 text-center ${activeTab === "measurements" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"}`}
+            className={`py-3 text-center ${
+              activeTab === "ar"
+                ? isLightMode
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-secondary text-foreground"
+                : isLightMode
+                  ? "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                  : "bg-muted text-muted-foreground"
+            }`}
+            onClick={() => setActiveTab("ar")}
+          >
+            <span className="flex items-center justify-center gap-2">
+              <Glasses className="w-4 h-4" />
+              <span className="hidden sm:inline">AR</span>
+            </span>
+          </button>
+          <button
+            className={`py-3 text-center ${
+              activeTab === "measurements"
+                ? isLightMode
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-secondary text-foreground"
+                : isLightMode
+                  ? "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                  : "bg-muted text-muted-foreground"
+            }`}
             onClick={() => setActiveTab("measurements")}
           >
             <span className="flex items-center justify-center gap-2">
@@ -239,7 +352,15 @@ export function TryOnModal({
             </span>
           </button>
           <button
-            className={`py-3 text-center ${activeTab === "fit" ? "bg-secondary text-foreground" : "bg-muted text-muted-foreground"}`}
+            className={`py-3 text-center ${
+              activeTab === "fit"
+                ? isLightMode
+                  ? "bg-blue-100 text-blue-800"
+                  : "bg-secondary text-foreground"
+                : isLightMode
+                  ? "bg-gray-50 text-gray-700 hover:bg-gray-100"
+                  : "bg-muted text-muted-foreground"
+            }`}
             onClick={() => setActiveTab("fit")}
           >
             <span className="flex items-center justify-center gap-2">
@@ -251,12 +372,30 @@ export function TryOnModal({
 
         <div className="aspect-[4/3] w-full bg-black relative">
           {activeTab === "camera" ? (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-gray-400 flex flex-col items-center">
-                <Camera className="w-12 h-12 mb-2" />
-                <p>Camera permission required</p>
-                <button className="mt-4 px-4 py-2 bg-[#3B82F6] hover:bg-[#2563EB] rounded-md">Enable Camera</button>
-              </div>
+            <div className="w-full h-full relative">
+              {cameraPermission === false ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-gray-400 flex flex-col items-center">
+                    <Camera className="w-12 h-12 mb-2" />
+                    <p>Camera permission required</p>
+                    <button
+                      className={`mt-4 px-4 py-2 rounded-md ${
+                        isLightMode
+                          ? "bg-blue-600 hover:bg-blue-700 text-white"
+                          : "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+                      }`}
+                      onClick={() => setActiveTab("camera")}
+                    >
+                      Enable Camera
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                  {/* This would be where the glasses overlay would go in a real implementation */}
+                </>
+              )}
             </div>
           ) : activeTab === "sample" ? (
             <div className="w-full h-full flex items-center justify-center">
@@ -273,12 +412,72 @@ export function TryOnModal({
                 <canvas ref={canvasRef} width={800} height={600} className="w-full h-full" />
               )}
             </div>
+          ) : activeTab === "ar" ? (
+            <div className="w-full h-full relative">
+              {isARLoading ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-gray-400 flex flex-col items-center">
+                    <Glasses className="w-12 h-12 mb-2 animate-pulse" />
+                    <p>Initializing AR experience...</p>
+                  </div>
+                </div>
+              ) : cameraPermission === false ? (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-gray-400 flex flex-col items-center">
+                    <Camera className="w-12 h-12 mb-2" />
+                    <p>Camera permission required for AR</p>
+                    <button
+                      className={`mt-4 px-4 py-2 rounded-md ${
+                        isLightMode
+                          ? "bg-blue-600 hover:bg-blue-700 text-white"
+                          : "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+                      }`}
+                      onClick={() => setActiveTab("ar")}
+                    >
+                      Enable Camera
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
+                  {isARActive && (
+                    <div className="absolute inset-0 pointer-events-none">
+                      {/* AR glasses overlay */}
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4">
+                        <img
+                          src={frameImage || "/placeholder.svg"}
+                          alt={frameName}
+                          className="w-full h-auto opacity-90"
+                          style={{ filter: `drop-shadow(0 0 8px rgba(0,0,0,0.3))` }}
+                        />
+                      </div>
+
+                      {/* AR UI elements */}
+                      <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                        <Glasses className="w-3 h-3" />
+                        AR Mode Active
+                      </div>
+
+                      <div className="absolute bottom-4 right-4 flex gap-2">
+                        <button className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white">
+                          <Camera className="w-5 h-5" />
+                        </button>
+                        <button className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white">
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           ) : activeTab === "measurements" ? (
-            <div className="w-full h-full bg-card p-4 overflow-auto">
+            <div className={`w-full h-full p-4 overflow-auto ${isLightMode ? "bg-white" : "bg-card"}`}>
               <FrameMeasurementsDisplay measurements={frameMeasurements} />
             </div>
           ) : (
-            <div className="w-full h-full bg-card p-4 overflow-auto">
+            <div className={`w-full h-full p-4 overflow-auto ${isLightMode ? "bg-white" : "bg-card"}`}>
               {faceMeasurements ? (
                 <AiFitPrediction
                   frameMeasurements={frameMeasurements}
@@ -290,18 +489,17 @@ export function TryOnModal({
                 <div className="flex flex-col items-center justify-center h-full">
                   <Brain className="w-12 h-12 text-muted-foreground mb-2" />
                   <p className="text-muted-foreground">Face analysis required for AI fit prediction</p>
-                  <button className="mt-4 px-4 py-2 bg-[#3B82F6] hover:bg-[#2563EB] rounded-md text-white">
+                  <button
+                    className={`mt-4 px-4 py-2 rounded-md ${
+                      isLightMode
+                        ? "bg-blue-600 hover:bg-blue-700 text-white"
+                        : "bg-[#3B82F6] hover:bg-[#2563EB] text-white"
+                    }`}
+                  >
                     Analyze Your Face
                   </button>
                 </div>
               )}
-            </div>
-          )}
-
-          {/* This would be where the AR glasses overlay would go in a real implementation */}
-          {(activeTab === "camera" || activeTab === "sample") && (
-            <div className="absolute inset-0 pointer-events-none">
-              {/* AR glasses overlay would be positioned here */}
             </div>
           )}
         </div>
@@ -318,7 +516,11 @@ export function TryOnModal({
               />
             ))}
           </div>
-          <button className="px-6 py-2 bg-primary hover:bg-primary/90 text-white rounded-md flex items-center gap-2">
+          <button
+            className={`px-6 py-2 rounded-md flex items-center gap-2 ${
+              isLightMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-primary hover:bg-primary/90 text-white"
+            }`}
+          >
             {activeTab === "measurements" ? (
               <>
                 <Ruler className="w-4 h-4" />
@@ -333,6 +535,11 @@ export function TryOnModal({
               <>
                 <CubeIcon className="w-4 h-4" />
                 Save View
+              </>
+            ) : activeTab === "ar" ? (
+              <>
+                <Glasses className="w-4 h-4" />
+                {isARActive ? "Take AR Photo" : "Start AR"}
               </>
             ) : (
               <>

@@ -124,15 +124,11 @@
 
   /* Badge styles */
   .badge-new {
-    @apply px-3 py-1 rounded-full text-xs font-medium;
-    background-color: hsl(var(--badge-new-bg));
-    color: hsl(var(--badge-new-text));
+    @apply px-3 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-xs font-medium rounded-full shadow-md;
   }
 
   .badge-bestseller {
-    @apply px-3 py-1 rounded-full text-xs font-medium;
-    background-color: hsl(var(--badge-bestseller-bg));
-    color: hsl(var(--badge-bestseller-text));
+    @apply px-3 py-1 bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-medium rounded-full shadow-md;
   }
 
   /* Social icon styles */

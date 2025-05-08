@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Heart, ShoppingCart, Maximize2, CuboidIcon as CubeIcon } from "lucide-react"
+import { Heart, Maximize2, CuboidIcon as CubeIcon, Glasses, Camera } from "lucide-react"
 import { TryOnModal } from "./try-on-modal"
 import { Frame3DCaptureModal } from "./frame-3d-capture-modal"
 import type { FrameMeasurements } from "./frame-measurements-display"
@@ -18,7 +18,6 @@ interface FrameCardProps {
   isBestseller?: boolean
   modelUrl?: string
   faceAnalysisResults?: any
-  onAddToCart?: () => void
   onAddToWishlist?: () => void
 }
 
@@ -46,7 +45,6 @@ export function FrameCard({
   isBestseller = false,
   modelUrl,
   faceAnalysisResults,
-  onAddToCart,
   onAddToWishlist,
 }: FrameCardProps) {
   const [selectedColor, setSelectedColor] = useState(colors[0])
@@ -55,6 +53,7 @@ export function FrameCard({
   const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false)
   const [is3DCaptureModalOpen, setIs3DCaptureModalOpen] = useState(false)
   const [showTooltip, setShowTooltip] = useState<string | null>(null)
+  const [isARActive, setIsARActive] = useState(false)
   const { theme } = useTheme()
   const isLightMode = theme === "light"
 
@@ -68,6 +67,27 @@ export function FrameCard({
     frameWeight: 28,
     frameDepth: 38,
     rimThickness: 5,
+  }
+
+  const handleARTryOn = () => {
+    // Check if WebXR is supported
+    if ("xr" in navigator) {
+      // In a real implementation, this would launch the AR experience
+      // For now, we'll just open the try-on modal
+      setIsTryOnModalOpen(true)
+
+      // Simulate AR activation
+      setIsARActive(true)
+
+      // For demo purposes, we'll reset the AR state after a few seconds
+      setTimeout(() => {
+        setIsARActive(false)
+      }, 5000)
+    } else {
+      // Fallback for browsers that don't support WebXR
+      alert("AR is not supported in your browser. Try using the latest Chrome or Safari on a compatible device.")
+      setIsTryOnModalOpen(true)
+    }
   }
 
   return (
@@ -175,16 +195,26 @@ export function FrameCard({
               ))}
             </div>
 
+            {/* Replace Add to Cart with Try On with AR */}
             <button
-              onClick={onAddToCart}
+              onClick={handleARTryOn}
               className={`flex items-center gap-1 px-4 py-2 rounded-md text-sm font-medium shadow-sm ${
                 isLightMode
                   ? "bg-blue-600 text-white hover:bg-blue-700"
                   : "bg-primary text-primary-foreground hover:bg-primary/90"
-              }`}
+              } ${isARActive ? "animate-pulse" : ""}`}
             >
-              <ShoppingCart className="w-4 h-4" />
-              Add to Cart
+              {isARActive ? (
+                <>
+                  <Camera className="w-4 h-4 animate-spin" />
+                  AR Active...
+                </>
+              ) : (
+                <>
+                  <Glasses className="w-4 h-4" />
+                  Try On with AR
+                </>
+              )}
             </button>
           </div>
 
@@ -209,7 +239,10 @@ export function FrameCard({
       {isTryOnModalOpen && (
         <TryOnModal
           isOpen={isTryOnModalOpen}
-          onClose={() => setIsTryOnModalOpen(false)}
+          onClose={() => {
+            setIsTryOnModalOpen(false)
+            setIsARActive(false)
+          }}
           frameName={name}
           frameImage={image}
           modelUrl={modelUrl || null}
