@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { X, Camera, ImageIcon, CuboidIcon as CubeIcon, Ruler, Brain, Glasses } from "lucide-react"
+import { X, Camera, ImageIcon, CuboidIcon as CubeIcon, Ruler, Brain, Glasses, Bug, Loader2 } from "lucide-react"
 import { FrameMeasurementsDisplay, type FrameMeasurements } from "./frame-measurements-display"
 import { AiFitPrediction } from "./ai-fit-prediction"
 import { extractFaceMeasurementsFromAnalysis } from "@/utils/fit-prediction"
 import type { FaceMeasurements } from "@/utils/fit-prediction"
 import { useTheme } from "next-themes"
+import { ARGlassesOverlay } from "./ar-glasses-overlay"
 
 interface TryOnModalProps {
   isOpen: boolean
@@ -42,6 +43,9 @@ export function TryOnModal({
   const [isARActive, setIsARActive] = useState(false)
   const [faceMeasurements, setFaceMeasurements] = useState<FaceMeasurements | null>(null)
   const [cameraPermission, setCameraPermission] = useState<boolean | null>(null)
+  const [isFaceDetected, setIsFaceDetected] = useState(false)
+  const [isDebugMode, setIsDebugMode] = useState(false)
+  const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const { theme } = useTheme()
   const isLightMode = theme === "light"
 
@@ -113,24 +117,31 @@ export function TryOnModal({
 
       // Request camera access
       navigator.mediaDevices
-        .getUserMedia({ video: { facingMode: "user" } })
+        .getUserMedia({
+          video: {
+            facingMode: "user",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
+        })
         .then((stream) => {
           if (videoRef.current) {
             videoRef.current.srcObject = stream
             setCameraPermission(true)
 
             if (activeTab === "ar") {
-              // Simulate AR initialization
+              // For AR mode, we'll initialize face tracking
               setTimeout(() => {
                 setIsARLoading(false)
                 setIsARActive(true)
-              }, 1500)
+              }, 1000)
             }
           }
         })
         .catch((err) => {
           console.error("Error accessing camera:", err)
           setCameraPermission(false)
+          setIsARLoading(false)
         })
 
       return () => {
@@ -143,7 +154,6 @@ export function TryOnModal({
 
         if (activeTab === "ar") {
           setIsARActive(false)
-          setIsARLoading(false)
         }
       }
     }
@@ -232,6 +242,33 @@ export function TryOnModal({
 
     // Request next frame
     requestAnimationFrame(renderMock3DModel)
+  }
+
+  const captureARImage = () => {
+    if (!videoRef.current) return
+
+    const video = videoRef.current
+    const canvas = document.createElement("canvas")
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    // Draw the video frame
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+    // Get the image data URL
+    const imageDataURL = canvas.toDataURL("image/jpeg")
+    setCapturedImage(imageDataURL)
+  }
+
+  const handleFaceDetectionChange = (detected: boolean) => {
+    setIsFaceDetected(detected)
+  }
+
+  const toggleDebugMode = () => {
+    setIsDebugMode(!isDebugMode)
   }
 
   if (!isOpen) return null
@@ -327,7 +364,10 @@ export function TryOnModal({
                   ? "bg-gray-50 text-gray-700 hover:bg-gray-100"
                   : "bg-muted text-muted-foreground"
             }`}
-            onClick={() => setActiveTab("ar")}
+            onClick={() => {
+              setActiveTab("ar")
+              setCapturedImage(null)
+            }}
           >
             <span className="flex items-center justify-center gap-2">
               <Glasses className="w-4 h-4" />
@@ -393,7 +433,6 @@ export function TryOnModal({
               ) : (
                 <>
                   <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
-                  {/* This would be where the glasses overlay would go in a real implementation */}
                 </>
               )}
             </div>
@@ -417,8 +456,8 @@ export function TryOnModal({
               {isARLoading ? (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-gray-400 flex flex-col items-center">
-                    <Glasses className="w-12 h-12 mb-2 animate-pulse" />
-                    <p>Initializing AR experience...</p>
+                    <Loader2 className="w-12 h-12 mb-2 animate-spin" />
+                    <p>Initializing AR face tracking...</p>
                   </div>
                 </div>
               ) : cameraPermission === false ? (
@@ -438,37 +477,59 @@ export function TryOnModal({
                     </button>
                   </div>
                 </div>
+              ) : capturedImage ? (
+                // Show captured AR image
+                <div className="relative w-full h-full">
+                  <img
+                    src={capturedImage || "/placeholder.svg"}
+                    alt="AR Capture"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute bottom-4 right-4 flex gap-2">
+                    <button
+                      className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white"
+                      onClick={() => setCapturedImage(null)}
+                      aria-label="Retake photo"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <>
                   <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" />
                   {isARActive && (
-                    <div className="absolute inset-0 pointer-events-none">
-                      {/* AR glasses overlay */}
-                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3/4">
-                        <img
-                          src={frameImage || "/placeholder.svg"}
-                          alt={frameName}
-                          className="w-full h-auto opacity-90"
-                          style={{ filter: `drop-shadow(0 0 8px rgba(0,0,0,0.3))` }}
-                        />
-                      </div>
-
-                      {/* AR UI elements */}
-                      <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
-                        <Glasses className="w-3 h-3" />
-                        AR Mode Active
-                      </div>
-
-                      <div className="absolute bottom-4 right-4 flex gap-2">
-                        <button className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white">
-                          <Camera className="w-5 h-5" />
-                        </button>
-                        <button className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white">
-                          <X className="w-5 h-5" />
-                        </button>
-                      </div>
-                    </div>
+                    <ARGlassesOverlay
+                      videoRef={videoRef}
+                      frameImage={frameImage}
+                      isDebugMode={isDebugMode}
+                      onFaceDetected={handleFaceDetectionChange}
+                    />
                   )}
+
+                  {/* AR UI elements */}
+                  <div className="absolute top-4 left-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1">
+                    <Glasses className="w-3 h-3" />
+                    {isFaceDetected ? "Face Tracked" : "Searching for Face..."}
+                  </div>
+
+                  <div className="absolute bottom-4 right-4 flex gap-2">
+                    <button
+                      className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white"
+                      onClick={toggleDebugMode}
+                      aria-label="Toggle debug mode"
+                    >
+                      <Bug className="w-5 h-5" />
+                    </button>
+                    <button
+                      className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white"
+                      onClick={captureARImage}
+                      disabled={!isFaceDetected}
+                      aria-label="Capture AR image"
+                    >
+                      <Camera className="w-5 h-5" />
+                    </button>
+                  </div>
                 </>
               )}
             </div>
@@ -520,6 +581,7 @@ export function TryOnModal({
             className={`px-6 py-2 rounded-md flex items-center gap-2 ${
               isLightMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-primary hover:bg-primary/90 text-white"
             }`}
+            disabled={activeTab === "ar" && !isFaceDetected && !capturedImage}
           >
             {activeTab === "measurements" ? (
               <>
@@ -539,7 +601,7 @@ export function TryOnModal({
             ) : activeTab === "ar" ? (
               <>
                 <Glasses className="w-4 h-4" />
-                {isARActive ? "Take AR Photo" : "Start AR"}
+                {capturedImage ? "Save AR Photo" : isARActive ? "Take AR Photo" : "Start AR"}
               </>
             ) : (
               <>
