@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 
-export default function CookieConsent() {
+export function CookieConsent() {
   const [showBanner, setShowBanner] = useState(false)
 
   useEffect(() => {

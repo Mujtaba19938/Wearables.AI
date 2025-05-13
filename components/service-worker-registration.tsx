@@ -63,3 +63,6 @@ export function ServiceWorkerRegistration() {
     </div>
   )
 }
+
+// Add default export
+export default ServiceWorkerRegistration

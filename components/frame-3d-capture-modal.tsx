@@ -22,13 +22,19 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
   const [currentAngle, setCurrentAngle] = useState(0)
   const [isUploading, setIsUploading] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
+  const [processingProgress, setProcessingProgress] = useState(0)
+  const [uploadProgress, setUploadProgress] = useState(0)
 
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const processingTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const uploadTimerRef = useRef<NodeJS.Timeout | null>(null)
 
   const totalAngles = 4 // Number of angles to capture for 3D reconstruction
+  const angleLabels = ["Front", "Left Side", "Right Side", "Top"]
 
   // Safe cleanup function for camera
   const cleanupCamera = () => {
@@ -123,6 +129,15 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
           // Move to next angle or processing
           if (currentAngle < totalAngles - 1) {
             setCurrentAngle((prev) => prev + 1)
+
+            // Temporarily stop the camera
+            cleanupCamera()
+
+            // Show a brief confirmation before reopening camera
+            setTimeout(() => {
+              // Reopen camera for next angle
+              initializeCamera()
+            }, 500)
           } else {
             // All angles captured, move to processing
             setCaptureStage("processing")
@@ -130,10 +145,8 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
             // Clean up camera
             cleanupCamera()
 
-            // Simulate processing
-            setTimeout(() => {
-              setCaptureStage("complete")
-            }, 2000)
+            // Start processing simulation
+            simulateProcessing()
           }
         } catch (e) {
           console.error("Error creating image:", e)
@@ -144,6 +157,59 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
       console.error("Capture error:", e)
       setCameraError("Failed to capture image")
     }
+  }
+
+  // Simulate 3D model processing with progress
+  const simulateProcessing = () => {
+    setProcessingProgress(0)
+
+    // Clear any existing timer
+    if (processingTimerRef.current) {
+      clearInterval(processingTimerRef.current)
+    }
+
+    // Simulate processing with progress updates
+    processingTimerRef.current = setInterval(() => {
+      setProcessingProgress((prev) => {
+        const newProgress = prev + 5
+        if (newProgress >= 100) {
+          if (processingTimerRef.current) {
+            clearInterval(processingTimerRef.current)
+          }
+          // Move to upload stage
+          simulateUpload()
+          return 100
+        }
+        return newProgress
+      })
+    }, 100)
+  }
+
+  // Simulate model upload with progress
+  const simulateUpload = () => {
+    setCaptureStage("uploading")
+    setUploadProgress(0)
+
+    // Clear any existing timer
+    if (uploadTimerRef.current) {
+      clearInterval(uploadTimerRef.current)
+    }
+
+    // Simulate upload with progress updates
+    uploadTimerRef.current = setInterval(() => {
+      setUploadProgress((prev) => {
+        const newProgress = prev + 10
+        if (newProgress >= 100) {
+          if (uploadTimerRef.current) {
+            clearInterval(uploadTimerRef.current)
+          }
+          // Move to complete stage
+          setCaptureStage("complete")
+          return 100
+        }
+        return newProgress
+      })
+    }, 150)
   }
 
   // Handle file upload
@@ -162,14 +228,29 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
       }
 
       setIsUploading(true)
+      setCaptureStage("uploading")
+      setUploadProgress(0)
 
-      // Simulate upload
-      setTimeout(() => {
-        const mockModelUrl = `/models/${frameName.toLowerCase().replace(/\s+/g, "-")}.glb`
-        onUploadComplete(mockModelUrl)
-        setIsUploading(false)
-        onClose()
-      }, 2000)
+      // Simulate upload with progress
+      const uploadInterval = setInterval(() => {
+        setUploadProgress((prev) => {
+          const newProgress = prev + 10
+          if (newProgress >= 100) {
+            clearInterval(uploadInterval)
+
+            // Complete the upload
+            setTimeout(() => {
+              const mockModelUrl = `/models/${frameName.toLowerCase().replace(/\s+/g, "-")}.glb`
+              onUploadComplete(mockModelUrl)
+              setIsUploading(false)
+              onClose()
+            }, 500)
+
+            return 100
+          }
+          return newProgress
+        })
+      }, 150)
     } catch (e) {
       console.error("Upload error:", e)
       setIsUploading(false)
@@ -184,6 +265,14 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
     setCurrentAngle(0)
     setCameraError(null)
     setCaptureStage("intro")
+
+    // Clear any timers
+    if (processingTimerRef.current) {
+      clearInterval(processingTimerRef.current)
+    }
+    if (uploadTimerRef.current) {
+      clearInterval(uploadTimerRef.current)
+    }
   }
 
   // Complete capture process
@@ -209,6 +298,14 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
     // Cleanup on unmount or when leaving capture stage
     return () => {
       cleanupCamera()
+
+      // Clear any timers
+      if (processingTimerRef.current) {
+        clearInterval(processingTimerRef.current)
+      }
+      if (uploadTimerRef.current) {
+        clearInterval(uploadTimerRef.current)
+      }
     }
   }, [isOpen, captureStage])
 
@@ -216,6 +313,14 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
   useEffect(() => {
     return () => {
       cleanupCamera()
+
+      // Clear any timers
+      if (processingTimerRef.current) {
+        clearInterval(processingTimerRef.current)
+      }
+      if (uploadTimerRef.current) {
+        clearInterval(uploadTimerRef.current)
+      }
     }
   }, [])
 
@@ -318,7 +423,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
                 />
 
                 {/* Last Captured Image (shown after first capture) */}
-                {capturedImages.length > 0 && currentAngle > 0 && (
+                {capturedImages.length > 0 && currentAngle > 0 && !streamRef.current && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black">
                     <img
                       src={capturedImages[capturedImages.length - 1] || "/placeholder.svg"}
@@ -333,7 +438,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
               <div className="flex items-center justify-between">
                 <div className="text-sm">
                   <span className="text-primary font-medium">
-                    Angle {currentAngle + 1}/{totalAngles}
+                    Angle {currentAngle + 1}/{totalAngles}: {angleLabels[currentAngle]}
                   </span>
                   <p className="text-muted-foreground">Rotate the frame after each capture</p>
                 </div>
@@ -348,9 +453,9 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
 
                   <button
                     onClick={handleCapture}
-                    disabled={!!cameraError}
+                    disabled={!!cameraError || !streamRef.current}
                     className={`px-4 py-2 rounded-lg text-primary-foreground hover:bg-primary/90 transition-colors ${
-                      !cameraError ? "bg-primary" : "bg-gray-700 cursor-not-allowed"
+                      !cameraError && streamRef.current ? "bg-primary" : "bg-gray-700 cursor-not-allowed"
                     }`}
                   >
                     Capture
@@ -386,9 +491,36 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
             <div className="py-8 text-center">
               <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
               <h3 className="text-lg font-medium mb-2">Processing 3D Model</h3>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground mb-4">
                 We're creating a 3D model from your photos. This may take a moment...
               </p>
+
+              {/* Progress bar */}
+              <div className="w-full bg-muted rounded-full h-2.5 mb-2">
+                <div
+                  className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${processingProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-muted-foreground">{processingProgress}% complete</p>
+            </div>
+          )}
+
+          {/* Uploading Stage */}
+          {captureStage === "uploading" && (
+            <div className="py-8 text-center">
+              <Upload className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
+              <h3 className="text-lg font-medium mb-2">Uploading 3D Model</h3>
+              <p className="text-sm text-muted-foreground mb-4">Uploading your 3D model to the cloud...</p>
+
+              {/* Progress bar */}
+              <div className="w-full bg-muted rounded-full h-2.5 mb-2">
+                <div
+                  className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-out"
+                  style={{ width: `${uploadProgress}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-muted-foreground">{uploadProgress}% complete</p>
             </div>
           )}
 
@@ -415,3 +547,5 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
     </div>
   )
 }
+
+export default Frame3DCaptureModal

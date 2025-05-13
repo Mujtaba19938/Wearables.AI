@@ -59,6 +59,9 @@ export function AnalysisResults({
 
   const isFallbackMode = landmarks.length < 68
 
+  // Ensure confidence is a number between 0-100
+  const displayConfidence = typeof confidence === "number" ? Math.min(100, Math.max(0, Math.round(confidence))) : 0
+
   return (
     <div className="w-full">
       {isFallbackMode && (
@@ -88,21 +91,25 @@ export function AnalysisResults({
                 Your Face Shape: <span className="text-[#3B82F6]">{faceShape}</span>
               </h2>
 
-              {confidence > 0 && analysisMode === "extensive" && (
+              {analysisMode === "extensive" && (
                 <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded text-xs">
                   <span className="text-gray-400">{isFallbackMode ? "Estimate" : "Confidence"}:</span>
                   <span
                     className={`font-medium ${
-                      confidence > 75 ? "text-green-400" : confidence > 50 ? "text-yellow-400" : "text-red-400"
+                      displayConfidence > 75
+                        ? "text-green-400"
+                        : displayConfidence > 50
+                          ? "text-yellow-400"
+                          : "text-red-400"
                     }`}
                   >
-                    {confidence}%
+                    {displayConfidence}%
                   </span>
                 </div>
               )}
             </div>
 
-            <p className="text-sm sm:text-base text-gray-300 mb-4">
+            <p className="text-sm sm:text-base text-gray-300 dark:text-gray-300 light:text-gray-700 mb-4">
               Based on our analysis, you have a {faceShape.toLowerCase()} face shape. This shape is characterized by{" "}
               {description}
             </p>
@@ -117,7 +124,7 @@ export function AnalysisResults({
                   {alternativeShapes.slice(1, 3).map((alt, index) => (
                     <div key={index} className="bg-muted px-2 py-1 rounded text-xs flex items-center gap-1">
                       <span>{alt.shape}</span>
-                      <span className="text-gray-400">({alt.score}%)</span>
+                      <span className="text-gray-400">({Math.round(alt.score)}%)</span>
                     </div>
                   ))}
                 </div>
@@ -197,3 +204,5 @@ export function AnalysisResults({
     </div>
   )
 }
+
+export default AnalysisResults

@@ -566,3 +566,6 @@ export function AnimatedBackground({ reducedMotion = false, lowPowerMode = false
     />
   )
 }
+
+// Add default export
+export default AnimatedBackground

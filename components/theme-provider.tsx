@@ -15,14 +15,22 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     // Add transition class to body for smooth theme changes
     document.body.classList.add("theme-transition")
 
-    // Apply appropriate theme class to body
+    // Apply appropriate theme class to body and html
     const updateBodyClass = () => {
-      if (localStorage.getItem("theme") === "dark") {
+      const isDark =
+        localStorage.getItem("theme") === "dark" ||
+        (!localStorage.getItem("theme") && window.matchMedia("(prefers-color-scheme: dark)").matches)
+
+      if (isDark) {
         document.documentElement.classList.add("dark")
         document.documentElement.classList.remove("light")
+        document.body.classList.add("dark")
+        document.body.classList.remove("light")
       } else {
         document.documentElement.classList.add("light")
         document.documentElement.classList.remove("dark")
+        document.body.classList.add("light")
+        document.body.classList.remove("dark")
       }
     }
 
@@ -32,8 +40,13 @@ export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
     // Listen for theme changes
     window.addEventListener("storage", updateBodyClass)
 
+    // Listen for system preference changes
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+    mediaQuery.addEventListener("change", updateBodyClass)
+
     return () => {
       window.removeEventListener("storage", updateBodyClass)
+      mediaQuery.removeEventListener("change", updateBodyClass)
     }
   }, [])
 
@@ -51,3 +64,5 @@ export const ThemeContext = createContext({
 })
 
 export const useTheme = () => useContext(ThemeContext)
+
+export default ThemeProvider

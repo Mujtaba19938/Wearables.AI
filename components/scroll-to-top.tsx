@@ -61,3 +61,6 @@ export function ScrollToTop() {
     </button>
   )
 }
+
+// Add default export
+export default ScrollToTop

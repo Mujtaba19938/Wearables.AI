@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import { X, Camera, ImageIcon, CuboidIcon as CubeIcon, Ruler, Brain, Glasses, Bug, Loader2 } from "lucide-react"
+import { X, Camera, ImageIcon, CuboidIcon as CubeIcon, Ruler, Brain, Glasses, Bug, Loader2, Share2 } from "lucide-react"
 import { FrameMeasurementsDisplay, type FrameMeasurements } from "./frame-measurements-display"
 import { AiFitPrediction } from "./ai-fit-prediction"
 import { extractFaceMeasurementsFromAnalysis } from "@/utils/fit-prediction"
 import type { FaceMeasurements } from "@/utils/fit-prediction"
 import { useTheme } from "next-themes"
 import { ARGlassesOverlay } from "./ar-glasses-overlay"
+import { ShareARPhoto } from "./share-ar-photo"
+import { useToast } from "@/contexts/toast-context"
 
 interface TryOnModalProps {
   isOpen: boolean
@@ -48,6 +50,8 @@ export function TryOnModal({
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const { theme } = useTheme()
   const isLightMode = theme === "light"
+  const [isSharing, setIsSharing] = useState(false)
+  const { showToast } = useToast()
 
   // Default colors if none provided
   const colors = ["#000000", "#8B4513", "#3B82F6"]
@@ -261,6 +265,16 @@ export function TryOnModal({
     // Get the image data URL
     const imageDataURL = canvas.toDataURL("image/jpeg")
     setCapturedImage(imageDataURL)
+    setIsSharing(false) // Reset sharing state when capturing a new image
+    showToast("Photo captured! Now you can share it.", "success")
+  }
+
+  const handleSharePhoto = () => {
+    setIsSharing(true)
+  }
+
+  const handleCloseSharing = () => {
+    setIsSharing(false)
   }
 
   const handleFaceDetectionChange = (detected: boolean) => {
@@ -486,13 +500,26 @@ export function TryOnModal({
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute bottom-4 right-4 flex gap-2">
-                    <button
-                      className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white"
-                      onClick={() => setCapturedImage(null)}
-                      aria-label="Retake photo"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
+                    {isSharing ? (
+                      <ShareARPhoto imageDataURL={capturedImage} frameName={frameName} onClose={handleCloseSharing} />
+                    ) : (
+                      <>
+                        <button
+                          className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white"
+                          onClick={() => setCapturedImage(null)}
+                          aria-label="Retake photo"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                        <button
+                          className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white"
+                          onClick={handleSharePhoto}
+                          aria-label="Share photo"
+                        >
+                          <Share2 className="w-5 h-5" />
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -582,6 +609,13 @@ export function TryOnModal({
               isLightMode ? "bg-blue-600 hover:bg-blue-700 text-white" : "bg-primary hover:bg-primary/90 text-white"
             }`}
             disabled={activeTab === "ar" && !isFaceDetected && !capturedImage}
+            onClick={() => {
+              if (activeTab === "ar" && capturedImage) {
+                return isSharing ? handleCloseSharing() : handleSharePhoto()
+              } else if (activeTab === "ar") {
+                return handleSaveARPhoto()
+              }
+            }}
           >
             {activeTab === "measurements" ? (
               <>
@@ -597,6 +631,11 @@ export function TryOnModal({
               <>
                 <CubeIcon className="w-4 h-4" />
                 Save View
+              </>
+            ) : activeTab === "ar" && capturedImage ? (
+              <>
+                <Share2 className="w-4 h-4" />
+                {isSharing ? "Close Sharing" : "Share AR Photo"}
               </>
             ) : activeTab === "ar" ? (
               <>
@@ -614,4 +653,9 @@ export function TryOnModal({
       </div>
     </div>
   )
+
+  const handleSaveARPhoto = () => {
+    // In a real app, this would save the photo to the user's account
+    showToast("Photo saved to your gallery!", "success")
+  }
 }

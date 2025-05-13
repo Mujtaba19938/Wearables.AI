@@ -104,3 +104,6 @@ export function OfflineDetector() {
     </>
   )
 }
+
+// Add default export
+export default OfflineDetector

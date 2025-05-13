@@ -162,3 +162,6 @@ export function Preloader({ className, duration = 2000, onLoadingComplete }: Pre
     </div>
   )
 }
+
+// Add default export
+export default Preloader

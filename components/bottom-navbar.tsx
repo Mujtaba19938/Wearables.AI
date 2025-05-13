@@ -97,3 +97,6 @@ export function BottomNavbar() {
     </div>
   )
 }
+
+// Add default export
+export default BottomNavbar
