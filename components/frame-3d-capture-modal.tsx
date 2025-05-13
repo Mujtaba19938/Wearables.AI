@@ -33,6 +33,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const processingTimerRef = useRef<NodeJS.Timeout | null>(null)
   const uploadTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const uploadIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   const totalAngles = 4 // Number of angles to capture for 3D reconstruction
   const angleLabels = ["Front", "Left Side", "Right Side", "Top"]
@@ -180,16 +181,29 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
     }
   }
 
+  // Clear all timers
+  const clearAllTimers = () => {
+    if (processingTimerRef.current) {
+      clearInterval(processingTimerRef.current)
+      processingTimerRef.current = null
+    }
+    if (uploadTimerRef.current) {
+      clearInterval(uploadTimerRef.current)
+      uploadTimerRef.current = null
+    }
+    if (uploadIntervalRef.current) {
+      clearInterval(uploadIntervalRef.current)
+      uploadIntervalRef.current = null
+    }
+  }
+
   // Simulate 3D model processing with progress
   const simulateProcessing = () => {
     console.log("Starting processing simulation")
     setProcessingProgress(0)
 
     // Clear any existing timer
-    if (processingTimerRef.current) {
-      clearInterval(processingTimerRef.current)
-      processingTimerRef.current = null
-    }
+    clearAllTimers()
 
     // Simulate processing with progress updates
     processingTimerRef.current = setInterval(() => {
@@ -220,10 +234,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
     setUploadProgress(0)
 
     // Clear any existing timer
-    if (uploadTimerRef.current) {
-      clearInterval(uploadTimerRef.current)
-      uploadTimerRef.current = null
-    }
+    clearAllTimers()
 
     // Simulate upload with progress updates
     uploadTimerRef.current = setInterval(() => {
@@ -266,12 +277,21 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
       setCaptureStage("uploading")
       setUploadProgress(0)
 
+      // Clear any existing timers
+      clearAllTimers()
+
       // Simulate upload with progress
-      const uploadInterval = setInterval(() => {
+      console.log("Starting file upload simulation")
+      uploadIntervalRef.current = setInterval(() => {
         setUploadProgress((prev) => {
+          console.log("File upload progress:", prev)
           const newProgress = prev + 10
           if (newProgress >= 100) {
-            clearInterval(uploadInterval)
+            console.log("File upload complete")
+            if (uploadIntervalRef.current) {
+              clearInterval(uploadIntervalRef.current)
+              uploadIntervalRef.current = null
+            }
 
             // Complete the upload
             setTimeout(() => {
@@ -303,14 +323,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
     setCameraReady(false)
 
     // Clear any timers
-    if (processingTimerRef.current) {
-      clearInterval(processingTimerRef.current)
-      processingTimerRef.current = null
-    }
-    if (uploadTimerRef.current) {
-      clearInterval(uploadTimerRef.current)
-      uploadTimerRef.current = null
-    }
+    clearAllTimers()
 
     // Reinitialize camera
     setTimeout(() => {
@@ -341,16 +354,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
     // Cleanup on unmount or when leaving capture stage
     return () => {
       cleanupCamera()
-
-      // Clear any timers
-      if (processingTimerRef.current) {
-        clearInterval(processingTimerRef.current)
-        processingTimerRef.current = null
-      }
-      if (uploadTimerRef.current) {
-        clearInterval(uploadTimerRef.current)
-        uploadTimerRef.current = null
-      }
+      clearAllTimers()
     }
   }, [isOpen, captureStage])
 
@@ -358,16 +362,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
   useEffect(() => {
     return () => {
       cleanupCamera()
-
-      // Clear any timers
-      if (processingTimerRef.current) {
-        clearInterval(processingTimerRef.current)
-        processingTimerRef.current = null
-      }
-      if (uploadTimerRef.current) {
-        clearInterval(uploadTimerRef.current)
-        uploadTimerRef.current = null
-      }
+      clearAllTimers()
     }
   }, [])
 
@@ -377,6 +372,12 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
       console.log("Capture stage changed to processing, starting simulation")
       // Ensure processing starts
       simulateProcessing()
+    } else if (captureStage === "uploading") {
+      console.log("Capture stage changed to uploading, ensuring upload simulation")
+      // If we're in the uploading stage but no timer is running, start the upload simulation
+      if (!uploadTimerRef.current && !uploadIntervalRef.current) {
+        simulateUpload()
+      }
     }
   }, [captureStage])
 
@@ -395,6 +396,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
           <button
             onClick={() => {
               cleanupCamera()
+              clearAllTimers()
               onClose()
             }}
             className="p-1 rounded-full hover:bg-white/10"
@@ -588,6 +590,13 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
                 ></div>
               </div>
               <p className="text-xs text-muted-foreground">{uploadProgress}% complete</p>
+
+              {/* Manual retry button if stuck */}
+              {uploadProgress === 0 && (
+                <button onClick={simulateUpload} className="mt-4 px-4 py-2 bg-primary rounded-md text-white">
+                  Start Upload
+                </button>
+              )}
             </div>
           )}
 
