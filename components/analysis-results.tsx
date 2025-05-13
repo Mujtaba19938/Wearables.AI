@@ -81,7 +81,9 @@ export function AnalysisResults({
           <div className="w-full sm:w-40 sm:h-40 rounded-lg overflow-hidden flex-shrink-0">
             <FaceImageViewer imageData={imageData} landmarks={landmarks} measurements={measurements} />
             {analysisMode === "extensive" && (
-              <p className="text-xs text-center text-gray-400 mt-1">Toggle the eye icon to view facial landmarks</p>
+              <p className="text-xs text-center text-gray-500 dark:text-gray-400 mt-1">
+                Toggle the eye icon to view facial landmarks
+              </p>
             )}
           </div>
 
@@ -93,14 +95,16 @@ export function AnalysisResults({
 
               {analysisMode === "extensive" && (
                 <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded text-xs">
-                  <span className="text-gray-400">{isFallbackMode ? "Estimate" : "Confidence"}:</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    {isFallbackMode ? "Estimate" : "Confidence"}:
+                  </span>
                   <span
                     className={`font-medium ${
                       displayConfidence > 75
-                        ? "text-green-400"
+                        ? "text-green-600 dark:text-green-400"
                         : displayConfidence > 50
-                          ? "text-yellow-400"
-                          : "text-red-400"
+                          ? "text-yellow-600 dark:text-yellow-400"
+                          : "text-red-600 dark:text-red-400"
                     }`}
                   >
                     {displayConfidence}%
@@ -109,14 +113,14 @@ export function AnalysisResults({
               )}
             </div>
 
-            <p className="text-sm sm:text-base text-gray-300 dark:text-gray-300 light:text-gray-700 mb-4">
+            <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300 mb-4">
               Based on our analysis, you have a {faceShape.toLowerCase()} face shape. This shape is characterized by{" "}
               {description}
             </p>
 
             {alternativeShapes && alternativeShapes.length > 1 && analysisMode === "extensive" && (
               <div className="mb-4">
-                <div className="flex items-center gap-1 text-xs text-gray-400 mb-2">
+                <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-2">
                   <Info className="w-3 h-3" />
                   <span>Alternative face shape matches:</span>
                 </div>
@@ -124,7 +128,7 @@ export function AnalysisResults({
                   {alternativeShapes.slice(1, 3).map((alt, index) => (
                     <div key={index} className="bg-muted px-2 py-1 rounded text-xs flex items-center gap-1">
                       <span>{alt.shape}</span>
-                      <span className="text-gray-400">({Math.round(alt.score)}%)</span>
+                      <span className="text-gray-500 dark:text-gray-400">({Math.round(alt.score)}%)</span>
                     </div>
                   ))}
                 </div>
@@ -145,19 +149,19 @@ export function AnalysisResults({
               <div className="bg-muted p-3 rounded-lg mb-4 text-xs sm:text-sm">
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <p className="text-gray-400">Width/Height Ratio:</p>
+                    <p className="text-gray-500 dark:text-gray-400">Width/Height Ratio:</p>
                     <p>{measurements.widthToHeightRatio.toFixed(2)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400">Forehead/Jaw Ratio:</p>
+                    <p className="text-gray-500 dark:text-gray-400">Forehead/Jaw Ratio:</p>
                     <p>{measurements.foreheadToJawRatio.toFixed(2)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400">Cheekbone/Jaw Ratio:</p>
+                    <p className="text-gray-500 dark:text-gray-400">Cheekbone/Jaw Ratio:</p>
                     <p>{measurements.cheekboneToJawRatio.toFixed(2)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400">Jaw Angularity:</p>
+                    <p className="text-gray-500 dark:text-gray-400">Jaw Angularity:</p>
                     <p>{measurements.jawAngularity.toFixed(1)}°</p>
                   </div>
                 </div>
@@ -178,7 +182,7 @@ export function AnalysisResults({
               </div>
               <div>
                 <p className="font-medium">{style}</p>
-                <p className="text-xs sm:text-sm text-gray-400">
+                <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-400">
                   {style === "Square" && "Bold frames with angular lines to contrast with your softer features."}
                   {style === "Rectangle" && "Structured frames that add definition and angles to your face."}
                   {style === "Round" && "Circular frames that soften angular features and add balance."}
