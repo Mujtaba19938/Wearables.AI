@@ -24,6 +24,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [processingProgress, setProcessingProgress] = useState(0)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [cameraReady, setCameraReady] = useState(false)
 
   // Refs
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -53,6 +54,8 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
       if (videoRef.current && videoRef.current.srcObject) {
         videoRef.current.srcObject = null
       }
+
+      setCameraReady(false)
     } catch (e) {
       console.error("Error in cleanup:", e)
     }
@@ -62,6 +65,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
   const initializeCamera = async () => {
     try {
       setCameraError(null)
+      setCameraReady(false)
 
       // Clean up any existing streams first
       cleanupCamera()
@@ -92,6 +96,22 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
         videoRef.current.setAttribute("playsinline", "true")
         videoRef.current.setAttribute("autoplay", "true")
         videoRef.current.muted = true
+
+        // Wait for video to be ready
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current
+              .play()
+              .then(() => {
+                console.log("Camera ready")
+                setCameraReady(true)
+              })
+              .catch((err) => {
+                console.error("Error playing video:", err)
+                setCameraError("Could not start video stream")
+              })
+          }
+        }
       }
     } catch (error) {
       console.error("Camera error:", error)
@@ -129,6 +149,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
           // Move to next angle or processing
           if (currentAngle < totalAngles - 1) {
             setCurrentAngle((prev) => prev + 1)
+            setCameraReady(false)
 
             // Temporarily stop the camera
             cleanupCamera()
@@ -265,6 +286,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
     setCurrentAngle(0)
     setCameraError(null)
     setCaptureStage("intro")
+    setCameraReady(false)
 
     // Clear any timers
     if (processingTimerRef.current) {
@@ -273,6 +295,11 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
     if (uploadTimerRef.current) {
       clearInterval(uploadTimerRef.current)
     }
+
+    // Reinitialize camera
+    setTimeout(() => {
+      initializeCamera()
+    }, 300)
   }
 
   // Complete capture process
@@ -404,11 +431,22 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
                     <p className="text-red-400 font-medium mb-2">Camera Error</p>
                     <p className="text-gray-300 text-sm">{cameraError}</p>
                     <button
-                      onClick={() => setCaptureStage("intro")}
+                      onClick={() => {
+                        setCameraError(null)
+                        initializeCamera()
+                      }}
                       className="mt-4 px-4 py-2 bg-primary rounded-md text-white"
                     >
-                      Go Back
+                      Try Again
                     </button>
+                  </div>
+                )}
+
+                {/* Loading indicator */}
+                {!cameraReady && !cameraError && (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-4 text-center">
+                    <Loader2 className="h-12 w-12 text-primary animate-spin mb-2" />
+                    <p className="text-gray-300 text-sm">Initializing camera...</p>
                   </div>
                 )}
 
@@ -423,7 +461,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
                 />
 
                 {/* Last Captured Image (shown after first capture) */}
-                {capturedImages.length > 0 && currentAngle > 0 && !streamRef.current && (
+                {capturedImages.length > 0 && currentAngle > 0 && !cameraReady && !cameraError && (
                   <div className="absolute inset-0 flex items-center justify-center bg-black">
                     <img
                       src={capturedImages[capturedImages.length - 1] || "/placeholder.svg"}
@@ -453,12 +491,12 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
 
                   <button
                     onClick={handleCapture}
-                    disabled={!!cameraError || !streamRef.current}
+                    disabled={!!cameraError || !cameraReady}
                     className={`px-4 py-2 rounded-lg text-primary-foreground hover:bg-primary/90 transition-colors ${
-                      !cameraError && streamRef.current ? "bg-primary" : "bg-gray-700 cursor-not-allowed"
+                      !cameraError && cameraReady ? "bg-primary" : "bg-gray-700 cursor-not-allowed"
                     }`}
                   >
-                    Capture
+                    {cameraReady ? "Capture" : "Waiting..."}
                   </button>
                 </div>
               </div>
