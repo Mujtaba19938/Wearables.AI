@@ -182,55 +182,69 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
 
   // Simulate 3D model processing with progress
   const simulateProcessing = () => {
+    console.log("Starting processing simulation")
     setProcessingProgress(0)
 
     // Clear any existing timer
     if (processingTimerRef.current) {
       clearInterval(processingTimerRef.current)
+      processingTimerRef.current = null
     }
 
     // Simulate processing with progress updates
     processingTimerRef.current = setInterval(() => {
       setProcessingProgress((prev) => {
+        console.log("Processing progress:", prev)
         const newProgress = prev + 5
         if (newProgress >= 100) {
+          console.log("Processing complete, moving to upload")
           if (processingTimerRef.current) {
             clearInterval(processingTimerRef.current)
+            processingTimerRef.current = null
           }
           // Move to upload stage
-          simulateUpload()
+          setTimeout(() => {
+            simulateUpload()
+          }, 500)
           return 100
         }
         return newProgress
       })
-    }, 100)
+    }, 200)
   }
 
   // Simulate model upload with progress
   const simulateUpload = () => {
+    console.log("Starting upload simulation")
     setCaptureStage("uploading")
     setUploadProgress(0)
 
     // Clear any existing timer
     if (uploadTimerRef.current) {
       clearInterval(uploadTimerRef.current)
+      uploadTimerRef.current = null
     }
 
     // Simulate upload with progress updates
     uploadTimerRef.current = setInterval(() => {
       setUploadProgress((prev) => {
+        console.log("Upload progress:", prev)
         const newProgress = prev + 10
         if (newProgress >= 100) {
+          console.log("Upload complete, moving to complete stage")
           if (uploadTimerRef.current) {
             clearInterval(uploadTimerRef.current)
+            uploadTimerRef.current = null
           }
           // Move to complete stage
-          setCaptureStage("complete")
+          setTimeout(() => {
+            setCaptureStage("complete")
+          }, 500)
           return 100
         }
         return newProgress
       })
-    }, 150)
+    }, 300)
   }
 
   // Handle file upload
@@ -271,7 +285,7 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
           }
           return newProgress
         })
-      }, 150)
+      }, 300)
     } catch (e) {
       console.error("Upload error:", e)
       setIsUploading(false)
@@ -291,9 +305,11 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
     // Clear any timers
     if (processingTimerRef.current) {
       clearInterval(processingTimerRef.current)
+      processingTimerRef.current = null
     }
     if (uploadTimerRef.current) {
       clearInterval(uploadTimerRef.current)
+      uploadTimerRef.current = null
     }
 
     // Reinitialize camera
@@ -329,9 +345,11 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
       // Clear any timers
       if (processingTimerRef.current) {
         clearInterval(processingTimerRef.current)
+        processingTimerRef.current = null
       }
       if (uploadTimerRef.current) {
         clearInterval(uploadTimerRef.current)
+        uploadTimerRef.current = null
       }
     }
   }, [isOpen, captureStage])
@@ -344,12 +362,23 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
       // Clear any timers
       if (processingTimerRef.current) {
         clearInterval(processingTimerRef.current)
+        processingTimerRef.current = null
       }
       if (uploadTimerRef.current) {
         clearInterval(uploadTimerRef.current)
+        uploadTimerRef.current = null
       }
     }
   }, [])
+
+  // Force processing to start when captureStage changes to "processing"
+  useEffect(() => {
+    if (captureStage === "processing") {
+      console.log("Capture stage changed to processing, starting simulation")
+      // Ensure processing starts
+      simulateProcessing()
+    }
+  }, [captureStage])
 
   // Don't render anything if not open
   if (!isOpen) {
