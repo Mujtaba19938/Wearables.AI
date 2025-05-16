@@ -1,462 +1,363 @@
 "use client"
 
+import { useState } from "react"
+import Link from "next/link"
+import Image from "next/image"
 import { useTheme } from "next-themes"
+import { ChevronLeft, ChevronRight, Info, Camera, Upload, Check, AlertTriangle } from "lucide-react"
 
 export default function GuidePage() {
+  const [currentStep, setCurrentStep] = useState(1)
+  const totalSteps = 5
   const { theme } = useTheme()
-  const isLightMode = theme === "light"
+
+  const nextStep = () => {
+    if (currentStep < totalSteps) {
+      setCurrentStep(currentStep + 1)
+    }
+  }
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1)
+    }
+  }
 
   return (
-    <main className="flex min-h-screen flex-col items-start p-4 sm:p-6 max-w-4xl mx-auto">
-      <div className="w-full mb-8">
-        <h1 className={`text-3xl sm:text-4xl font-bold mb-1 sm:mb-2 ${isLightMode ? "text-gray-900" : ""}`}>Guide</h1>
-        <p className={`mb-2 sm:mb-4 text-sm sm:text-base ${isLightMode ? "text-gray-600" : "text-gray-400"}`}>
-          Learn how to use our app to find the perfect eyeglasses for your face shape
-        </p>
-
-        {/* Progress indicator */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className={`h-2 w-8 rounded-full ${isLightMode ? "bg-blue-600" : "bg-primary"}`}></div>
-          <div className={`h-2 w-8 rounded-full ${isLightMode ? "bg-gray-200" : "bg-gray-600"}`}></div>
-          <div className={`h-2 w-8 rounded-full ${isLightMode ? "bg-gray-200" : "bg-gray-600"}`}></div>
-          <span className={`text-xs ml-2 ${isLightMode ? "text-gray-600" : "text-gray-400"}`}>Step 1 of 3: Learn</span>
-        </div>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="flex items-center mb-6">
+        <Link href="/" className="text-blue-500 hover:text-blue-700 flex items-center">
+          <ChevronLeft className="w-5 h-5 mr-1" />
+          Back to Home
+        </Link>
+        <h1 className="text-3xl font-bold text-center flex-grow">Guide to Perfect Eyewear</h1>
       </div>
 
-      <h2 className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-8 ${isLightMode ? "text-gray-900" : ""}`}>
-        How to Use the App
-      </h2>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full mb-6 sm:mb-12">
+      {/* Progress bar */}
+      <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6 dark:bg-gray-700">
         <div
-          className={`p-4 sm:p-6 rounded-xl shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl ${
-            isLightMode
-              ? "bg-white border border-gray-200 hover:border-blue-200 hover:shadow-blue-100"
-              : "bg-gray-800/80 border border-gray-700 hover:border-primary/50 hover:shadow-primary/20"
-          }`}
-        >
-          <div
-            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-4 shadow-md ${
-              isLightMode
-                ? "bg-gradient-to-br from-blue-400 to-blue-600"
-                : "bg-gradient-to-br from-blue-500 to-blue-700"
-            }`}
-          >
-            <span className="text-white font-bold text-lg">1</span>
-          </div>
-          <h3 className={`text-lg sm:text-xl font-bold mb-2 sm:mb-3 ${isLightMode ? "text-gray-900" : ""}`}>
-            Take a Photo
-          </h3>
-          <p className={`text-sm sm:text-base ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
-            Use your camera or upload a photo that clearly shows your face from the front.
-          </p>
-        </div>
-
-        <div
-          className={`p-4 sm:p-6 rounded-xl shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl ${
-            isLightMode
-              ? "bg-white border border-gray-200 hover:border-blue-200 hover:shadow-blue-100"
-              : "bg-gray-800/80 border border-gray-700 hover:border-primary/50 hover:shadow-primary/20"
-          }`}
-        >
-          <div
-            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-4 shadow-md ${
-              isLightMode
-                ? "bg-gradient-to-br from-blue-400 to-blue-600"
-                : "bg-gradient-to-br from-blue-500 to-blue-700"
-            }`}
-          >
-            <span className="text-white font-bold text-lg">2</span>
-          </div>
-          <h3 className={`text-lg sm:text-xl font-bold mb-2 sm:mb-3 ${isLightMode ? "text-gray-900" : ""}`}>Analyze</h3>
-          <p className={`text-sm sm:text-base ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
-            Our AI will analyze your facial features to determine your face shape.
-          </p>
-        </div>
-
-        <div
-          className={`p-4 sm:p-6 rounded-xl shadow-lg transition-all duration-300 hover:translate-y-[-4px] hover:shadow-xl ${
-            isLightMode
-              ? "bg-white border border-gray-200 hover:border-blue-200 hover:shadow-blue-100"
-              : "bg-gray-800/80 border border-gray-700 hover:border-primary/50 hover:shadow-primary/20"
-          }`}
-        >
-          <div
-            className={`w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center mb-4 shadow-md ${
-              isLightMode
-                ? "bg-gradient-to-br from-blue-400 to-blue-600"
-                : "bg-gradient-to-br from-blue-500 to-blue-700"
-            }`}
-          >
-            <span className="text-white font-bold text-lg">3</span>
-          </div>
-          <h3 className={`text-lg sm:text-xl font-bold mb-2 sm:mb-3 ${isLightMode ? "text-gray-900" : ""}`}>
-            Get Recommendations
-          </h3>
-          <p className={`text-sm sm:text-base ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
-            View personalized eyeglass style recommendations based on your face shape.
-          </p>
-        </div>
+          className="bg-blue-500 h-2.5 rounded-full transition-all duration-300 ease-in-out"
+          style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+        ></div>
       </div>
 
-      {/* Tips section with individual cards */}
-      <h2 className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 ${isLightMode ? "text-gray-900" : ""}`}>
-        Tips for Best Results
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mb-8">
-        <div
-          className={`p-4 rounded-xl shadow-md transition-all duration-300 hover:bg-opacity-90 ${
-            isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"
-          }`}
-        >
-          <div className="flex items-start gap-3">
-            <div className={`p-2 rounded-lg ${isLightMode ? "bg-blue-100" : "bg-blue-500/20"}`}>
-              <svg
-                className={`w-5 h-5 ${isLightMode ? "text-blue-600" : "text-blue-400"}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className={`font-semibold mb-1 ${isLightMode ? "text-gray-900" : ""}`}>Good Lighting</h3>
-              <p className={`text-sm ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
-                Ensure your face is well-lit with even lighting from the front
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`p-4 rounded-xl shadow-md transition-all duration-300 hover:bg-opacity-90 ${
-            isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"
-          }`}
-        >
-          <div className="flex items-start gap-3">
-            <div className={`p-2 rounded-lg ${isLightMode ? "bg-blue-100" : "bg-blue-500/20"}`}>
-              <svg
-                className={`w-5 h-5 ${isLightMode ? "text-blue-600" : "text-blue-400"}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className={`font-semibold mb-1 ${isLightMode ? "text-gray-900" : ""}`}>Remove Obstructions</h3>
-              <p className={`text-sm ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
-                Remove glasses, hats, or anything that might obscure your face shape
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`p-4 rounded-xl shadow-md transition-all duration-300 hover:bg-opacity-90 ${
-            isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"
-          }`}
-        >
-          <div className="flex items-start gap-3">
-            <div className={`p-2 rounded-lg ${isLightMode ? "bg-blue-100" : "bg-blue-500/20"}`}>
-              <svg
-                className={`w-5 h-5 ${isLightMode ? "text-blue-600" : "text-blue-400"}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className={`font-semibold mb-1 ${isLightMode ? "text-gray-900" : ""}`}>Neutral Expression</h3>
-              <p className={`text-sm ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
-                Look directly at the camera with a neutral expression
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className={`p-4 rounded-xl shadow-md transition-all duration-300 hover:bg-opacity-90 ${
-            isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"
-          }`}
-        >
-          <div className="flex items-start gap-3">
-            <div className={`p-2 rounded-lg ${isLightMode ? "bg-blue-100" : "bg-blue-500/20"}`}>
-              <svg
-                className={`w-5 h-5 ${isLightMode ? "text-blue-600" : "text-blue-400"}`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                />
-              </svg>
-            </div>
-            <div>
-              <h3 className={`font-semibold mb-1 ${isLightMode ? "text-gray-900" : ""}`}>Clear Jawline</h3>
-              <p className={`text-sm ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
-                Pull your hair back to reveal your entire face shape and jawline
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Good vs Bad Photo Examples */}
-      <h2 className={`text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 ${isLightMode ? "text-gray-900" : ""}`}>
-        Photo Examples
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 w-full mb-8">
-        <div
-          className={`p-4 rounded-xl ${isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"}`}
-        >
-          <h3 className={`font-semibold mb-3 flex items-center ${isLightMode ? "text-gray-900" : ""}`}>
-            <svg
-              className="w-5 h-5 text-green-500 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            Good Example
-          </h3>
-          <div className="aspect-square bg-gray-700 rounded-lg overflow-hidden mb-3 flex items-center justify-center">
-            <img src="/neutral-portrait.png" alt="Good photo example" className="w-full h-full object-cover" />
-          </div>
-          <ul className={`text-sm space-y-1 ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
-            <li className="flex items-center">
-              <svg
-                className="w-4 h-4 text-green-500 mr-2 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Even lighting
-            </li>
-            <li className="flex items-center">
-              <svg
-                className="w-4 h-4 text-green-500 mr-2 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Neutral expression
-            </li>
-            <li className="flex items-center">
-              <svg
-                className="w-4 h-4 text-green-500 mr-2 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-              Clear view of jawline
-            </li>
-          </ul>
-        </div>
-
-        <div
-          className={`p-4 rounded-xl ${isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"}`}
-        >
-          <h3 className={`font-semibold mb-3 flex items-center ${isLightMode ? "text-gray-900" : ""}`}>
-            <svg
-              className="w-5 h-5 text-red-500 mr-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            Bad Example
-          </h3>
-          <div className="aspect-square bg-gray-700 rounded-lg overflow-hidden mb-3 flex items-center justify-center">
-            <img src="/dimly-lit-person.png" alt="Bad photo example" className="w-full h-full object-cover" />
-          </div>
-          <ul className={`text-sm space-y-1 ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
-            <li className="flex items-center">
-              <svg
-                className="w-4 h-4 text-red-500 mr-2 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Poor lighting
-            </li>
-            <li className="flex items-center">
-              <svg
-                className="w-4 h-4 text-red-500 mr-2 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Wearing glasses/hat
-            </li>
-            <li className="flex items-center">
-              <svg
-                className="w-4 h-4 text-red-500 mr-2 flex-shrink-0"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              Jawline obscured
-            </li>
-          </ul>
-        </div>
-      </div>
-
-      {/* Video Tutorial */}
-      <div
-        className={`w-full p-4 sm:p-6 rounded-xl shadow-lg mb-8 ${
-          isLightMode ? "bg-white border border-gray-200" : "bg-gray-800/80 border border-gray-700"
-        }`}
-      >
-        <h2 className={`text-xl sm:text-2xl font-bold mb-3 flex items-center ${isLightMode ? "text-gray-900" : ""}`}>
-          <svg
-            className={`w-6 h-6 mr-2 ${isLightMode ? "text-blue-600" : "text-blue-400"}`}
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
-            />
-          </svg>
-          Video Walkthrough
-        </h2>
-        <div
-          className={`aspect-video rounded-lg overflow-hidden mb-4 flex items-center justify-center ${
-            isLightMode ? "bg-gray-100" : "bg-gray-900"
-          }`}
-        >
-          <div className="text-center p-6">
-            <svg
-              className={`w-16 h-16 mx-auto mb-4 opacity-70 ${isLightMode ? "text-blue-600" : "text-blue-500"}`}
-              fill="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M8 5v14l11-7z" />
-            </svg>
-            <p className={`${isLightMode ? "text-gray-600" : "text-gray-400"}`}>
-              Tutorial video showing how to use the face analyzer
+      {/* Step content */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
+        {currentStep === 1 && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold">Welcome to the Eyewear Guide</h2>
+            <p className="text-gray-700 dark:text-gray-300">
+              Finding the perfect eyewear for your face shape is both an art and a science. This guide will walk you
+              through our process and help you understand how to get the most accurate results.
             </p>
+            <div className="flex justify-center my-6">
+              <div className="relative w-full max-w-md h-64">
+                <Image
+                  src="/placeholder-t4mxm.png"
+                  alt="Person trying different eyeglass styles"
+                  fill
+                  className="rounded-lg object-cover"
+                />
+              </div>
+            </div>
+            <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg flex items-start">
+              <Info className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0 mr-3" />
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                Our face analyzer uses advanced algorithms to determine your face shape and recommend the most
+                flattering eyewear styles.
+              </p>
+            </div>
           </div>
-        </div>
-        <p className={`text-sm ${isLightMode ? "text-gray-700" : "text-gray-300"}`}>
-          This video demonstrates how to take the perfect photo for analysis, navigate the app, and understand your
-          results.
-        </p>
+        )}
+
+        {currentStep === 2 && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold">Preparing for Analysis</h2>
+            <p className="text-gray-700 dark:text-gray-300">
+              To get the most accurate results, please follow these preparation tips before using our face analyzer:
+            </p>
+            <ul className="space-y-3 mt-4">
+              {[
+                "Remove glasses, hats, and hair from your face",
+                "Ensure good, even lighting on your face",
+                "Look directly at the camera with a neutral expression",
+                "Position your face to fill most of the frame",
+                "Remove heavy makeup that might alter face contours",
+              ].map((tip, index) => (
+                <li key={index} className="flex items-start">
+                  <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0 mr-3" />
+                  <span className="text-gray-700 dark:text-gray-300">{tip}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-center my-6">
+              <div className="grid grid-cols-2 gap-4 w-full max-w-md">
+                <div className="relative h-40">
+                  <Image src="/placeholder-4rrf5.png" alt="Good example" fill className="rounded-lg object-cover" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-green-500 text-white text-center text-sm py-1 rounded-b-lg">
+                    Good
+                  </div>
+                </div>
+                <div className="relative h-40">
+                  <Image src="/placeholder-p0lly.png" alt="Bad example" fill className="rounded-lg object-cover" />
+                  <div className="absolute bottom-0 left-0 right-0 bg-red-500 text-white text-center text-sm py-1 rounded-b-lg">
+                    Avoid
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 3 && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold">Using the Face Analyzer</h2>
+            <p className="text-gray-700 dark:text-gray-300">
+              Our face analyzer offers two convenient ways to analyze your face shape:
+            </p>
+
+            <div className="grid md:grid-cols-2 gap-6 mt-6">
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <div className="flex items-center mb-3">
+                  <Camera className="w-6 h-6 text-blue-500 mr-2" />
+                  <h3 className="text-xl font-medium">Camera Mode</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                  Use your device's camera to take a photo in real-time for immediate analysis.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0 mr-2" />
+                    <span>Quick and convenient</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0 mr-2" />
+                    <span>Real-time guidance</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0 mr-2" />
+                    <span>Instant results</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
+                <div className="flex items-center mb-3">
+                  <Upload className="w-6 h-6 text-purple-500 mr-2" />
+                  <h3 className="text-xl font-medium">Upload Mode</h3>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                  Upload an existing photo from your device for analysis.
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-start">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0 mr-2" />
+                    <span>Use your best photo</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0 mr-2" />
+                    <span>More control over image quality</span>
+                  </li>
+                  <li className="flex items-start">
+                    <Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0 mr-2" />
+                    <span>Works on all devices</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg flex items-start mt-4">
+              <AlertTriangle className="w-5 h-5 text-yellow-500 mt-1 flex-shrink-0 mr-3" />
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                Your privacy is important to us. All face analysis is performed locally on your device, and your photos
+                are never stored or sent to any server.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 4 && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold">Understanding Face Shapes</h2>
+            <p className="text-gray-700 dark:text-gray-300">
+              Our analyzer identifies your face shape from these common types. Each shape has ideal frame styles that
+              complement its features:
+            </p>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6">
+              {[
+                {
+                  shape: "Oval",
+                  description: "Balanced proportions with a slightly narrower jawline than forehead.",
+                  frames: "Most styles work well, especially rectangular and square frames.",
+                },
+                {
+                  shape: "Round",
+                  description: "Similar width and length with soft curves and full cheeks.",
+                  frames: "Angular, rectangular frames to add definition.",
+                },
+                {
+                  shape: "Square",
+                  description: "Strong jawline with a broad forehead and angular features.",
+                  frames: "Round or oval frames to soften angles.",
+                },
+                {
+                  shape: "Heart",
+                  description: "Wider forehead and cheekbones with a narrow chin.",
+                  frames: "Bottom-heavy frames or rimless styles.",
+                },
+                {
+                  shape: "Diamond",
+                  description: "Narrow forehead and jawline with wide cheekbones.",
+                  frames: "Cat-eye or oval frames to highlight cheekbones.",
+                },
+                {
+                  shape: "Rectangle",
+                  description: "Long face with straight cheek lines.",
+                  frames: "Frames with decorative temples or bold colors.",
+                },
+              ].map((item, index) => (
+                <div key={index} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                  <h3 className="text-lg font-medium text-blue-600 dark:text-blue-400 mb-2">{item.shape}</h3>
+                  <p className="text-xs text-gray-600 dark:text-gray-300 mb-2">{item.description}</p>
+                  <p className="text-xs font-medium text-gray-800 dark:text-gray-200">
+                    <span className="text-green-600 dark:text-green-400">Best frames:</span> {item.frames}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg flex items-start mt-4">
+              <Info className="w-5 h-5 text-blue-500 mt-1 flex-shrink-0 mr-3" />
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                Our analyzer provides a confidence score for each face shape match, and may suggest alternative shapes
+                that could also work well for you.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {currentStep === 5 && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-semibold">Try On and Explore</h2>
+            <p className="text-gray-700 dark:text-gray-300">
+              After analyzing your face shape, you can explore recommended frames and try them on virtually:
+            </p>
+
+            <div className="space-y-6 mt-6">
+              <div className="flex items-start">
+                <div className="bg-blue-100 dark:bg-blue-800 rounded-full p-2 mr-4 flex-shrink-0">
+                  <span className="flex items-center justify-center w-6 h-6 text-blue-600 dark:text-blue-200 font-bold">
+                    1
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium mb-1">Browse Recommendations</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    View frames specifically recommended for your face shape, with detailed explanations of why they
+                    work for you.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <div className="bg-blue-100 dark:bg-blue-800 rounded-full p-2 mr-4 flex-shrink-0">
+                  <span className="flex items-center justify-center w-6 h-6 text-blue-600 dark:text-blue-200 font-bold">
+                    2
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium mb-1">Virtual Try-On</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Use our AR technology to see how different frames look on your face in real-time.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <div className="bg-blue-100 dark:bg-blue-800 rounded-full p-2 mr-4 flex-shrink-0">
+                  <span className="flex items-center justify-center w-6 h-6 text-blue-600 dark:text-blue-200 font-bold">
+                    3
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium mb-1">Save Favorites</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Save frames you like to your profile for future reference or to share with others.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start">
+                <div className="bg-blue-100 dark:bg-blue-800 rounded-full p-2 mr-4 flex-shrink-0">
+                  <span className="flex items-center justify-center w-6 h-6 text-blue-600 dark:text-blue-200 font-bold">
+                    4
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-medium mb-1">Create Your Own 3D Models</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">
+                    Use our 3D capture tool to create models of your own glasses and see how they look from every angle.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-center my-6">
+              <div className="relative w-full max-w-md h-64">
+                <Image
+                  src="/placeholder-e3hxj.png"
+                  alt="AR glasses try-on demonstration"
+                  fill
+                  className="rounded-lg object-cover"
+                />
+              </div>
+            </div>
+
+            <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg flex items-start">
+              <Check className="w-5 h-5 text-green-500 mt-1 flex-shrink-0 mr-3" />
+              <p className="text-sm text-green-800 dark:text-green-200">
+                You're now ready to use our face analyzer and find your perfect eyewear! Click the button below to get
+                started.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* CTA Button */}
-      <div className="w-full flex flex-col sm:flex-row items-center justify-center gap-4 mb-8">
-        <a
-          href="/analyzer"
-          className={`w-full sm:w-auto font-bold py-3 px-8 rounded-lg shadow-lg transition-all duration-300 flex items-center justify-center ${
-            isLightMode
-              ? "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white"
-              : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white"
+      {/* Navigation buttons */}
+      <div className="flex justify-between">
+        <button
+          onClick={prevStep}
+          disabled={currentStep === 1}
+          className={`px-4 py-2 rounded-lg flex items-center ${
+            currentStep === 1
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
           }`}
         >
-          <svg
-            className="w-5 h-5 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+          <ChevronLeft className="w-5 h-5 mr-1" />
+          Previous
+        </button>
+
+        {currentStep < totalSteps ? (
+          <button
+            onClick={nextStep}
+            className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 flex items-center"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-            />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Try It Now
-        </a>
-        <a
-          href="#"
-          className={`w-full sm:w-auto font-bold py-3 px-8 rounded-lg transition-all duration-300 flex items-center justify-center ${
-            isLightMode
-              ? "bg-transparent border border-blue-500 text-blue-600 hover:bg-blue-50"
-              : "bg-transparent border border-blue-500 text-blue-400 hover:bg-blue-500/10"
-          }`}
-        >
-          <svg
-            className="w-5 h-5 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+            Next
+            <ChevronRight className="w-5 h-5 ml-1" />
+          </button>
+        ) : (
+          <Link
+            href="/analyzer"
+            className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 flex items-center"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          Learn More
-        </a>
+            Start Analysis
+            <ChevronRight className="w-5 h-5 ml-1" />
+          </Link>
+        )}
       </div>
-    </main>
+    </div>
   )
 }

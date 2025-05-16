@@ -1,180 +1,158 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FaceAnalyzer } from "@/components/face-analyzer"
-import { AnalysisResults } from "@/components/analysis-results"
-import { FacialMeasurementsCard } from "@/components/facial-measurements-card"
-import { Shield, WifiOff, Smartphone } from "lucide-react"
-import { shouldUseStandaloneAnalyzer } from "@/utils/mobile-detector"
-import type { AnalysisMode } from "@/components/analysis-mode-selector"
-import { PhotoTips } from "@/components/photo-tips"
-
-// Only import face-api related functions if we're not using the standalone analyzer
-let areModelsLoaded: () => boolean
-if (!shouldUseStandaloneAnalyzer()) {
-  import("@/utils/face-api").then((module) => {
-    areModelsLoaded = module.areModelsLoaded
-  })
-}
+import { useTheme } from "next-themes"
+import { Sun, Moon, Camera, Upload, Info } from "lucide-react"
+import Link from "next/link"
 
 export default function AnalyzerPage() {
-  const [analysisComplete, setAnalysisComplete] = useState(false)
-  const [isOffline, setIsOffline] = useState(false)
-  const [modelsReady, setModelsReady] = useState(false)
-  const [analysisResults, setAnalysisResults] = useState<{
-    shape: string
-    confidence?: number
-    alternativeShapes?: Array<{ shape: string; score: number }>
-    measurements: any
-    landmarks: any
-    imageData: string
-    analysisMode: AnalysisMode
-  } | null>(null)
-  const [usingStandaloneMode, setUsingStandaloneMode] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const { theme, setTheme } = useTheme()
+  const [analysisMode, setAnalysisMode] = useState<"camera" | "upload">("camera")
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [showTips, setShowTips] = useState(false)
 
-  // Check if we should use standalone mode
+  // Only show the theme toggle after mounting to avoid hydration mismatch
   useEffect(() => {
-    setUsingStandaloneMode(shouldUseStandaloneAnalyzer())
+    setMounted(true)
   }, [])
 
-  // Check online status and models
-  useEffect(() => {
-    const checkStatus = () => {
-      setIsOffline(!navigator.onLine)
-      if (areModelsLoaded) {
-        setModelsReady(areModelsLoaded())
-      }
-    }
-
-    checkStatus()
-
-    const handleOnlineStatusChange = () => {
-      checkStatus()
-    }
-
-    window.addEventListener("online", handleOnlineStatusChange)
-    window.addEventListener("offline", handleOnlineStatusChange)
-
-    // Check models status periodically
-    const interval = setInterval(() => {
-      if (areModelsLoaded) {
-        setModelsReady(areModelsLoaded())
-      }
-    }, 2000)
-
-    return () => {
-      window.removeEventListener("online", handleOnlineStatusChange)
-      window.removeEventListener("offline", handleOnlineStatusChange)
-      clearInterval(interval)
-    }
-  }, [])
-
-  const handleAnalysisComplete = (results: {
-    shape: string
-    confidence?: number
-    alternativeShapes?: Array<{ shape: string; score: number }>
-    measurements: any
-    landmarks: any
-    imageData: string
-    analysisMode: AnalysisMode
-  }) => {
-    setAnalysisResults(results)
-    setAnalysisComplete(true)
+  const toggleTheme = () => {
+    setTheme(theme === "dark" ? "light" : "dark")
   }
 
-  const resetAnalysis = () => {
-    setAnalysisComplete(false)
-    setAnalysisResults(null)
+  const startAnalysis = () => {
+    setIsAnalyzing(true)
+    // Simulate analysis process
+    setTimeout(() => {
+      setIsAnalyzing(false)
+      // Redirect to results page or show results
+      window.location.href = "/?result=true"
+    }, 3000)
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
-      <div className="max-w-md w-full">
-        <h1 className="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2 text-center">
-          {analysisComplete ? "Analysis Results" : "Face Analyzer"}
-        </h1>
-        <p className="text-sm sm:text-base text-gray-400 mb-6 sm:mb-8 text-center">
-          {analysisComplete
-            ? "Here are your personalized eyewear recommendations"
-            : "Take or upload a photo to analyze your face shape"}
+    <main className="container mx-auto px-4 py-8 min-h-screen flex flex-col">
+      {/* Theme toggle */}
+      {mounted && (
+        <button
+          onClick={toggleTheme}
+          className="fixed top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
+          aria-label="Toggle theme"
+        >
+          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+        </button>
+      )}
+
+      <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto">
+        <h1 className="text-3xl font-bold mb-6 text-center">Face Shape Analyzer</h1>
+
+        <p className="text-gray-600 dark:text-gray-400 mb-8 text-center">
+          Take a photo or upload an image to analyze your face shape and get personalized eyewear recommendations.
         </p>
 
-        {isOffline && !modelsReady && !analysisComplete && !usingStandaloneMode && (
-          <div className="bg-red-900/20 border border-red-800 rounded-lg p-4 mb-6 text-center">
-            <WifiOff className="w-8 h-8 text-red-500 mx-auto mb-2" />
-            <h3 className="text-lg font-bold text-red-200 mb-1">Offline Mode Limited</h3>
-            <p className="text-sm text-red-300/80">
-              You need to connect to the internet at least once to download the face analysis models before using
-              offline mode.
-            </p>
-          </div>
-        )}
+        {/* Analysis mode selector */}
+        <div className="flex gap-4 mb-8 w-full">
+          <button
+            onClick={() => setAnalysisMode("camera")}
+            className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors ${
+              analysisMode === "camera"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+            }`}
+          >
+            <Camera className="h-5 w-5" />
+            <span>Camera</span>
+          </button>
+          <button
+            onClick={() => setAnalysisMode("upload")}
+            className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors ${
+              analysisMode === "upload"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+            }`}
+          >
+            <Upload className="h-5 w-5" />
+            <span>Upload</span>
+          </button>
+        </div>
 
-        {isOffline && modelsReady && !analysisComplete && !usingStandaloneMode && (
-          <div className="bg-green-900/20 border border-green-800 rounded-lg p-4 mb-6 text-center">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-8 h-8 text-green-500 mx-auto mb-2"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            <h3 className="text-lg font-bold text-green-200 mb-1">Offline Mode Ready</h3>
-            <p className="text-sm text-green-300/80">
-              Face analysis models are loaded and ready to use in offline mode.
-            </p>
-          </div>
-        )}
-
-        {!analysisComplete && usingStandaloneMode && (
-          <div className="bg-blue-900/20 border border-blue-800 rounded-lg p-4 mb-6 text-center">
-            <Smartphone className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-            <h3 className="text-lg font-bold text-blue-200 mb-1">Mobile Compatibility Mode</h3>
-            <p className="text-sm text-blue-300/80">
-              Using simplified face analysis for better compatibility with your device. For the most accurate results,
-              try using a desktop browser.
-            </p>
-          </div>
-        )}
-
-        {analysisComplete && analysisResults ? (
-          <>
-            <AnalysisResults
-              faceShape={analysisResults.shape}
-              confidence={analysisResults.confidence}
-              alternativeShapes={analysisResults.alternativeShapes}
-              measurements={analysisResults.measurements}
-              landmarks={analysisResults.landmarks}
-              imageData={analysisResults.imageData}
-              analysisMode={analysisResults.analysisMode}
-            />
-
-            {/* Only show the facial measurements card in extensive mode */}
-            {analysisResults.analysisMode === "extensive" && (
-              <FacialMeasurementsCard measurements={analysisResults.measurements} />
-            )}
-
-            <button
-              onClick={resetAnalysis}
-              className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground py-3 rounded-lg font-medium transition-all duration-300 mt-2"
-            >
-              Try Another Photo
-            </button>
-          </>
-        ) : (
-          <>
-            <FaceAnalyzer onAnalysisComplete={handleAnalysisComplete} />
-            <PhotoTips />
-            <div className="bg-card p-3 sm:p-4 rounded-xl border border-border mt-4">
-              <Shield className="w-5 h-5 text-[#3B82F6] flex-shrink-0" />
-              <p className="text-xs sm:text-sm text-[#3B82F6]">
-                Your privacy is important to us. All analysis is done on-device.
+        {/* Camera view or upload area */}
+        <div className="w-full aspect-square bg-gray-200 dark:bg-gray-800 rounded-lg mb-6 flex items-center justify-center overflow-hidden">
+          {analysisMode === "camera" ? (
+            <div className="text-center p-4">
+              <Camera className="h-12 w-12 mx-auto mb-4 text-gray-500 dark:text-gray-400" />
+              <p className="text-gray-600 dark:text-gray-400">
+                Camera access will be requested when you start the analysis
               </p>
             </div>
-          </>
+          ) : (
+            <div className="text-center p-4">
+              <Upload className="h-12 w-12 mx-auto mb-4 text-gray-500 dark:text-gray-400" />
+              <p className="text-gray-600 dark:text-gray-400">Click to select an image from your device</p>
+              <input type="file" accept="image/*" className="hidden" id="image-upload" />
+              <label
+                htmlFor="image-upload"
+                className="mt-4 inline-block py-2 px-4 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors"
+              >
+                Select Image
+              </label>
+            </div>
+          )}
+        </div>
+
+        {/* Photo tips toggle */}
+        <button
+          onClick={() => setShowTips(!showTips)}
+          className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-6"
+        >
+          <Info className="h-4 w-4" />
+          <span>{showTips ? "Hide photo tips" : "Show photo tips"}</span>
+        </button>
+
+        {/* Photo tips */}
+        {showTips && (
+          <div className="w-full bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6">
+            <h3 className="font-medium mb-2">For best results:</h3>
+            <ul className="list-disc pl-5 text-sm text-gray-700 dark:text-gray-300 space-y-1">
+              <li>Ensure good, even lighting on your face</li>
+              <li>Remove glasses, hats, and hair covering your face</li>
+              <li>Look directly at the camera with a neutral expression</li>
+              <li>Use a plain background if possible</li>
+              <li>Keep your face centered in the frame</li>
+            </ul>
+          </div>
         )}
+
+        {/* Privacy notice */}
+        <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 text-center">
+          <strong>Privacy:</strong> Your photos are processed locally on your device and are not stored or sent to any
+          server.
+        </p>
+
+        {/* Start analysis button */}
+        <button
+          onClick={startAnalysis}
+          disabled={isAnalyzing}
+          className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50"
+        >
+          {isAnalyzing ? (
+            <>
+              <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Analyzing...</span>
+            </>
+          ) : (
+            <span>Start Analysis</span>
+          )}
+        </button>
+
+        {/* Back link */}
+        <Link
+          href="/"
+          className="mt-6 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
+        >
+          ← Back to Home
+        </Link>
       </div>
     </main>
   )

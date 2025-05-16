@@ -1,83 +1,71 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useRef, useEffect } from "react"
-import { X, Camera, Upload, RotateCw, Check, Loader2, AlertCircle } from "lucide-react"
+import { useState, useRef, useEffect, useCallback } from "react"
+import { X, Camera, Upload, Check, CuboidIcon as Cube, RefreshCw } from "lucide-react"
 
 interface Frame3DCaptureModalProps {
   isOpen: boolean
   onClose: () => void
-  frameName: string
-  onUploadComplete: (modelUrl: string) => void
+  onModelCreated?: (modelUrl: string) => void
 }
 
-export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
-  // Destructure props inside the component to avoid issues
-  const { isOpen, onClose, frameName, onUploadComplete } = props
+type CaptureStage = "front" | "left" | "right" | "top" | "processing" | "uploading" | "complete"
 
-  // Basic state
-  const [captureStage, setCaptureStage] = useState<string>("intro")
-  const [capturedImages, setCapturedImages] = useState<string[]>([])
-  const [currentAngle, setCurrentAngle] = useState(0)
-  const [isUploading, setIsUploading] = useState(false)
-  const [cameraError, setCameraError] = useState<string | null>(null)
+export function Frame3DCaptureModal({ isOpen, onClose, onModelCreated }: Frame3DCaptureModalProps) {
+  const [captureStage, setCaptureStage] = useState<CaptureStage>("front")
+  const [capturedImages, setCapturedImages] = useState<Record<CaptureStage, string | null>>({
+    front: null,
+    left: null,
+    right: null,
+    top: null,
+    processing: null,
+    uploading: null,
+    complete: null,
+  })
   const [processingProgress, setProcessingProgress] = useState(0)
   const [uploadProgress, setUploadProgress] = useState(0)
+  const [cameraError, setCameraError] = useState<string | null>(null)
   const [cameraReady, setCameraReady] = useState(false)
+  const [showLastCapture, setShowLastCapture] = useState(false)
+  const [modelUrl, setModelUrl] = useState<string | null>(null)
 
-  // Refs
-  const fileInputRef = useRef<HTMLInputElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
-  const streamRef = useRef<MediaStream | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const processingTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const uploadTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const streamRef = useRef<MediaStream | null>(null)
+  const processingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const uploadIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const stageTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
-  const totalAngles = 4 // Number of angles to capture for 3D reconstruction
-  const angleLabels = ["Front", "Left Side", "Right Side", "Top"]
-
-  // Safe cleanup function for camera
-  const cleanupCamera = () => {
-    try {
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach((track) => {
-          try {
-            track.stop()
-          } catch (e) {
-            console.error("Error stopping track:", e)
-          }
-        })
-        streamRef.current = null
-      }
-
-      if (videoRef.current && videoRef.current.srcObject) {
-        videoRef.current.srcObject = null
-      }
-
-      setCameraReady(false)
-    } catch (e) {
-      console.error("Error in cleanup:", e)
+  // Clear all timers and intervals
+  const clearAllTimers = useCallback(() => {
+    if (processingIntervalRef.current) {
+      clearInterval(processingIntervalRef.current)
+      processingIntervalRef.current = null
     }
-  }
 
-  // Initialize camera safely
-  const initializeCamera = async () => {
+    if (uploadIntervalRef.current) {
+      clearInterval(uploadIntervalRef.current)
+      uploadIntervalRef.current = null
+    }
+
+    if (stageTimeoutRef.current) {
+      clearTimeout(stageTimeoutRef.current)
+      stageTimeoutRef.current = null
+    }
+  }, [])
+
+  // Initialize camera
+  const initCamera = useCallback(async () => {
     try {
       setCameraError(null)
       setCameraReady(false)
 
-      // Clean up any existing streams first
-      cleanupCamera()
-
-      // Check if mediaDevices API is supported
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        setCameraError("Camera not supported in your browser")
-        return
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
       }
 
-      // Request camera access with fallback options
+      console.log("Initializing camera...")
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
           facingMode: "environment",
@@ -86,20 +74,12 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
         },
       })
 
-      // Store stream in ref for later cleanup
       streamRef.current = stream
 
-      // Set video source if video element exists
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-
-        // Ensure video plays on iOS
-        videoRef.current.setAttribute("playsinline", "true")
-        videoRef.current.setAttribute("autoplay", "true")
-        videoRef.current.muted = true
-
-        // Wait for video to be ready
         videoRef.current.onloadedmetadata = () => {
+          console.log("Video metadata loaded")
           if (videoRef.current) {
             videoRef.current
               .play()
@@ -109,515 +89,499 @@ export function Frame3DCaptureModal(props: Frame3DCaptureModalProps) {
               })
               .catch((err) => {
                 console.error("Error playing video:", err)
-                setCameraError("Could not start video stream")
+                setCameraError("Failed to start video stream")
               })
           }
         }
       }
     } catch (error) {
-      console.error("Camera error:", error)
-      setCameraError("Could not access camera. Please check permissions.")
+      console.error("Error accessing camera:", error)
+      setCameraError("Could not access camera. Please ensure you have granted camera permissions.")
     }
-  }
+  }, [])
 
-  // Handle capture button click
-  const handleCapture = () => {
-    try {
-      if (!videoRef.current || !streamRef.current) {
-        setCameraError("Camera not initialized")
-        return
+  // Handle capture
+  const handleCapture = useCallback(() => {
+    if (!videoRef.current || !canvasRef.current || !streamRef.current || !cameraReady) return
+
+    // Simulate haptic feedback with console log
+    console.log("Capture button pressed - would trigger haptic feedback")
+
+    const video = videoRef.current
+    const canvas = canvasRef.current
+    const context = canvas.getContext("2d")
+
+    if (!context) return
+
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    // Draw video frame to canvas
+    context.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+    // Get image data URL
+    const imageDataUrl = canvas.toDataURL("image/jpeg")
+
+    // Update captured images
+    setCapturedImages((prev) => ({
+      ...prev,
+      [captureStage]: imageDataUrl,
+    }))
+
+    // Show confirmation of capture
+    setShowLastCapture(true)
+
+    // Stop camera temporarily to show the captured image
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop())
+      streamRef.current = null
+    }
+
+    // After a brief delay, move to next stage or processing
+    stageTimeoutRef.current = setTimeout(() => {
+      setShowLastCapture(false)
+
+      // Determine next stage
+      let nextStage: CaptureStage
+      switch (captureStage) {
+        case "front":
+          nextStage = "left"
+          break
+        case "left":
+          nextStage = "right"
+          break
+        case "right":
+          nextStage = "top"
+          break
+        case "top":
+          nextStage = "processing"
+          break
+        default:
+          nextStage = "processing"
       }
 
-      // Create canvas for capture
-      const canvas = document.createElement("canvas")
-      const video = videoRef.current
+      setCaptureStage(nextStage)
 
-      canvas.width = video.videoWidth || 640
-      canvas.height = video.videoHeight || 480
+      // If not moving to processing, reinitialize camera
+      if (nextStage !== "processing") {
+        initCamera()
+      }
+    }, 1500)
+  }, [captureStage, cameraReady, initCamera])
 
-      // Draw video frame to canvas
-      const ctx = canvas.getContext("2d")
-      if (ctx) {
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+  // Start processing simulation
+  const startProcessingSimulation = useCallback(() => {
+    console.log("Starting processing simulation")
 
-        // Get image data
-        try {
-          const imageUrl = canvas.toDataURL("image/jpeg", 0.8)
+    // Clear any existing interval
+    if (processingIntervalRef.current) {
+      clearInterval(processingIntervalRef.current)
+      processingIntervalRef.current = null
+    }
 
-          // Update state with new image
-          setCapturedImages((prev) => [...prev, imageUrl])
+    setProcessingProgress(0)
 
-          // Move to next angle or processing
-          if (currentAngle < totalAngles - 1) {
-            setCurrentAngle((prev) => prev + 1)
-            setCameraReady(false)
+    // Simulate processing with progress updates
+    processingIntervalRef.current = setInterval(() => {
+      setProcessingProgress((prev) => {
+        const newProgress = prev + 2
 
-            // Temporarily stop the camera
-            cleanupCamera()
-
-            // Show a brief confirmation before reopening camera
-            setTimeout(() => {
-              // Reopen camera for next angle
-              initializeCamera()
-            }, 500)
-          } else {
-            // All angles captured, move to processing
-            setCaptureStage("processing")
-
-            // Clean up camera
-            cleanupCamera()
-
-            // Start processing simulation
-            simulateProcessing()
+        // When processing is complete, move to upload stage
+        if (newProgress >= 100) {
+          if (processingIntervalRef.current) {
+            clearInterval(processingIntervalRef.current)
+            processingIntervalRef.current = null
           }
-        } catch (e) {
-          console.error("Error creating image:", e)
-          setCameraError("Failed to capture image")
-        }
-      }
-    } catch (e) {
-      console.error("Capture error:", e)
-      setCameraError("Failed to capture image")
-    }
-  }
 
-  // Clear all timers
-  const clearAllTimers = () => {
-    if (processingTimerRef.current) {
-      clearInterval(processingTimerRef.current)
-      processingTimerRef.current = null
-    }
-    if (uploadTimerRef.current) {
-      clearInterval(uploadTimerRef.current)
-      uploadTimerRef.current = null
-    }
+          // Short delay before moving to upload stage
+          stageTimeoutRef.current = setTimeout(() => {
+            setCaptureStage("uploading")
+            setUploadProgress(0)
+          }, 500)
+
+          return 100
+        }
+
+        return newProgress
+      })
+    }, 200)
+  }, [])
+
+  // Start upload simulation
+  const startUploadSimulation = useCallback(() => {
+    console.log("Starting upload simulation")
+
+    // Clear any existing interval
     if (uploadIntervalRef.current) {
       clearInterval(uploadIntervalRef.current)
       uploadIntervalRef.current = null
     }
-  }
 
-  // Simulate 3D model processing with progress
-  const simulateProcessing = () => {
-    console.log("Starting processing simulation")
-    setProcessingProgress(0)
-
-    // Clear any existing timer
-    clearAllTimers()
-
-    // Simulate processing with progress updates
-    processingTimerRef.current = setInterval(() => {
-      setProcessingProgress((prev) => {
-        console.log("Processing progress:", prev)
-        const newProgress = prev + 5
-        if (newProgress >= 100) {
-          console.log("Processing complete, moving to upload")
-          if (processingTimerRef.current) {
-            clearInterval(processingTimerRef.current)
-            processingTimerRef.current = null
-          }
-          // Move to upload stage
-          setTimeout(() => {
-            simulateUpload()
-          }, 500)
-          return 100
-        }
-        return newProgress
-      })
-    }, 200)
-  }
-
-  // Simulate model upload with progress
-  const simulateUpload = () => {
-    console.log("Starting upload simulation")
-    setCaptureStage("uploading")
     setUploadProgress(0)
 
-    // Clear any existing timer
-    clearAllTimers()
-
     // Simulate upload with progress updates
-    uploadTimerRef.current = setInterval(() => {
+    uploadIntervalRef.current = setInterval(() => {
       setUploadProgress((prev) => {
-        console.log("Upload progress:", prev)
-        const newProgress = prev + 10
+        const newProgress = prev + 5
+
+        // When upload is complete, move to complete stage
         if (newProgress >= 100) {
-          console.log("Upload complete, moving to complete stage")
-          if (uploadTimerRef.current) {
-            clearInterval(uploadTimerRef.current)
-            uploadTimerRef.current = null
+          if (uploadIntervalRef.current) {
+            clearInterval(uploadIntervalRef.current)
+            uploadIntervalRef.current = null
           }
-          // Move to complete stage
-          setTimeout(() => {
+
+          // Generate a fake model URL
+          const generatedModelUrl = `https://example.com/models/frame-${Date.now()}.glb`
+
+          // Store the model URL in state instead of calling the callback directly
+          setModelUrl(generatedModelUrl)
+
+          // Short delay before moving to complete stage
+          stageTimeoutRef.current = setTimeout(() => {
             setCaptureStage("complete")
           }, 500)
+
           return 100
         }
+
         return newProgress
       })
-    }, 300)
-  }
-
-  // Handle file upload
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    try {
-      const file = e.target.files?.[0]
-      if (!file) return
-
-      // Check file type
-      const validFormats = [".glb", ".gltf", ".obj", ".stl"]
-      const fileExtension = file.name.substring(file.name.lastIndexOf(".")).toLowerCase()
-
-      if (!validFormats.includes(fileExtension)) {
-        alert("Please upload a valid 3D model file (GLB, GLTF, OBJ, or STL)")
-        return
-      }
-
-      setIsUploading(true)
-      setCaptureStage("uploading")
-      setUploadProgress(0)
-
-      // Clear any existing timers
-      clearAllTimers()
-
-      // Simulate upload with progress
-      console.log("Starting file upload simulation")
-      uploadIntervalRef.current = setInterval(() => {
-        setUploadProgress((prev) => {
-          console.log("File upload progress:", prev)
-          const newProgress = prev + 10
-          if (newProgress >= 100) {
-            console.log("File upload complete")
-            if (uploadIntervalRef.current) {
-              clearInterval(uploadIntervalRef.current)
-              uploadIntervalRef.current = null
-            }
-
-            // Complete the upload
-            setTimeout(() => {
-              const mockModelUrl = `/models/${frameName.toLowerCase().replace(/\s+/g, "-")}.glb`
-              onUploadComplete(mockModelUrl)
-              setIsUploading(false)
-              onClose()
-            }, 500)
-
-            return 100
-          }
-          return newProgress
-        })
-      }, 300)
-    } catch (e) {
-      console.error("Upload error:", e)
-      setIsUploading(false)
-      alert("Upload failed. Please try again.")
-    }
-  }
-
-  // Reset capture state
-  const resetCapture = () => {
-    cleanupCamera()
-    setCapturedImages([])
-    setCurrentAngle(0)
-    setCameraError(null)
-    setCaptureStage("intro")
-    setCameraReady(false)
-
-    // Clear any timers
-    clearAllTimers()
-
-    // Reinitialize camera
-    setTimeout(() => {
-      initializeCamera()
-    }, 300)
-  }
-
-  // Complete capture process
-  const completeCapture = () => {
-    const mockModelUrl = `/models/${frameName.toLowerCase().replace(/\s+/g, "-")}.glb`
-    onUploadComplete(mockModelUrl)
-    onClose()
-  }
-
-  // Trigger file input click
-  const triggerFileInput = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click()
-    }
-  }
-
-  // Start camera when entering capture stage
-  useEffect(() => {
-    if (isOpen && captureStage === "capture") {
-      initializeCamera()
-    }
-
-    // Cleanup on unmount or when leaving capture stage
-    return () => {
-      cleanupCamera()
-      clearAllTimers()
-    }
-  }, [isOpen, captureStage])
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      cleanupCamera()
-      clearAllTimers()
-    }
+    }, 150)
   }, [])
 
-  // Force processing to start when captureStage changes to "processing"
-  useEffect(() => {
-    if (captureStage === "processing") {
-      console.log("Capture stage changed to processing, starting simulation")
-      // Ensure processing starts
-      simulateProcessing()
-    } else if (captureStage === "uploading") {
-      console.log("Capture stage changed to uploading, ensuring upload simulation")
-      // If we're in the uploading stage but no timer is running, start the upload simulation
-      if (!uploadTimerRef.current && !uploadIntervalRef.current) {
-        simulateUpload()
-      }
-    }
-  }, [captureStage])
+  // Handle save and continue
+  const handleSaveAndContinue = useCallback(() => {
+    console.log("Save and continue clicked")
 
-  // Don't render anything if not open
-  if (!isOpen) {
+    // Simulate haptic feedback with console log
+    console.log("Save button pressed - would trigger haptic feedback")
+
+    // Clear any existing timers
+    clearAllTimers()
+
+    // If we're in the complete stage, close the modal and call onModelCreated if we have a model URL
+    if (captureStage === "complete") {
+      if (modelUrl && onModelCreated) {
+        onModelCreated(modelUrl)
+      }
+      onClose()
+      return
+    }
+
+    // Force move to processing stage if all images are captured
+    if (capturedImages.front && capturedImages.left && capturedImages.right && capturedImages.top) {
+      setCaptureStage("processing")
+    } else {
+      console.error("Not all images have been captured yet")
+      // You could show an error message here
+    }
+  }, [captureStage, capturedImages, clearAllTimers, onClose, modelUrl, onModelCreated])
+
+  // Initialize camera when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      // Reset state when modal opens
+      setCaptureStage("front")
+      setCapturedImages({
+        front: null,
+        left: null,
+        right: null,
+        top: null,
+        processing: null,
+        uploading: null,
+        complete: null,
+      })
+      setProcessingProgress(0)
+      setUploadProgress(0)
+      setCameraError(null)
+      setShowLastCapture(false)
+      setModelUrl(null)
+
+      // Initialize camera
+      initCamera()
+    } else {
+      // Clean up when modal closes
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+      }
+
+      clearAllTimers()
+    }
+
+    // Clean up on unmount
+    return () => {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+        streamRef.current = null
+      }
+
+      clearAllTimers()
+    }
+  }, [isOpen, initCamera, clearAllTimers])
+
+  // Watch for processing stage and start simulation
+  useEffect(() => {
+    if (captureStage === "processing" && processingProgress === 0 && !processingIntervalRef.current) {
+      console.log("Auto-starting processing simulation")
+      startProcessingSimulation()
+    }
+  }, [captureStage, processingProgress, startProcessingSimulation])
+
+  // Watch for uploading stage and start simulation
+  useEffect(() => {
+    if (captureStage === "uploading" && uploadProgress === 0 && !uploadIntervalRef.current) {
+      console.log("Auto-starting upload simulation")
+      startUploadSimulation()
+    }
+  }, [captureStage, uploadProgress, startUploadSimulation])
+
+  // Don't render anything if modal is closed
+  if (!isOpen) return null
+
+  // Get stage title
+  const getStageTitle = () => {
+    switch (captureStage) {
+      case "front":
+        return "Front View"
+      case "left":
+        return "Left Side View"
+      case "right":
+        return "Right Side View"
+      case "top":
+        return "Top View"
+      case "processing":
+        return "Processing 3D Model"
+      case "uploading":
+        return "Uploading 3D Model"
+      case "complete":
+        return "3D Model Created"
+      default:
+        return "Capture Frame"
+    }
+  }
+
+  // Get stage description
+  const getStageDescription = () => {
+    switch (captureStage) {
+      case "front":
+        return "Position the glasses directly facing the camera"
+      case "left":
+        return "Rotate the glasses to show the left side"
+      case "right":
+        return "Rotate the glasses to show the right side"
+      case "top":
+        return "Position the camera above the glasses"
+      case "processing":
+        return "We're creating a 3D model from your photos. This may take a moment..."
+      case "uploading":
+        return "Uploading your 3D model to the cloud..."
+      case "complete":
+        return "Your 3D model has been created and saved!"
+      default:
+        return ""
+    }
+  }
+
+  // Render content based on stage
+  const renderContent = () => {
+    // For capture stages
+    if (["front", "left", "right", "top"].includes(captureStage)) {
+      if (showLastCapture) {
+        return (
+          <div className="relative w-full h-64 md:h-80 bg-gray-900 rounded-md overflow-hidden">
+            <img
+              src={capturedImages[captureStage as CaptureStage] || ""}
+              alt={`Captured ${captureStage} view`}
+              className="w-full h-full object-contain"
+            />
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-green-500 rounded-full p-2">
+                <Check className="w-8 h-8 text-white" />
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      if (cameraError) {
+        return (
+          <div className="w-full h-64 md:h-80 bg-gray-900 rounded-md flex flex-col items-center justify-center p-4">
+            <p className="text-red-500 mb-4">{cameraError}</p>
+            <button onClick={initCamera} className="px-4 py-2 bg-blue-500 text-white rounded-md flex items-center">
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Try Again
+            </button>
+          </div>
+        )
+      }
+
+      return (
+        <div className="relative w-full h-64 md:h-80 bg-gray-900 rounded-md overflow-hidden">
+          <video ref={videoRef} className="w-full h-full object-cover" autoPlay playsInline muted />
+          <canvas ref={canvasRef} className="hidden" />
+
+          {!cameraReady && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-70">
+              <div className="flex flex-col items-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-2"></div>
+                <p className="text-white">Initializing camera...</p>
+              </div>
+            </div>
+          )}
+
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+            <button
+              onClick={handleCapture}
+              disabled={!cameraReady}
+              className="w-16 h-16 rounded-full bg-white border-4 border-blue-500 flex items-center justify-center disabled:opacity-50"
+            >
+              {cameraReady ? (
+                <Camera className="w-8 h-8 text-blue-500" />
+              ) : (
+                <span className="text-xs text-blue-500">Waiting...</span>
+              )}
+            </button>
+          </div>
+        </div>
+      )
+    }
+
+    // For processing stage
+    if (captureStage === "processing") {
+      return (
+        <div className="w-full p-6 flex flex-col items-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-6"></div>
+          <p className="text-gray-500 dark:text-gray-400 text-center mb-6">{getStageDescription()}</p>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-2">
+            <div
+              className="bg-blue-500 h-2.5 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${processingProgress}%` }}
+            ></div>
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{processingProgress}% complete</p>
+
+          {processingProgress === 0 && (
+            <button
+              onClick={startProcessingSimulation}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md flex items-center"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Start Processing
+            </button>
+          )}
+        </div>
+      )
+    }
+
+    // For uploading stage
+    if (captureStage === "uploading") {
+      return (
+        <div className="w-full p-6 flex flex-col items-center">
+          <Upload className="w-12 h-12 text-blue-500 mb-6" />
+          <p className="text-gray-500 dark:text-gray-400 text-center mb-6">{getStageDescription()}</p>
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mb-2">
+            <div
+              className="bg-blue-500 h-2.5 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{uploadProgress}% complete</p>
+
+          {uploadProgress === 0 && (
+            <button
+              onClick={startUploadSimulation}
+              className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-md flex items-center"
+            >
+              <Upload className="w-4 h-4 mr-2" />
+              Start Upload
+            </button>
+          )}
+        </div>
+      )
+    }
+
+    // For complete stage
+    if (captureStage === "complete") {
+      return (
+        <div className="w-full p-6 flex flex-col items-center">
+          <div className="bg-green-100 dark:bg-green-900 rounded-full p-4 mb-6">
+            <Check className="w-12 h-12 text-green-500" />
+          </div>
+          <p className="text-gray-500 dark:text-gray-400 text-center mb-6">{getStageDescription()}</p>
+          <Cube className="w-24 h-24 text-blue-500 mb-4" />
+          {modelUrl && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 break-all">Model ready at: {modelUrl}</p>
+          )}
+        </div>
+      )
+    }
+
     return null
   }
 
-  // Render modal content based on stage
+  // Determine if Save & Continue button should be enabled
+  const isSaveButtonEnabled = () => {
+    if (captureStage === "front" || captureStage === "left" || captureStage === "right" || captureStage === "top") {
+      return capturedImages[captureStage] !== null
+    }
+
+    if (captureStage === "processing") {
+      return processingProgress === 100
+    }
+
+    if (captureStage === "uploading") {
+      return uploadProgress === 100
+    }
+
+    return captureStage === "complete"
+  }
+
+  // Get Save & Continue button text
+  const getSaveButtonText = () => {
+    if (captureStage === "complete") {
+      return "Close"
+    }
+
+    if (captureStage === "processing" && processingProgress < 100) {
+      return `Processing (${processingProgress}%)`
+    }
+
+    if (captureStage === "uploading" && uploadProgress < 100) {
+      return `Uploading (${uploadProgress}%)`
+    }
+
+    return "Save & Continue"
+  }
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
-      <div className="bg-card rounded-lg max-w-md w-full overflow-hidden border border-border">
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h2 className="text-xl font-bold">3D Frame Capture</h2>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-lg shadow-lg overflow-hidden">
+        <div className="flex justify-between items-center p-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">3D Frame Capture</h2>
           <button
-            onClick={() => {
-              cleanupCamera()
-              clearAllTimers()
-              onClose()
-            }}
-            className="p-1 rounded-full hover:bg-white/10"
-            aria-label="Close"
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
           >
-            <X className="h-5 w-5" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Content */}
         <div className="p-4">
-          {/* Intro Stage */}
-          {captureStage === "intro" && (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Create a 3D model of your eyeglass frames by taking photos from multiple angles or upload an existing 3D
-                model.
-              </p>
+          <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-white">{getStageTitle()}</h3>
+          {renderContent()}
+        </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setCaptureStage("capture")}
-                  className="flex flex-col items-center justify-center gap-2 p-6 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
-                >
-                  <Camera className="h-8 w-8 text-primary" />
-                  <span>Capture Photos</span>
-                </button>
-
-                <button
-                  onClick={triggerFileInput}
-                  className="flex flex-col items-center justify-center gap-2 p-6 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
-                >
-                  <Upload className="h-8 w-8 text-primary" />
-                  <span>Upload 3D Model</span>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".glb,.gltf,.obj,.stl"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                  />
-                </button>
-              </div>
-
-              {isUploading && (
-                <div className="flex items-center justify-center gap-2 mt-4">
-                  <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                  <span>Uploading 3D model...</span>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Capture Stage */}
-          {captureStage === "capture" && (
-            <div className="space-y-4">
-              {/* Camera/Preview Area */}
-              <div className="aspect-square bg-black relative rounded-lg overflow-hidden flex items-center justify-center">
-                {/* Camera Error */}
-                {cameraError && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-4 text-center">
-                    <AlertCircle className="h-12 w-12 text-red-500 mb-2" />
-                    <p className="text-red-400 font-medium mb-2">Camera Error</p>
-                    <p className="text-gray-300 text-sm">{cameraError}</p>
-                    <button
-                      onClick={() => {
-                        setCameraError(null)
-                        initializeCamera()
-                      }}
-                      className="mt-4 px-4 py-2 bg-primary rounded-md text-white"
-                    >
-                      Try Again
-                    </button>
-                  </div>
-                )}
-
-                {/* Loading indicator */}
-                {!cameraReady && !cameraError && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 p-4 text-center">
-                    <Loader2 className="h-12 w-12 text-primary animate-spin mb-2" />
-                    <p className="text-gray-300 text-sm">Initializing camera...</p>
-                  </div>
-                )}
-
-                {/* Video Feed */}
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className="max-w-full max-h-full"
-                  style={{ display: !cameraError ? "block" : "none" }}
-                />
-
-                {/* Last Captured Image (shown after first capture) */}
-                {capturedImages.length > 0 && currentAngle > 0 && !cameraReady && !cameraError && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black">
-                    <img
-                      src={capturedImages[capturedImages.length - 1] || "/placeholder.svg"}
-                      alt={`Frame from angle ${currentAngle}`}
-                      className="max-w-full max-h-full"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Controls */}
-              <div className="flex items-center justify-between">
-                <div className="text-sm">
-                  <span className="text-primary font-medium">
-                    Angle {currentAngle + 1}/{totalAngles}: {angleLabels[currentAngle]}
-                  </span>
-                  <p className="text-muted-foreground">Rotate the frame after each capture</p>
-                </div>
-
-                <div className="flex gap-2">
-                  <button
-                    onClick={resetCapture}
-                    className="p-2 rounded-lg bg-muted hover:bg-muted/80 transition-colors"
-                  >
-                    <RotateCw className="h-5 w-5" />
-                  </button>
-
-                  <button
-                    onClick={handleCapture}
-                    disabled={!!cameraError || !cameraReady}
-                    className={`px-4 py-2 rounded-lg text-primary-foreground hover:bg-primary/90 transition-colors ${
-                      !cameraError && cameraReady ? "bg-primary" : "bg-gray-700 cursor-not-allowed"
-                    }`}
-                  >
-                    {cameraReady ? "Capture" : "Waiting..."}
-                  </button>
-                </div>
-              </div>
-
-              {/* Thumbnails */}
-              <div className="flex gap-2 overflow-x-auto py-2">
-                {capturedImages.map((img, idx) => (
-                  <div key={idx} className="w-16 h-16 flex-shrink-0 rounded-md overflow-hidden border border-border">
-                    <img
-                      src={img || "/placeholder.svg"}
-                      alt={`Angle ${idx + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-                {Array.from({ length: totalAngles - capturedImages.length }).map((_, idx) => (
-                  <div
-                    key={`empty-${idx}`}
-                    className="w-16 h-16 flex-shrink-0 rounded-md bg-muted flex items-center justify-center"
-                  >
-                    <span className="text-xs text-muted-foreground">{capturedImages.length + idx + 1}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Processing Stage */}
-          {captureStage === "processing" && (
-            <div className="py-8 text-center">
-              <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto mb-4" />
-              <h3 className="text-lg font-medium mb-2">Processing 3D Model</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                We're creating a 3D model from your photos. This may take a moment...
-              </p>
-
-              {/* Progress bar */}
-              <div className="w-full bg-muted rounded-full h-2.5 mb-2">
-                <div
-                  className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-out"
-                  style={{ width: `${processingProgress}%` }}
-                ></div>
-              </div>
-              <p className="text-xs text-muted-foreground">{processingProgress}% complete</p>
-            </div>
-          )}
-
-          {/* Uploading Stage */}
-          {captureStage === "uploading" && (
-            <div className="py-8 text-center">
-              <Upload className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-              <h3 className="text-lg font-medium mb-2">Uploading 3D Model</h3>
-              <p className="text-sm text-muted-foreground mb-4">Uploading your 3D model to the cloud...</p>
-
-              {/* Progress bar */}
-              <div className="w-full bg-muted rounded-full h-2.5 mb-2">
-                <div
-                  className="bg-primary h-2.5 rounded-full transition-all duration-300 ease-out"
-                  style={{ width: `${uploadProgress}%` }}
-                ></div>
-              </div>
-              <p className="text-xs text-muted-foreground">{uploadProgress}% complete</p>
-
-              {/* Manual retry button if stuck */}
-              {uploadProgress === 0 && (
-                <button onClick={simulateUpload} className="mt-4 px-4 py-2 bg-primary rounded-md text-white">
-                  Start Upload
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Complete Stage */}
-          {captureStage === "complete" && (
-            <div className="py-8 text-center">
-              <div className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4">
-                <Check className="h-8 w-8 text-green-500" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">3D Model Created!</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Your 3D model has been successfully created and is ready to use.
-              </p>
-              <button
-                onClick={completeCapture}
-                className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-              >
-                Save & Continue
-              </button>
-            </div>
-          )}
+        <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+          <button
+            onClick={handleSaveAndContinue}
+            disabled={!isSaveButtonEnabled()}
+            className="px-4 py-2 bg-blue-500 text-white rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {getSaveButtonText()}
+          </button>
         </div>
       </div>
     </div>

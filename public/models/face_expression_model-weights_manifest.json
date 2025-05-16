@@ -1,8 +1,0 @@
-{
-  "weightsManifest": [
-    {
-      "paths": ["face_expression_model-shard1"],
-      "weights": []
-    }
-  ]
-}
