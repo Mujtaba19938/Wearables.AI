@@ -37,16 +37,16 @@ export default function Page() {
 
       <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
         <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 max-w-md w-full text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mt-8">wearables.ai</h1>
-          <p className="text-lg sm:text-xl text-muted-foreground mb-6">Find your perfect eyewear match</p>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mt-8 mb-3">wearables.ai</h1>
+          <p className="text-lg sm:text-xl text-muted-foreground mb-10">Find your perfect eyewear match</p>
 
           <div className="card-gradient p-6 sm:p-8 rounded-xl w-full">
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4">Face Shape Analyzer</h2>
-            <p className="text-sm sm:text-base text-muted-foreground mb-5">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6">Face Shape Analyzer</h2>
+            <p className="text-sm sm:text-base text-muted-foreground mb-8">
               Discover eyeglasses that complement your unique facial features
             </p>
 
-            <div className="privacy-badge mb-5">
+            <div className="privacy-badge mb-8">
               <div className="privacy-badge-icon">
                 <svg
                   width="16"
@@ -70,7 +70,7 @@ export default function Page() {
               </p>
             </div>
 
-            <p className="text-sm sm:text-base text-muted-foreground mb-5">
+            <p className="text-sm sm:text-base text-muted-foreground mb-8">
               Our AI will analyze your face shape and recommend the most suitable eyeglasses styles that enhance your
               appearance and boost your confidence.
             </p>

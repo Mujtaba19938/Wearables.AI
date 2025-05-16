@@ -5,6 +5,7 @@ import type React from "react"
 import { useEffect, useState, createContext, useContext } from "react"
 import BottomNavbar from "./bottom-navbar"
 import AnimatedBackground from "./animated-background"
+import Preloader from "./preloader"
 
 // Create a simple toast context
 type ToastType = "success" | "error" | "info"
@@ -87,11 +88,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   const [showCookieConsent, setShowCookieConsent] = useState(false)
 
   useEffect(() => {
-    // Simulate initial loading
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1500)
-
     // Check for online/offline status
     const handleOnline = () => setIsOffline(false)
     const handleOffline = () => setIsOffline(true)
@@ -117,7 +113,6 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         setShowCookieConsent(true)
       }, 2000)
       return () => {
-        clearTimeout(timer)
         clearTimeout(consentTimer)
         window.removeEventListener("online", handleOnline)
         window.removeEventListener("offline", handleOffline)
@@ -126,12 +121,15 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     }
 
     return () => {
-      clearTimeout(timer)
       window.removeEventListener("online", handleOnline)
       window.removeEventListener("offline", handleOffline)
       window.removeEventListener("scroll", handleScroll)
     }
   }, [])
+
+  const handleLoadingComplete = () => {
+    setIsLoading(false)
+  }
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" })
@@ -145,18 +143,15 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <ToastProvider>
       <div className="min-h-screen flex flex-col relative w-full overflow-x-hidden">
-        {/* Animated background */}
-        <AnimatedBackground />
+        {/* Animated background - always render but only visible when not loading */}
+        <div className={isLoading ? "opacity-0" : "opacity-100 transition-opacity duration-500"}>
+          <AnimatedBackground />
+        </div>
 
-        {isLoading ? (
-          <div className="fixed inset-0 flex items-center justify-center bg-background z-50">
-            <div className="text-center">
-              <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-              <h2 className="text-xl font-semibold">Loading...</h2>
-              <p className="text-muted-foreground">Preparing your experience</p>
-            </div>
-          </div>
-        ) : (
+        {/* Preloader */}
+        {isLoading && <Preloader onLoadingComplete={handleLoadingComplete} />}
+
+        {!isLoading && (
           <>
             {/* Inline offline indicator */}
             {isOffline && (
