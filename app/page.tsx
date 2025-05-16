@@ -35,12 +35,12 @@ export default function Page() {
         <SubscribeButton />
       </div>
 
-      <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6">
+      <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 pb-24">
         <div className="flex flex-col items-center justify-center gap-3 sm:gap-4 max-w-md w-full text-center">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mt-8 mb-3">wearables.ai</h1>
           <p className="text-lg sm:text-xl text-muted-foreground mb-10">Find your perfect eyewear match</p>
 
-          <div className="card-gradient p-6 sm:p-8 rounded-xl w-full">
+          <div className="card-gradient p-8 sm:p-10 rounded-xl w-full shadow-lg border border-primary/10 mt-4">
             <h2 className="text-2xl sm:text-3xl font-bold mb-6">Face Shape Analyzer</h2>
             <p className="text-sm sm:text-base text-muted-foreground mb-8">
               Discover eyeglasses that complement your unique facial features
@@ -70,13 +70,17 @@ export default function Page() {
               </p>
             </div>
 
-            <p className="text-sm sm:text-base text-muted-foreground mb-8">
+            <p className="text-sm sm:text-base text-muted-foreground mb-10">
               Our AI will analyze your face shape and recommend the most suitable eyeglasses styles that enhance your
               appearance and boost your confidence.
             </p>
 
-            <a href="/analyzer" className="inline-block w-full button-primary text-center">
-              Start Analysis
+            <a
+              href="/analyzer"
+              className="inline-block w-full button-primary text-center py-4 text-lg font-medium relative overflow-hidden group"
+            >
+              <span className="relative z-10">Start Analysis</span>
+              <span className="absolute inset-0 bg-white/20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
             </a>
           </div>
         </div>
