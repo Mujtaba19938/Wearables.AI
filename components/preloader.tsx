@@ -12,8 +12,17 @@ interface PreloaderProps {
 export function Preloader({ onLoadingComplete }: PreloaderProps) {
   const [progress, setProgress] = useState(0)
   const [showLogo, setShowLogo] = useState(true)
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
   const { theme } = useTheme()
   const isDark = theme === "dark"
+
+  // Set dimensions safely after component mounts
+  useEffect(() => {
+    setDimensions({
+      width: window.innerWidth,
+      height: window.innerHeight,
+    })
+  }, [])
 
   useEffect(() => {
     // Simulate loading progress
@@ -64,8 +73,8 @@ export function Preloader({ onLoadingComplete }: PreloaderProps) {
                 key={i}
                 className="absolute rounded-full bg-white/20"
                 initial={{
-                  x: Math.random() * window.innerWidth,
-                  y: Math.random() * window.innerHeight,
+                  x: Math.random() * (dimensions.width || 100),
+                  y: Math.random() * (dimensions.height || 100),
                   scale: Math.random() * 0.5 + 0.5,
                   opacity: Math.random() * 0.5 + 0.3,
                 }}

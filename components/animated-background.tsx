@@ -61,24 +61,26 @@ export function AnimatedBackground() {
 
     // Initialize mouse position to center of screen
     mousePositionRef.current = {
-      x: window.innerWidth / 2,
-      y: window.innerHeight / 2,
+      x: typeof window !== "undefined" ? window.innerWidth / 2 : 0,
+      y: typeof window !== "undefined" ? window.innerHeight / 2 : 0,
     }
 
-    window.addEventListener("resize", handleResize)
-    handleResize() // Initial sizing
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", handleResize)
+      handleResize() // Initial sizing
 
-    const handleMouseMove = (e: MouseEvent) => {
-      mousePositionRef.current = { x: e.clientX, y: e.clientY }
-    }
+      const handleMouseMove = (e: MouseEvent) => {
+        mousePositionRef.current = { x: e.clientX, y: e.clientY }
+      }
 
-    window.addEventListener("mousemove", handleMouseMove)
+      window.addEventListener("mousemove", handleMouseMove)
 
-    return () => {
-      window.removeEventListener("resize", handleResize)
-      window.removeEventListener("mousemove", handleMouseMove)
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current)
+      return () => {
+        window.removeEventListener("resize", handleResize)
+        window.removeEventListener("mousemove", handleMouseMove)
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current)
+        }
       }
     }
   }, [style])

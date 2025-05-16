@@ -19,7 +19,7 @@ const createNoopStorage = () => {
 
 // Get storage that works in browser and SSR
 const getStorage = () => {
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" && typeof window.localStorage !== "undefined") {
     return localStorage
   }
   return createNoopStorage()
