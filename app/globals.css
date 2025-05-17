@@ -97,18 +97,18 @@
 
 /* Custom styles for the face analyzer app */
 .card-gradient {
-  @apply bg-gradient-to-b from-card/80 to-card/60 backdrop-blur-md border border-border/50;
+  @apply bg-gradient-to-b from-card/90 to-card/70 backdrop-blur-md border border-border/50;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card-gradient:hover {
-  transform: translateY(-5px);
+  transform: translateY(-3px);
   box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .dark .card-gradient {
-  @apply from-black/80 to-black/60 border-gray-800/50;
+  @apply from-gray-900/90 to-gray-900/70 border-gray-800/50;
   box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
 }
 
@@ -140,4 +140,15 @@
 
 .input-field {
   @apply w-full px-4 py-2 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground;
+}
+
+/* Add responsive utilities */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
 }

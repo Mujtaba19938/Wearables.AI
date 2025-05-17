@@ -18,9 +18,9 @@ export function BottomNavbar() {
 
   return (
     <>
-      <div className="fixed bottom-4 left-0 right-0 z-50 flex items-center justify-center">
+      <div className="fixed bottom-4 left-0 right-0 z-50 flex items-center justify-center px-4">
         <motion.div
-          className="bg-black/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full shadow-lg px-4 py-2 flex items-center space-x-8 border border-gray-700/50"
+          className="bg-black/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full shadow-lg px-3 sm:px-4 py-2 flex items-center space-x-4 sm:space-x-8 border border-gray-700/50"
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{

@@ -37,10 +37,10 @@ export function SubscribeButton() {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 px-5 py-2 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium transition-colors shadow-lg"
+        className="flex items-center gap-2 px-3 sm:px-5 py-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary-foreground font-medium transition-colors backdrop-blur-md"
       >
         <Mail className="h-4 w-4" />
-        <span>Subscribe</span>
+        <span className="hidden sm:inline">Subscribe</span>
       </button>
 
       {isModalOpen && (

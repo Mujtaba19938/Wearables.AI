@@ -51,7 +51,7 @@ export function AnimationStyleButton() {
         onClick={cycleAnimation}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className="floating-button relative"
+        className="floating-button relative bg-primary/20 dark:bg-primary/30 backdrop-blur-md"
         aria-label="Change animation style"
         whileTap={{ scale: 0.95 }}
         animate={animating ? { rotate: 360 } : {}}
