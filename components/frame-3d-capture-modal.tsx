@@ -533,8 +533,32 @@ export function Frame3DCaptureModal({ isOpen, onClose, onModelCreated }: Frame3D
               <div className="flex space-x-3 mt-2">
                 <a
                   href={modelUrl}
-                  download="sample-frame-model.glb"
+                  download
                   className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    // Create a fetch request to get the binary data
+                    fetch(modelUrl)
+                      .then((response) => response.blob())
+                      .then((blob) => {
+                        // Create a blob URL for the file
+                        const blobUrl = URL.createObjectURL(blob)
+                        // Create a temporary link element
+                        const link = document.createElement("a")
+                        link.href = blobUrl
+                        link.download = "sample-frame-model.glb"
+                        // Append to the document, click it, and remove it
+                        document.body.appendChild(link)
+                        link.click()
+                        document.body.removeChild(link)
+                        // Release the blob URL
+                        URL.revokeObjectURL(blobUrl)
+                      })
+                      .catch((error) => {
+                        console.error("Error downloading the model:", error)
+                        alert("Failed to download the model. Please try again.")
+                      })
+                  }}
                 >
                   <Download className="w-4 h-4" />
                   <span>Download</span>
