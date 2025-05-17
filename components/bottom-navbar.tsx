@@ -20,7 +20,7 @@ export function BottomNavbar() {
     <>
       <div className="fixed bottom-4 left-0 right-0 z-50 flex items-center justify-center px-4">
         <motion.div
-          className="bg-black/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full shadow-lg px-3 sm:px-4 py-2 flex items-center space-x-4 sm:space-x-8 border border-gray-700/50"
+          className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-full shadow-lg px-3 sm:px-4 py-2 flex items-center space-x-4 sm:space-x-8 border border-gray-200/50 dark:border-gray-700/50"
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{
@@ -33,7 +33,7 @@ export function BottomNavbar() {
           <Link
             href="/"
             className={`flex flex-col items-center justify-center p-2 rounded-full transition-colors ${
-              isActive("/") ? "text-blue-500" : "text-gray-500 dark:text-gray-400"
+              isActive("/") ? "text-blue-500" : "text-gray-600 dark:text-gray-400"
             }`}
           >
             <Home className="w-5 h-5" />
@@ -50,7 +50,7 @@ export function BottomNavbar() {
           <Link
             href="/guide"
             className={`flex flex-col items-center justify-center p-2 rounded-full transition-colors ${
-              isActive("/guide") ? "text-blue-500" : "text-gray-500 dark:text-gray-400"
+              isActive("/guide") ? "text-blue-500" : "text-gray-600 dark:text-gray-400"
             }`}
           >
             <Book className="w-5 h-5" />
@@ -67,7 +67,7 @@ export function BottomNavbar() {
           <Link
             href="/frames"
             className={`flex flex-col items-center justify-center p-2 rounded-full transition-colors ${
-              isActive("/frames") ? "text-blue-500" : "text-gray-500 dark:text-gray-400"
+              isActive("/frames") ? "text-blue-500" : "text-gray-600 dark:text-gray-400"
             }`}
           >
             <Glasses className="w-5 h-5" />
@@ -84,7 +84,7 @@ export function BottomNavbar() {
           <Link
             href="/about"
             className={`flex flex-col items-center justify-center p-2 rounded-full transition-colors ${
-              isActive("/about") ? "text-blue-500" : "text-gray-500 dark:text-gray-400"
+              isActive("/about") ? "text-blue-500" : "text-gray-600 dark:text-gray-400"
             }`}
           >
             <Info className="w-5 h-5" />

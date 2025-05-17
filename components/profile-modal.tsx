@@ -38,7 +38,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
       />
 
       <motion.div
-        className="relative bg-card rounded-t-xl sm:rounded-xl shadow-xl w-full max-w-md sm:max-w-lg overflow-hidden z-10 border border-border"
+        className="relative bg-background rounded-t-xl sm:rounded-xl shadow-xl w-full max-w-md sm:max-w-lg overflow-hidden z-10 border border-border"
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
@@ -57,7 +57,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         <div className="p-6">
           {isAuthenticated ? (
             <div className="flex flex-col items-center">
-              <div className="w-24 h-24 rounded-full bg-blue-500 flex items-center justify-center text-white mb-4">
+              <div className="w-24 h-24 rounded-full bg-primary flex items-center justify-center text-primary-foreground mb-4">
                 {user?.avatar ? (
                   <img
                     src={user.avatar || "/placeholder.svg"}
@@ -73,12 +73,12 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
               <div className="w-full mt-6 space-y-2">
                 <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors text-left">
-                  <User className="w-5 h-5 text-blue-500" />
+                  <User className="w-5 h-5 text-primary" />
                   <span>Edit Profile</span>
                 </button>
 
                 <button className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors text-left">
-                  <Settings className="w-5 h-5 text-blue-500" />
+                  <Settings className="w-5 h-5 text-primary" />
                   <span>Settings</span>
                 </button>
 

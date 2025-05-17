@@ -4,6 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { Mail } from "lucide-react"
+import { useToast } from "@/components/client-layout"
 
 export function SubscribeButton() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -11,6 +12,7 @@ export function SubscribeButton() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const { addToast } = useToast() // Add this line to use the toast functionality
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,12 +24,17 @@ export function SubscribeButton() {
       await new Promise((resolve) => setTimeout(resolve, 1000))
       setIsSuccess(true)
       setEmail("")
+
+      // Show toast notification
+      addToast("Successfully subscribed to updates!", "success")
+
       setTimeout(() => {
         setIsModalOpen(false)
         setIsSuccess(false)
       }, 2000)
     } catch (err) {
       setError("Something went wrong. Please try again.")
+      addToast("Failed to subscribe. Please try again.", "error")
     } finally {
       setIsSubmitting(false)
     }
@@ -37,7 +44,7 @@ export function SubscribeButton() {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 px-3 sm:px-5 py-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary-foreground font-medium transition-colors backdrop-blur-md"
+        className="flex items-center gap-2 px-3 sm:px-5 py-2 rounded-full bg-primary/20 hover:bg-primary/30 text-primary dark:text-primary-foreground font-medium transition-colors backdrop-blur-md"
       >
         <Mail className="h-4 w-4" />
         <span className="hidden sm:inline">Subscribe</span>

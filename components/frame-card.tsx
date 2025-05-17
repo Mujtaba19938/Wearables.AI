@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Glasses, CuboidIcon as Cube } from "lucide-react"
+import { motion } from "framer-motion"
+import { Glasses, CuboidIcon as Cube, Heart, ShoppingCart } from "lucide-react"
 import { TryOnModal } from "./try-on-modal"
 
 interface FrameCardProps {
@@ -18,6 +19,7 @@ export function FrameCard({ id, name, type, price, imageUrl, modelUrl, onAdd3DMo
   const [selectedColor, setSelectedColor] = useState<string>("gray")
   const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false)
   const [isARActive, setIsARActive] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(false)
 
   const colors = [
     { name: "gray", class: "bg-gray-400 border-gray-500" },
@@ -31,7 +33,13 @@ export function FrameCard({ id, name, type, price, imageUrl, modelUrl, onAdd3DMo
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg">
+    <motion.div
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg card-gradient"
+      whileHover={{ y: -5 }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       <div className="relative h-48 bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
         <img src={imageUrl || "/placeholder.svg"} alt={name} className="max-h-full max-w-full object-contain" />
 
@@ -42,6 +50,16 @@ export function FrameCard({ id, name, type, price, imageUrl, modelUrl, onAdd3DMo
             3D
           </div>
         )}
+
+        {/* Favorite button */}
+        <button
+          onClick={() => setIsFavorite(!isFavorite)}
+          className="absolute top-2 left-2 w-8 h-8 flex items-center justify-center rounded-full bg-white/80 dark:bg-black/50 backdrop-blur-sm transition-colors hover:bg-white dark:hover:bg-black/70"
+        >
+          <Heart
+            className={`w-4 h-4 ${isFavorite ? "text-red-500 fill-red-500" : "text-gray-500 dark:text-gray-400"}`}
+          />
+        </button>
       </div>
 
       <div className="p-4">
@@ -55,13 +73,13 @@ export function FrameCard({ id, name, type, price, imageUrl, modelUrl, onAdd3DMo
                 key={color.name}
                 className={`w-6 h-6 rounded-full border ${color.class} ${
                   selectedColor === color.name ? "ring-2 ring-blue-500" : ""
-                }`}
+                } transition-all hover:scale-110`}
                 onClick={() => setSelectedColor(color.name)}
                 aria-label={`Select ${color.name} color`}
               />
             ))}
           </div>
-          <span className="font-bold">${price.toFixed(2)}</span>
+          <span className="font-bold text-lg">${price.toFixed(2)}</span>
         </div>
 
         <div className="flex space-x-2">
@@ -72,7 +90,11 @@ export function FrameCard({ id, name, type, price, imageUrl, modelUrl, onAdd3DMo
             }`}
           >
             <Glasses className="w-4 h-4" />
-            <span>Try On with AR</span>
+            <span>Try On</span>
+          </button>
+
+          <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">
+            <ShoppingCart className="w-4 h-4" />
           </button>
         </div>
 
@@ -95,7 +117,7 @@ export function FrameCard({ id, name, type, price, imageUrl, modelUrl, onAdd3DMo
         frameColor={selectedColor}
         modelUrl={modelUrl}
       />
-    </div>
+    </motion.div>
   )
 }
 
