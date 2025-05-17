@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useTheme } from "next-themes"
 import { motion, AnimatePresence } from "framer-motion"
 import { FrameCard } from "@/components/frame-card"
-import { Filter, Search, Sun, Moon, ArrowLeft } from "lucide-react"
+import { Filter, Search, ArrowLeft } from "lucide-react"
 import { FrameFilterModal } from "@/components/frame-filter-modal"
 import Frame3DCaptureModal from "@/components/frame-3d-capture-modal"
 import Link from "next/link"
@@ -188,21 +188,11 @@ export default function FramesPage() {
     >
       {/* Header with back button and theme toggle */}
       <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/40 py-3">
-        <div className="container mx-auto px-4 flex justify-between items-center">
+        <div className="container mx-auto px-4">
           <Link href="/" className="flex items-center text-primary hover:text-primary/80 transition-colors">
             <ArrowLeft className="h-5 w-5 mr-2" />
             <span className="font-medium">Back</span>
           </Link>
-
-          {mounted && (
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-            </button>
-          )}
         </div>
       </div>
 

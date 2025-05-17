@@ -1,207 +1,178 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useEffect, useState } from "react"
+import { motion } from "framer-motion"
 import { useTheme } from "next-themes"
-import LogoAnimation from "./logo-animation"
 
 interface PreloaderProps {
-  onLoadingComplete: () => void
+  onLoadingComplete?: () => void
+  minimumDisplayTime?: number
 }
 
-export function Preloader({ onLoadingComplete }: PreloaderProps) {
+export default function Preloader({ onLoadingComplete, minimumDisplayTime = 2000 }: PreloaderProps) {
+  const [isLoading, setIsLoading] = useState(true)
   const [progress, setProgress] = useState(0)
-  const [showLogo, setShowLogo] = useState(true)
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+  const [resourcesLoaded, setResourcesLoaded] = useState(false)
+  const [minTimeElapsed, setMinTimeElapsed] = useState(false)
   const { theme } = useTheme()
   const isDark = theme === "dark"
 
-  // Set dimensions safely after component mounts
   useEffect(() => {
-    setDimensions({
-      width: window.innerWidth,
-      height: window.innerHeight,
-    })
-  }, [])
+    let progressInterval: NodeJS.Timeout
 
-  useEffect(() => {
-    // Simulate loading progress
-    const interval = setInterval(() => {
+    // Simulate progress
+    progressInterval = setInterval(() => {
       setProgress((prev) => {
-        const newProgress = prev + Math.random() * 15
-        if (newProgress >= 100) {
-          clearInterval(interval)
-
-          // After progress reaches 100%, wait a bit before transitioning out
-          setTimeout(() => {
-            setShowLogo(false)
-
-            // After logo animation completes, signal loading is complete
-            setTimeout(onLoadingComplete, 1000)
-          }, 500)
-
+        if (prev >= 100) {
+          clearInterval(progressInterval)
           return 100
         }
-        return newProgress
-      })
-    }, 200)
 
-    return () => clearInterval(interval)
-  }, [onLoadingComplete])
+        // Speed up progress if resources are actually loaded
+        const increment = resourcesLoaded ? 10 : 3
+        return Math.min(prev + increment, 100)
+      })
+    }, 150)
+
+    // Track page load completion
+    const handleResourcesLoaded = () => {
+      setResourcesLoaded(true)
+    }
+
+    // Check if page is already loaded
+    if (document.readyState === "complete") {
+      handleResourcesLoaded()
+    } else {
+      window.addEventListener("load", handleResourcesLoaded)
+    }
+
+    // Ensure minimum display time
+    const timer = setTimeout(() => {
+      setMinTimeElapsed(true)
+    }, minimumDisplayTime)
+
+    return () => {
+      window.removeEventListener("load", handleResourcesLoaded)
+      clearTimeout(timer)
+      clearInterval(progressInterval)
+    }
+  }, [minimumDisplayTime])
+
+  // Hide loader when both conditions are met
+  useEffect(() => {
+    if (progress >= 100 && minTimeElapsed) {
+      const finalTimer = setTimeout(() => {
+        setIsLoading(false)
+        if (onLoadingComplete) {
+          onLoadingComplete()
+        }
+      }, 500) // Small delay after reaching 100%
+
+      return () => clearTimeout(finalTimer)
+    }
+  }, [progress, minTimeElapsed, onLoadingComplete])
+
+  // Animation variants
+  const containerVariants = {
+    exit: {
+      opacity: 0,
+      transition: { duration: 0.5 },
+    },
+  }
+
+  const glassesVariants = {
+    initial: { opacity: 0, scale: 0.8 },
+    animate: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+      },
+    },
+  }
+
+  // Animation for the lens shine effect
+  const shineVariants = {
+    animate: {
+      opacity: [0, 1, 0],
+      pathLength: [0, 1, 0],
+      transition: {
+        duration: 1.8,
+        repeat: Number.POSITIVE_INFINITY,
+        repeatType: "reverse" as const,
+      },
+    },
+  }
+
+  if (!isLoading) return null
 
   return (
-    <AnimatePresence mode="wait">
-      {showLogo && (
-        <motion.div
-          className="fixed inset-0 flex flex-col items-center justify-center z-50"
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-        >
-          {/* Background with gradient */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-700 dark:from-blue-900 dark:to-purple-950"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
+    <motion.div
+      className={`fixed inset-0 flex flex-col items-center justify-center z-50 ${isDark ? "bg-gray-900" : "bg-gray-100"}`}
+      exit="exit"
+      variants={containerVariants}
+    >
+      <motion.div initial="initial" animate="animate" variants={glassesVariants} className="relative">
+        {/* Custom Glasses SVG */}
+        <svg width="125" height="45.01" viewBox="0 0 125 45.01" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M124.83,6.64a8,8,0,0,0-3.5-4.71c-2.4-1.38-22.38-1.73-22.58-1.73s-0.15,0-.25,0c-0.55,0-1.05-.12-1.63-0.15-1.05,0-2.28-.1-3.65-0.1-4.58,0-12.6.47-18.85,3.25l-7,1.08a40,40,0,0,1-9.7,0l-7-1.08c-6.25-2.81-14.28-3.25-18.85-3.25-1.38,0-2.63,0-3.65.1-0.58,0-1.13.1-1.68,0.15l-0.17,0c-0.2,0-20.15.34-22.58,1.72a8.12,8.12,0,0,0-3.5,4.7,5.17,5.17,0,0,0,.67,4.21c0.92,1.43,4.37,8.67,6.35,12.88,0,0.07.1,0.12,0.13,0.2a65.14,65.14,0,0,0,2.37,9.85c2.3,7.22,10.9,11.21,24.18,11.21a67,67,0,0,0,7-.37,18.11,18.11,0,0,0,12.25-6c4.13-4.51,6.4-11.92,6.43-20.61l1.63-1.11a2.81,2.81,0,0,1,2.65,0l1.63,1.11c0,8.69,2.3,16.11,6.42,20.62a18,18,0,0,0,12.25,6,67.39,67.39,0,0,0,7,.37c13.28,0,21.88-4,24.18-11.2a65.84,65.84,0,0,0,2.38-9.85,0.86,0.86,0,0,0,.13-0.2c2-4.21,5.43-11.45,6.35-12.88A5.33,5.33,0,0,0,124.83,6.64ZM49.36,35.28a13.06,13.06,0,0,1-9,4.37,64,64,0,0,1-6.51,.35c-5.09,0-17.16-.75-19.36-7.64a61.69,61.69,0,0,1-3-17,7.22,7.22,0,0,1,2.74-5.69c2.89-2.6,7.75-4.17,14.09-4.54,1,0,2.1-.1,3.37-.1,3.29,0,11.28,.3,16.85,2.8,0,0,0,0,.05,0,3.19,1.45,5.6,3.65,5.8,7C54.96,23.7,53.11,31.16,49.36,35.28Zm64.08-19.95a60.52,60.52,0,0,1-2.94,17c-2.21,6.89-14.27,7.64-19.37,7.64a64.54,64.54,0,0,1-6.54-.35,13.12,13.12,0,0,1-9-4.37c-3.75-4.12-5.6-11.58-5-20.5,0.2-3.32,2.59-5.49,5.81-7,0,0,0,0,.05,0,5.58-2.52,13.56-2.79,16.86-2.79,1.27,0,2.41,0,3.37,.1,8.8,.53,12.93,3.15,14.83,5.29A6.84,6.84,0,0,1,113.44,15.33Z"
+            fill={isDark ? "#A3B8CC" : "#2C3E50"}
           />
 
-          {/* Animated particles in background */}
-          <div className="absolute inset-0 overflow-hidden">
-            {Array.from({ length: 20 }).map((_, i) => (
-              <motion.div
-                key={i}
-                className="absolute rounded-full bg-white/20"
-                initial={{
-                  x: Math.random() * (dimensions.width || 100),
-                  y: Math.random() * (dimensions.height || 100),
-                  scale: Math.random() * 0.5 + 0.5,
-                  opacity: Math.random() * 0.5 + 0.3,
-                }}
-                animate={{
-                  y: [null, Math.random() * -200 - 100],
-                  opacity: [null, 0],
-                }}
-                transition={{
-                  duration: Math.random() * 10 + 10,
-                  repeat: Number.POSITIVE_INFINITY,
-                  ease: "linear",
-                }}
-                style={{
-                  width: `${Math.random() * 30 + 10}px`,
-                  height: `${Math.random() * 30 + 10}px`,
-                }}
-              />
-            ))}
-          </div>
+          {/* Add shine effects to the lenses */}
+          <motion.path
+            d="M30 20C40 10 45 30 30 25"
+            stroke="white"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            fill="none"
+            initial={{ opacity: 0, pathLength: 0 }}
+            animate={shineVariants.animate}
+          />
 
-          {/* Main content container */}
-          <div className="relative z-10 flex flex-col items-center">
-            {/* Logo animation */}
-            <div className="relative mb-8">
-              <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{
-                  duration: 0.8,
-                  ease: [0.16, 1, 0.3, 1],
-                  delay: 0.2,
-                }}
-              >
-                <LogoAnimation size={120} color="white" animated={true} />
-              </motion.div>
-            </div>
+          <motion.path
+            d="M95 20C105 10 110 30 95 25"
+            stroke="white"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            fill="none"
+            initial={{ opacity: 0, pathLength: 0 }}
+            animate={shineVariants.animate}
+          />
+        </svg>
+      </motion.div>
 
-            {/* App name */}
-            <motion.h1
-              className="text-4xl font-bold text-white mb-2"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              wearables.ai
-            </motion.h1>
+      {/* App name */}
+      <motion.h1
+        className={`text-3xl font-bold mt-6 ${isDark ? "text-white" : "text-gray-800"}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
+        wearables.ai
+      </motion.h1>
 
-            <motion.p
-              className="text-white/80 text-lg mb-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
-            >
-              Face Shape Analyzer
-            </motion.p>
+      {/* Progress indicator */}
+      <div className="w-48 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-4">
+        <motion.div
+          className="bg-primary h-1.5 rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.3 }}
+        />
+      </div>
 
-            {/* Progress bar */}
-            <div className="w-64 h-1 bg-white/20 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-white rounded-full"
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                transition={{ ease: "easeInOut" }}
-              />
-            </div>
-
-            {/* Loading text */}
-            <motion.p
-              className="text-white/70 text-sm mt-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.8 }}
-            >
-              {progress < 100 ? "Loading your experience..." : "Ready!"}
-            </motion.p>
-          </div>
-
-          {/* Animated face outline that morphs between different face shapes */}
-          <div className="absolute bottom-10 w-full flex justify-center">
-            <motion.div
-              className="relative w-32 h-32"
-              animate={{
-                rotate: [0, 5, -5, 0],
-              }}
-              transition={{
-                duration: 6,
-                repeat: Number.POSITIVE_INFINITY,
-                repeatType: "reverse",
-                ease: "easeInOut",
-              }}
-            >
-              <svg
-                width="100%"
-                height="100%"
-                viewBox="0 0 100 100"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-white/30"
-              >
-                <motion.path
-                  d="M50 10 C25 10, 10 30, 10 50 C10 75, 25 90, 50 90 C75 90, 90 75, 90 50 C90 30, 75 10, 50 10"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  animate={{
-                    d: [
-                      "M50 10 C25 10, 10 30, 10 50 C10 75, 25 90, 50 90 C75 90, 90 75, 90 50 C90 30, 75 10, 50 10", // Oval
-                      "M50 10 C30 10, 10 30, 10 50 C10 70, 30 90, 50 90 C70 90, 90 70, 90 50 C90 30, 70 10, 50 10", // Round
-                      "M30 10 C20 10, 10 20, 10 40 C10 70, 20 90, 50 90 C80 90, 90 70, 90 40 C90 20, 80 10, 70 10", // Heart
-                      "M50 10 C25 10, 10 30, 10 50 C10 75, 25 90, 50 90 C75 90, 90 75, 90 50 C90 30, 75 10, 50 10", // Back to Oval
-                    ],
-                  }}
-                  transition={{
-                    duration: 8,
-                    repeat: Number.POSITIVE_INFINITY,
-                    repeatType: "loop",
-                    ease: "easeInOut",
-                  }}
-                  fill="none"
-                />
-              </svg>
-            </motion.div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{
+          opacity: [0.5, 1, 0.5],
+          transition: { duration: 1.5, repeat: Number.POSITIVE_INFINITY },
+        }}
+        className={`mt-3 ${isDark ? "text-gray-300" : "text-gray-600"} text-sm`}
+      >
+        Loading your perfect frames...
+      </motion.p>
+    </motion.div>
   )
 }
-
-export default Preloader

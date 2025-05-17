@@ -38,7 +38,7 @@ export default function Page() {
         <SubscribeButton />
       </div>
 
-      <main className="flex min-h-screen flex-col items-center justify-center p-4 sm:p-6 pb-24">
+      <main className="flex min-h-screen flex-col items-center justify-center p-6 pb-28">
         <motion.div
           className="w-full max-w-md mx-auto"
           initial={{ opacity: 0, y: 20 }}
@@ -46,8 +46,8 @@ export default function Page() {
           transition={{ duration: 0.5 }}
         >
           {/* Logo and Title */}
-          <div className="text-center mb-8 sm:mb-12">
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
+          <div className="text-center mb-8">
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
               wearables.ai
             </h1>
             <p className="text-lg sm:text-xl text-muted-foreground">Find your perfect eyewear match</p>
@@ -55,23 +55,23 @@ export default function Page() {
 
           {/* Main Card */}
           <motion.div
-            className="card-gradient p-6 sm:p-8 rounded-2xl w-full shadow-xl border border-primary/10"
+            className="card-gradient p-6 rounded-2xl w-full shadow-xl border border-primary/10"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
           >
-            <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-center">Face Shape Analyzer</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center">Face Shape Analyzer</h2>
 
-            <div className="space-y-6 mb-8">
+            <div className="flex flex-col gap-6">
               {/* Feature points */}
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {[
                   "Discover your unique face shape",
                   "Get personalized eyewear recommendations",
                   "Try frames virtually with AR technology",
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center gap-3 bg-primary/5 p-3 rounded-lg">
-                    <div className="bg-primary/10 rounded-full p-1">
+                    <div className="bg-primary/10 rounded-full p-1.5 flex-shrink-0">
                       <ChevronRight className="h-4 w-4 text-primary" />
                     </div>
                     <p className="text-sm sm:text-base">{feature}</p>
@@ -80,8 +80,8 @@ export default function Page() {
               </div>
 
               {/* Privacy badge */}
-              <div className="flex items-start gap-3 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800/30">
-                <div className="bg-blue-500 rounded-full p-1 mt-0.5 flex-shrink-0">
+              <div className="flex items-start gap-3 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800/30 my-2">
+                <div className="bg-blue-500 rounded-full p-1.5 mt-0.5 flex-shrink-0">
                   <Shield className="h-4 w-4 text-white" />
                 </div>
                 <p className="text-xs sm:text-sm text-blue-800 dark:text-blue-200">
@@ -94,7 +94,7 @@ export default function Page() {
             {/* CTA Button */}
             <Link
               href="/analyzer"
-              className="group relative w-full flex items-center justify-center gap-2 button-primary py-4 text-lg font-medium overflow-hidden"
+              className="group relative w-full flex items-center justify-center gap-3 button-primary py-4 text-lg font-medium overflow-hidden mt-6"
             >
               <Glasses className="h-5 w-5" />
               <span>Start Analysis</span>
@@ -104,13 +104,13 @@ export default function Page() {
 
           {/* Additional Info */}
           <motion.div
-            className="mt-6 text-center text-sm text-muted-foreground"
+            className="mt-8 text-center text-sm text-muted-foreground"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
             <p>Advanced AI-powered face analysis technology</p>
-            <p className="mt-1">
+            <p className="mt-2">
               <Link href="/guide" className="text-primary hover:underline">
                 Learn how it works
               </Link>

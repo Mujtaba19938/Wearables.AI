@@ -6,6 +6,7 @@ import { useEffect, useState, createContext, useContext } from "react"
 import BottomNavbar from "./bottom-navbar"
 import AnimatedBackground from "./animated-background"
 import Preloader from "./preloader"
+import Link from "next/link"
 
 // Create a simple toast context
 type ToastType = "success" | "error" | "info"
@@ -143,13 +144,13 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   return (
     <ToastProvider>
       <div className="min-h-screen flex flex-col relative w-full overflow-x-hidden">
-        {/* Animated background - always render but only visible when not loading */}
+        {/* Preloader */}
+        {isLoading && <Preloader onLoadingComplete={handleLoadingComplete} minimumDisplayTime={2000} />}
+
+        {/* Animated background - only visible when not loading */}
         <div className={isLoading ? "opacity-0" : "opacity-100 transition-opacity duration-500"}>
           <AnimatedBackground />
         </div>
-
-        {/* Preloader */}
-        {isLoading && <Preloader onLoadingComplete={handleLoadingComplete} />}
 
         {!isLoading && (
           <>
@@ -218,19 +219,19 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
                       consent to our use of cookies.
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2 justify-center">
                     <button
                       onClick={acceptCookies}
                       className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors"
                     >
                       Accept
                     </button>
-                    <a
-                      href="/privacy-policy"
+                    <Link
+                      href="/cookie-policy"
                       className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90 transition-colors"
                     >
-                      Learn More
-                    </a>
+                      Cookie Policy
+                    </Link>
                   </div>
                 </div>
               </div>

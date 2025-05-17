@@ -2,16 +2,13 @@
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
-import { useTheme } from "next-themes"
-import { Sun, Moon, Camera, Upload, Info, Sliders, BarChart2, ChevronRight } from "lucide-react"
+import { useState, useRef } from "react"
+import { Camera, Upload, Info, Sliders, BarChart2, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 
 export default function AnalyzerPage() {
-  const [mounted, setMounted] = useState(false)
-  const { theme, setTheme } = useTheme()
   const [analysisMode, setAnalysisMode] = useState<"camera" | "upload">("camera")
   const [analysisType, setAnalysisType] = useState<"simple" | "detailed">("simple")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -26,26 +23,6 @@ export default function AnalyzerPage() {
   const router = useRouter()
 
   // Only show the theme toggle after mounting to avoid hydration mismatch
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
-
-  // Initialize camera when camera mode is selected
-  useEffect(() => {
-    if (analysisMode === "camera" && !capturedImage) {
-      initCamera()
-    } else {
-      stopCamera()
-    }
-
-    return () => {
-      stopCamera()
-    }
-  }, [analysisMode, capturedImage])
 
   const initCamera = async () => {
     try {
@@ -151,15 +128,6 @@ export default function AnalyzerPage() {
   return (
     <main className="container mx-auto px-4 py-8 min-h-screen flex flex-col">
       {/* Theme toggle */}
-      {mounted && (
-        <button
-          onClick={toggleTheme}
-          className="fixed top-4 right-4 p-2 rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
-          aria-label="Toggle theme"
-        >
-          {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </button>
-      )}
 
       <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-center">Face Shape Analyzer</h1>
