@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect, useCallback } from "react"
-import { X, Camera, Upload, Check, CuboidIcon as Cube, RefreshCw } from "lucide-react"
+import { X, Camera, Upload, Check, CuboidIcon as Cube, RefreshCw, Download, Eye } from "lucide-react"
 
 interface Frame3DCaptureModalProps {
   isOpen: boolean
@@ -28,6 +28,7 @@ export function Frame3DCaptureModal({ isOpen, onClose, onModelCreated }: Frame3D
   const [cameraReady, setCameraReady] = useState(false)
   const [showLastCapture, setShowLastCapture] = useState(false)
   const [modelUrl, setModelUrl] = useState<string | null>(null)
+  const [showDemoNotice, setShowDemoNotice] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -232,15 +233,16 @@ export function Frame3DCaptureModal({ isOpen, onClose, onModelCreated }: Frame3D
             uploadIntervalRef.current = null
           }
 
-          // Generate a fake model URL
-          const generatedModelUrl = `https://example.com/models/frame-${Date.now()}.glb`
+          // Generate a sample model URL that points to a real 3D model
+          const sampleModelUrl = "/assets/3d/duck.glb"
 
-          // Store the model URL in state instead of calling the callback directly
-          setModelUrl(generatedModelUrl)
+          // Store the model URL in state
+          setModelUrl(sampleModelUrl)
 
           // Short delay before moving to complete stage
           stageTimeoutRef.current = setTimeout(() => {
             setCaptureStage("complete")
+            setShowDemoNotice(true)
           }, 500)
 
           return 100
@@ -298,6 +300,7 @@ export function Frame3DCaptureModal({ isOpen, onClose, onModelCreated }: Frame3D
       setCameraError(null)
       setShowLastCapture(false)
       setModelUrl(null)
+      setShowDemoNotice(false)
 
       // Initialize camera
       initCamera()
@@ -512,8 +515,41 @@ export function Frame3DCaptureModal({ isOpen, onClose, onModelCreated }: Frame3D
           </div>
           <p className="text-gray-500 dark:text-gray-400 text-center mb-6">{getStageDescription()}</p>
           <Cube className="w-24 h-24 text-blue-500 mb-4" />
+
+          {showDemoNotice && (
+            <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg mb-4 text-center">
+              <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                <strong>Demo Mode:</strong> This is a demonstration of the 3D model creation feature.
+              </p>
+              <p className="text-xs text-blue-700 dark:text-blue-300">
+                In a production app, a real 3D model would be generated from your photos.
+              </p>
+            </div>
+          )}
+
           {modelUrl && (
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4 break-all">Model ready at: {modelUrl}</p>
+            <div className="flex flex-col items-center mt-4 w-full">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">Sample 3D model ready:</p>
+              <div className="flex space-x-3 mt-2">
+                <a
+                  href={modelUrl}
+                  download="sample-frame-model.glb"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download</span>
+                </a>
+                <a
+                  href={`https://viewer.vercel.app/?model=${encodeURIComponent(modelUrl)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span>View in 3D</span>
+                </a>
+              </div>
+            </div>
           )}
         </div>
       )
