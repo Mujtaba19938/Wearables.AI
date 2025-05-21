@@ -8,6 +8,9 @@ import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 
+// Define face shape types
+const faceShapes = ["Oval", "Round", "Square", "Heart", "Diamond", "Rectangle", "Triangle"]
+
 export default function AnalyzerPage() {
   const [analysisMode, setAnalysisMode] = useState<"camera" | "upload">("camera")
   const [analysisType, setAnalysisType] = useState<"simple" | "detailed">("simple")
@@ -19,10 +22,9 @@ export default function AnalyzerPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [imageHash, setImageHash] = useState<string | null>(null)
 
   const router = useRouter()
-
-  // Only show the theme toggle after mounting to avoid hydration mismatch
 
   const initCamera = async () => {
     try {
@@ -76,9 +78,29 @@ export default function AnalyzerPage() {
         context.drawImage(video, 0, 0, canvas.width, canvas.height)
         const imageDataUrl = canvas.toDataURL("image/jpeg")
         setCapturedImage(imageDataUrl)
+        // Generate a simple hash from the image data for consistent analysis results
+        setImageHash(generateSimpleHash(imageDataUrl))
         stopCamera()
       }
     }
+  }
+
+  // Generate a simple hash from the image data
+  const generateSimpleHash = (imageData: string): string => {
+    let hash = 0
+    for (let i = 0; i < Math.min(imageData.length, 1000); i++) {
+      hash = (hash << 5) - hash + imageData.charCodeAt(i)
+      hash = hash & hash // Convert to 32bit integer
+    }
+    return hash.toString()
+  }
+
+  // Determine face shape based on image hash
+  const determineFaceShape = (hash: string): string => {
+    // Use the hash to consistently select a face shape
+    const hashNum = Number.parseInt(hash, 10)
+    const index = Math.abs(hashNum) % faceShapes.length
+    return faceShapes[index]
   }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,7 +109,10 @@ export default function AnalyzerPage() {
       const reader = new FileReader()
       reader.onload = (e) => {
         if (e.target?.result) {
-          setCapturedImage(e.target.result as string)
+          const imageData = e.target.result as string
+          setCapturedImage(imageData)
+          // Generate a simple hash from the image data for consistent analysis results
+          setImageHash(generateSimpleHash(imageData))
         }
       }
       reader.readAsDataURL(file)
@@ -96,6 +121,7 @@ export default function AnalyzerPage() {
 
   const resetCapture = () => {
     setCapturedImage(null)
+    setImageHash(null)
     if (analysisMode === "camera") {
       initCamera()
     }
@@ -120,15 +146,17 @@ export default function AnalyzerPage() {
 
     setTimeout(() => {
       setIsAnalyzing(false)
-      // Use router.push instead of window.location.href
-      router.push(`/results?result=true&type=${analysisType}`)
+
+      // Determine face shape based on the image hash
+      const faceShape = imageHash ? determineFaceShape(imageHash) : "Oval"
+
+      // Navigate to results page with the determined face shape
+      router.push(`/results?result=true&type=${analysisType}&faceShape=${faceShape}`)
     }, analysisDuration)
   }
 
   return (
     <main className="container mx-auto px-4 py-8 min-h-screen flex flex-col">
-      {/* Theme toggle */}
-
       <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-center">Face Shape Analyzer</h1>
 
@@ -142,6 +170,7 @@ export default function AnalyzerPage() {
             onClick={() => {
               setAnalysisMode("camera")
               setCapturedImage(null)
+              setImageHash(null)
             }}
             className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors ${
               analysisMode === "camera"
@@ -156,6 +185,7 @@ export default function AnalyzerPage() {
             onClick={() => {
               setAnalysisMode("upload")
               setCapturedImage(null)
+              setImageHash(null)
             }}
             className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors ${
               analysisMode === "upload"
