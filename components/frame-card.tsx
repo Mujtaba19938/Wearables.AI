@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Glasses, CuboidIcon as Cube, Heart, ShoppingCart } from "lucide-react"
-import { TryOnModal } from "./try-on-modal"
+import { TryOnModal } from "@/components/try-on-modal"
 
 interface FrameCardProps {
   id: string
@@ -15,7 +15,7 @@ interface FrameCardProps {
   onAdd3DModel: () => void
 }
 
-export function FrameCard({ id, name, type, price, imageUrl, modelUrl, onAdd3DModel }: FrameCardProps) {
+export default function FrameCard({ id, name, type, price, imageUrl, modelUrl, onAdd3DModel }: FrameCardProps) {
   const [selectedColor, setSelectedColor] = useState<string>("gray")
   const [isTryOnModalOpen, setIsTryOnModalOpen] = useState(false)
   const [isARActive, setIsARActive] = useState(false)
@@ -120,5 +120,3 @@ export function FrameCard({ id, name, type, price, imageUrl, modelUrl, onAdd3DMo
     </motion.div>
   )
 }
-
-export default FrameCard

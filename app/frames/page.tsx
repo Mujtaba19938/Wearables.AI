@@ -1,13 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useTheme } from "next-themes"
-import { motion, AnimatePresence } from "framer-motion"
-import { FrameCard } from "@/components/frame-card"
+import { motion } from "framer-motion"
 import { Filter, Search, ArrowLeft } from "lucide-react"
+import Link from "next/link"
+import FrameCard from "@/components/frame-card"
 import { FrameFilterModal } from "@/components/frame-filter-modal"
 import Frame3DCaptureModal from "@/components/frame-3d-capture-modal"
-import Link from "next/link"
+import ThemeToggle from "@/components/theme-toggle"
+import SubscribeButton from "@/components/subscribe-button"
+import AnimatedBackground from "@/components/animated-background"
 
 // Frame data type
 interface Frame {
@@ -33,18 +35,6 @@ export default function FramesPage() {
   })
   const [is3DCaptureModalOpen, setIs3DCaptureModalOpen] = useState(false)
   const [selectedFrameId, setSelectedFrameId] = useState<string | null>(null)
-  const [mounted, setMounted] = useState(false)
-  const { theme, setTheme } = useTheme()
-
-  // Set mounted state once component mounts
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  // Toggle theme function
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
 
   // Load frames data
   useEffect(() => {
@@ -57,7 +47,7 @@ export default function FramesPage() {
           type: "Wayfarer",
           color: "Black",
           price: 129.99,
-          imageUrl: "/wayfarer-glasses.png",
+          imageUrl: "/classic-wayfarer-glasses.png",
           faceShapeMatch: ["Square", "Round", "Oval"],
         },
         {
@@ -66,7 +56,7 @@ export default function FramesPage() {
           type: "Aviator",
           color: "Gold",
           price: 149.99,
-          imageUrl: "/aviator-glasses.png",
+          imageUrl: "/gold-aviator-glasses.png",
           faceShapeMatch: ["Heart", "Oval", "Diamond"],
         },
         {
@@ -75,7 +65,7 @@ export default function FramesPage() {
           type: "Cat Eye",
           color: "Tortoise",
           price: 119.99,
-          imageUrl: "/cat-eye-glasses.png",
+          imageUrl: "/placeholder-mcg1r.png",
           faceShapeMatch: ["Round", "Square", "Oval"],
         },
         {
@@ -84,7 +74,7 @@ export default function FramesPage() {
           type: "Rectangle",
           color: "Silver",
           price: 139.99,
-          imageUrl: "/rectangle-glasses.png",
+          imageUrl: "/placeholder-fy9wy.png",
           faceShapeMatch: ["Oval", "Heart", "Diamond"],
         },
         {
@@ -93,7 +83,7 @@ export default function FramesPage() {
           type: "Clubmaster",
           color: "Black/Gold",
           price: 159.99,
-          imageUrl: "/clubmaster-glasses.png",
+          imageUrl: "/placeholder.svg?height=300&width=400&query=clubmaster+glasses",
           faceShapeMatch: ["Diamond", "Oval", "Heart"],
         },
         {
@@ -102,7 +92,7 @@ export default function FramesPage() {
           type: "Round",
           color: "Brown",
           price: 109.99,
-          imageUrl: "/round-vintage-glasses.png",
+          imageUrl: "/placeholder.svg?height=300&width=400&query=vintage+round+glasses",
           faceShapeMatch: ["Square", "Diamond", "Heart"],
         },
       ])
@@ -179,161 +169,123 @@ export default function FramesPage() {
   }
 
   return (
-    <motion.div
-      className="min-h-screen bg-background"
-      initial="initial"
-      animate="animate"
-      exit="exit"
-      variants={pageVariants}
-    >
-      {/* Header with back button and theme toggle */}
-      <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/40 py-3">
-        <div className="container mx-auto px-4">
-          <Link href="/" className="flex items-center text-primary hover:text-primary/80 transition-colors">
-            <ArrowLeft className="h-5 w-5 mr-2" />
-            <span className="font-medium">Back</span>
-          </Link>
-        </div>
+    <>
+      <AnimatedBackground />
+      <div className="absolute top-4 left-4 z-50">
+        <ThemeToggle />
+      </div>
+      <div className="absolute top-4 right-4 z-50">
+        <SubscribeButton />
       </div>
 
-      <main className="container mx-auto px-4 py-6 pb-24">
-        <motion.div className="flex flex-col items-center mb-8" variants={itemVariants}>
-          <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
-            Eyeglass Frames
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-center max-w-2xl text-pretty">
-            Browse our collection of eyeglass frames. Find the perfect style that complements your face shape and
-            personal style.
-          </p>
-        </motion.div>
+      <motion.div
+        className="min-h-screen bg-background/70 backdrop-blur-sm"
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        variants={pageVariants}
+      >
+        {/* Header with back button */}
+        <div className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border/40 py-3">
+          <div className="container mx-auto px-4 flex justify-between items-center">
+            <Link href="/" className="flex items-center text-primary hover:text-primary/80 transition-colors">
+              <ArrowLeft className="h-5 w-5 mr-2" />
+              <span className="font-medium">Back</span>
+            </Link>
+          </div>
+        </div>
 
-        {/* Search and filter */}
-        <motion.div className="flex flex-col sm:flex-row gap-4 mb-8" variants={itemVariants}>
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-gray-400" />
+        <main className="container mx-auto px-4 py-6 pb-24">
+          <motion.div className="flex flex-col items-center mb-8" variants={itemVariants}>
+            <h1 className="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
+              Eyeglass Frames
+            </h1>
+            <p className="text-muted-foreground text-center max-w-2xl">
+              Browse our collection of eyeglass frames. Find the perfect style that complements your face shape and
+              personal style.
+            </p>
+          </motion.div>
+
+          {/* Search and filter */}
+          <motion.div className="flex flex-col sm:flex-row gap-4 mb-8" variants={itemVariants}>
+            <div className="relative flex-grow">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-muted-foreground" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search frames..."
+                className="pl-10 pr-4 py-3 w-full border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-input shadow-sm"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-            <input
-              type="text"
-              placeholder="Search frames..."
-              className="pl-10 pr-4 py-3 w-full border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <button
-            onClick={() => setFilterModalOpen(true)}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-colors"
-          >
-            <Filter className="h-5 w-5" />
-            <span className="font-medium">Filter</span>
-            {Object.values(activeFilters).some((filters) => filters.length > 0) && (
-              <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-primary rounded-full">
-                {Object.values(activeFilters).reduce((count, filters) => count + filters.length, 0)}
-              </span>
-            )}
-          </button>
-        </motion.div>
-
-        {/* Active filters display */}
-        <AnimatePresence>
-          {Object.values(activeFilters).some((filters) => filters.length > 0) && (
-            <motion.div
-              className="flex flex-wrap gap-2 mb-6"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {Object.entries(activeFilters).map(([category, values]) =>
-                values.map((value) => (
-                  <div
-                    key={`${category}-${value}`}
-                    className="flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                  >
-                    <span>{value}</span>
-                    <button
-                      onClick={() => {
-                        setActiveFilters((prev) => ({
-                          ...prev,
-                          [category]: prev[category].filter((v) => v !== value),
-                        }))
-                      }}
-                      className="ml-1 hover:text-primary/70"
-                    >
-                      ×
-                    </button>
-                  </div>
-                )),
-              )}
-              <button
-                onClick={() => setActiveFilters({ type: [], color: [], faceShape: [] })}
-                className="text-sm text-primary hover:text-primary/70 underline"
-              >
-                Clear all
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Frames grid */}
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : filteredFrames.length === 0 ? (
-          <motion.div className="text-center py-12 bg-gray-50 dark:bg-gray-800/50 rounded-lg" variants={itemVariants}>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">No frames match your search criteria.</p>
             <button
-              onClick={() => {
-                setSearchQuery("")
-                setActiveFilters({ type: [], color: [], faceShape: [] })
-              }}
-              className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              onClick={() => setFilterModalOpen(true)}
+              className="flex items-center justify-center gap-2 px-4 py-3 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg transition-colors"
             >
-              Clear Filters
+              <Filter className="h-5 w-5" />
+              <span className="font-medium">Filter</span>
+              {Object.values(activeFilters).some((filters) => filters.length > 0) && (
+                <span className="inline-flex items-center justify-center w-5 h-5 text-xs font-bold text-white bg-primary rounded-full">
+                  {Object.values(activeFilters).reduce((count, filters) => count + filters.length, 0)}
+                </span>
+              )}
             </button>
           </motion.div>
-        ) : (
-          <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" variants={staggerContainer}>
-            {filteredFrames.map((frame, index) => (
-              <motion.div key={frame.id} variants={itemVariants}>
-                <FrameCard
-                  id={frame.id}
-                  name={frame.name}
-                  type={frame.type}
-                  price={frame.price}
-                  imageUrl={frame.imageUrl}
-                  modelUrl={frame.modelUrl}
-                  onAdd3DModel={() => openCaptureModal(frame.id)}
-                />
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
 
-        {/* Empty state for no frames */}
-        {!loading && frames.length === 0 && (
-          <motion.div className="text-center py-12 bg-gray-50 dark:bg-gray-800/50 rounded-lg" variants={itemVariants}>
-            <p className="text-gray-600 dark:text-gray-400">No frames available at the moment.</p>
-          </motion.div>
-        )}
-      </main>
+          {/* Frames grid */}
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+          ) : filteredFrames.length === 0 ? (
+            <motion.div className="text-center py-12 bg-muted/50 rounded-lg" variants={itemVariants}>
+              <p className="text-muted-foreground mb-4">No frames match your search criteria.</p>
+              <button
+                onClick={() => {
+                  setSearchQuery("")
+                  setActiveFilters({ type: [], color: [], faceShape: [] })
+                }}
+                className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+              >
+                Clear Filters
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6" variants={staggerContainer}>
+              {filteredFrames.map((frame) => (
+                <motion.div key={frame.id} variants={itemVariants}>
+                  <FrameCard
+                    id={frame.id}
+                    name={frame.name}
+                    type={frame.type}
+                    price={frame.price}
+                    imageUrl={frame.imageUrl}
+                    modelUrl={frame.modelUrl}
+                    onAdd3DModel={() => openCaptureModal(frame.id)}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </main>
 
-      {/* Filter Modal */}
-      <FrameFilterModal
-        isOpen={filterModalOpen}
-        onClose={() => setFilterModalOpen(false)}
-        activeFilters={activeFilters}
-        setActiveFilters={setActiveFilters}
-      />
+        {/* Filter Modal */}
+        <FrameFilterModal
+          isOpen={filterModalOpen}
+          onClose={() => setFilterModalOpen(false)}
+          activeFilters={activeFilters}
+          setActiveFilters={setActiveFilters}
+        />
 
-      {/* 3D Capture Modal */}
-      <Frame3DCaptureModal
-        isOpen={is3DCaptureModalOpen}
-        onClose={() => setIs3DCaptureModalOpen(false)}
-        onModelCreated={handle3DModelCreated}
-      />
-    </motion.div>
+        {/* 3D Capture Modal */}
+        <Frame3DCaptureModal
+          isOpen={is3DCaptureModalOpen}
+          onClose={() => setIs3DCaptureModalOpen(false)}
+          onModelCreated={handle3DModelCreated}
+        />
+      </motion.div>
+    </>
   )
 }

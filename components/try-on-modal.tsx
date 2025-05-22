@@ -13,7 +13,7 @@ interface TryOnModalProps {
   modelUrl?: string
 }
 
-export function TryOnModal({ isOpen, onClose, frameName, frameImage, frameColor, modelUrl }: TryOnModalProps) {
+export default function TryOnModal({ isOpen, onClose, frameName, frameImage, frameColor, modelUrl }: TryOnModalProps) {
   const [isARSupported, setIsARSupported] = useState(false)
   const [cameraActive, setCameraActive] = useState(false)
   const [cameraError, setCameraError] = useState<string | null>(null)
@@ -187,3 +187,5 @@ export function TryOnModal({ isOpen, onClose, frameName, frameImage, frameColor,
     </AnimatePresence>
   )
 }
+
+export { TryOnModal }

@@ -156,29 +156,27 @@ export default function AnalyzerPage() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8 min-h-screen flex flex-col">
-      <div className="flex-1 flex flex-col items-center justify-center max-w-md mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-center">Face Shape Analyzer</h1>
+    <main className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center px-4 py-8">
+      <div className="w-full max-w-md mx-auto flex flex-col items-center">
+        <h1 className="text-2xl font-bold mb-2 text-center">Face Shape Analyzer</h1>
 
-        <p className="text-gray-600 dark:text-gray-400 mb-8 text-center">
+        <p className="text-gray-400 mb-6 text-center text-sm">
           Take a photo or upload an image to analyze your face shape and get personalized eyewear recommendations.
         </p>
 
         {/* Analysis mode selector */}
-        <div className="flex gap-4 mb-6 w-full">
+        <div className="flex gap-3 mb-6 w-full">
           <button
             onClick={() => {
               setAnalysisMode("camera")
               setCapturedImage(null)
               setImageHash(null)
             }}
-            className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors ${
-              analysisMode === "camera"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+            className={`flex-1 py-2.5 px-4 rounded-md flex items-center justify-center gap-2 transition-colors ${
+              analysisMode === "camera" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
             }`}
           >
-            <Camera className="h-5 w-5" />
+            <Camera className="h-4 w-4" />
             <span>Camera</span>
           </button>
           <button
@@ -187,69 +185,64 @@ export default function AnalyzerPage() {
               setCapturedImage(null)
               setImageHash(null)
             }}
-            className={`flex-1 py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors ${
-              analysisMode === "upload"
-                ? "bg-blue-600 text-white"
-                : "bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+            className={`flex-1 py-2.5 px-4 rounded-md flex items-center justify-center gap-2 transition-colors ${
+              analysisMode === "upload" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
             }`}
           >
-            <Upload className="h-5 w-5" />
+            <Upload className="h-4 w-4" />
             <span>Upload</span>
           </button>
         </div>
 
-        {/* Analysis type selector */}
-        <div className="w-full mb-8">
-          <h2 className="text-lg font-medium mb-3 text-center">Choose Analysis Type</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <div
-              onClick={() => setAnalysisType("simple")}
-              className={`cursor-pointer rounded-lg p-4 border-2 transition-all ${
-                analysisType === "simple"
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                  : "border-gray-200 dark:border-gray-700"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <BarChart2 className={`h-6 w-6 ${analysisType === "simple" ? "text-blue-500" : "text-gray-500"}`} />
-                {analysisType === "simple" && (
-                  <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-white"></div>
-                  </div>
-                )}
-              </div>
-              <h3 className="font-medium mb-1">Simple Analysis</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Quick face shape detection with basic eyewear recommendations.
-              </p>
-            </div>
+        <h2 className="text-sm font-medium mb-3 text-center">Choose Analysis Type</h2>
 
-            <div
-              onClick={() => setAnalysisType("detailed")}
-              className={`cursor-pointer rounded-lg p-4 border-2 transition-all ${
-                analysisType === "detailed"
-                  ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
-                  : "border-gray-200 dark:border-gray-700"
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <Sliders className={`h-6 w-6 ${analysisType === "detailed" ? "text-blue-500" : "text-gray-500"}`} />
-                {analysisType === "detailed" && (
-                  <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
-                    <div className="w-2 h-2 rounded-full bg-white"></div>
-                  </div>
-                )}
-              </div>
-              <h3 className="font-medium mb-1">Detailed Analysis</h3>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Advanced facial feature analysis with comprehensive recommendations.
-              </p>
+        {/* Analysis type selector */}
+        <div className="grid grid-cols-2 gap-3 w-full mb-6">
+          <div
+            onClick={() => setAnalysisType("simple")}
+            className={`cursor-pointer rounded-md p-4 border transition-all ${
+              analysisType === "simple"
+                ? "border-blue-500 bg-[#1e293b]"
+                : "border-gray-700 bg-[#1e293b]/50 hover:bg-[#1e293b]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <BarChart2 className={`h-5 w-5 ${analysisType === "simple" ? "text-blue-500" : "text-gray-400"}`} />
+              {analysisType === "simple" && (
+                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white"></div>
+                </div>
+              )}
             </div>
+            <h3 className="font-medium text-sm mb-1">Simple Analysis</h3>
+            <p className="text-xs text-gray-400">Quick face shape detection with basic eyewear recommendations.</p>
+          </div>
+
+          <div
+            onClick={() => setAnalysisType("detailed")}
+            className={`cursor-pointer rounded-md p-4 border transition-all ${
+              analysisType === "detailed"
+                ? "border-blue-500 bg-[#1e293b]"
+                : "border-gray-700 bg-[#1e293b]/50 hover:bg-[#1e293b]"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <Sliders className={`h-5 w-5 ${analysisType === "detailed" ? "text-blue-500" : "text-gray-400"}`} />
+              {analysisType === "detailed" && (
+                <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center">
+                  <div className="w-2 h-2 rounded-full bg-white"></div>
+                </div>
+              )}
+            </div>
+            <h3 className="font-medium text-sm mb-1">Detailed Analysis</h3>
+            <p className="text-xs text-gray-400">
+              Advanced facial feature analysis with comprehensive recommendations.
+            </p>
           </div>
         </div>
 
         {/* Camera view or upload area */}
-        <div className="w-full aspect-square bg-gray-200 dark:bg-gray-800 rounded-lg mb-6 flex items-center justify-center overflow-hidden relative">
+        <div className="w-full aspect-square bg-[#1e293b] rounded-md mb-6 flex items-center justify-center overflow-hidden relative">
           {capturedImage ? (
             <div className="relative w-full h-full">
               <img src={capturedImage || "/placeholder.svg"} alt="Captured" className="w-full h-full object-cover" />
@@ -283,17 +276,19 @@ export default function AnalyzerPage() {
               />
               {!cameraActive && (
                 <div className="text-center p-4">
-                  <Camera className="h-12 w-12 mx-auto mb-4 text-gray-500 dark:text-gray-400" />
-                  <p className="text-gray-600 dark:text-gray-400">
-                    Camera access will be requested when you start the analysis
-                  </p>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-gray-600 flex items-center justify-center">
+                    <Camera className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <p className="text-gray-400 text-sm">Camera access will be requested when you start the analysis</p>
                 </div>
               )}
             </>
           ) : (
             <div className="text-center p-4">
-              <Upload className="h-12 w-12 mx-auto mb-4 text-gray-500 dark:text-gray-400" />
-              <p className="text-gray-600 dark:text-gray-400">Click to select an image from your device</p>
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-gray-600 flex items-center justify-center">
+                <Upload className="h-8 w-8 text-gray-400" />
+              </div>
+              <p className="text-gray-400 text-sm">Click to select an image from your device</p>
               <input
                 type="file"
                 accept="image/*"
@@ -304,7 +299,7 @@ export default function AnalyzerPage() {
               />
               <label
                 htmlFor="image-upload"
-                className="mt-4 inline-block py-2 px-4 bg-blue-600 text-white rounded-lg cursor-pointer hover:bg-blue-700 transition-colors"
+                className="mt-4 inline-block py-2 px-4 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-700 transition-colors"
               >
                 Select Image
               </label>
@@ -314,69 +309,55 @@ export default function AnalyzerPage() {
         </div>
 
         {/* Analysis features based on type */}
-        <div className="w-full mb-6">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={analysisType}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
-              className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg"
-            >
-              <h3 className="font-medium mb-2">
-                {analysisType === "simple" ? "Simple Analysis Features" : "Detailed Analysis Features"}
-              </h3>
-              <ul className="space-y-2 text-sm">
-                {analysisType === "simple" ? (
-                  <>
-                    <li className="flex items-start">
-                      <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
-                      <span>Basic face shape detection (oval, round, square, etc.)</span>
-                    </li>
-                    <li className="flex items-start">
-                      <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
-                      <span>General eyewear style recommendations</span>
-                    </li>
-                    <li className="flex items-start">
-                      <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
-                      <span>Quick processing (under 5 seconds)</span>
-                    </li>
-                  </>
-                ) : (
-                  <>
-                    <li className="flex items-start">
-                      <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
-                      <span>Advanced face shape analysis with confidence scores</span>
-                    </li>
-                    <li className="flex items-start">
-                      <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
-                      <span>Facial feature measurements (face width, jawline, etc.)</span>
-                    </li>
-                    <li className="flex items-start">
-                      <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
-                      <span>Personalized frame size recommendations</span>
-                    </li>
-                    <li className="flex items-start">
-                      <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
-                      <span>Color palette suggestions based on skin tone</span>
-                    </li>
-                    <li className="flex items-start">
-                      <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
-                      <span>Detailed processing (may take 10-15 seconds)</span>
-                    </li>
-                  </>
-                )}
-              </ul>
-            </motion.div>
-          </AnimatePresence>
+        <div className="w-full mb-4 bg-[#1e293b] p-4 rounded-md">
+          <h3 className="font-medium text-sm mb-2">
+            {analysisType === "simple" ? "Simple Analysis Features" : "Detailed Analysis Features"}
+          </h3>
+          <ul className="space-y-2 text-sm">
+            {analysisType === "simple" ? (
+              <>
+                <li className="flex items-start">
+                  <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
+                  <span className="text-gray-300">Basic face shape detection (oval, round, square, etc.)</span>
+                </li>
+                <li className="flex items-start">
+                  <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
+                  <span className="text-gray-300">General eyewear style recommendations</span>
+                </li>
+                <li className="flex items-start">
+                  <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
+                  <span className="text-gray-300">Quick processing (under 5 seconds)</span>
+                </li>
+              </>
+            ) : (
+              <>
+                <li className="flex items-start">
+                  <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
+                  <span className="text-gray-300">Advanced face shape analysis with confidence scores</span>
+                </li>
+                <li className="flex items-start">
+                  <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
+                  <span className="text-gray-300">Facial feature measurements (face width, jawline, etc.)</span>
+                </li>
+                <li className="flex items-start">
+                  <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
+                  <span className="text-gray-300">Personalized frame size recommendations</span>
+                </li>
+                <li className="flex items-start">
+                  <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
+                  <span className="text-gray-300">Color palette suggestions based on skin tone</span>
+                </li>
+                <li className="flex items-start">
+                  <ChevronRight className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0 mr-2" />
+                  <span className="text-gray-300">Detailed processing (may take 10-15 seconds)</span>
+                </li>
+              </>
+            )}
+          </ul>
         </div>
 
         {/* Photo tips toggle */}
-        <button
-          onClick={() => setShowTips(!showTips)}
-          className="flex items-center gap-2 text-blue-600 dark:text-blue-400 mb-2"
-        >
+        <button onClick={() => setShowTips(!showTips)} className="flex items-center gap-2 text-blue-400 mb-2 text-sm">
           <Info className="h-4 w-4" />
           <span>{showTips ? "Hide photo tips" : "Show photo tips"}</span>
         </button>
@@ -388,10 +369,10 @@ export default function AnalyzerPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="w-full bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6 overflow-hidden"
+              className="w-full bg-[#1e293b] p-4 rounded-md mb-4 overflow-hidden"
             >
-              <h3 className="font-medium mb-2">For best results:</h3>
-              <ul className="list-disc pl-5 text-sm text-gray-700 dark:text-gray-300 space-y-1">
+              <h3 className="font-medium text-sm mb-2">For best results:</h3>
+              <ul className="list-disc pl-5 text-sm text-gray-300 space-y-1">
                 <li>Ensure good, even lighting on your face</li>
                 <li>Remove glasses, hats, and hair covering your face</li>
                 <li>Look directly at the camera with a neutral expression</li>
@@ -403,16 +384,16 @@ export default function AnalyzerPage() {
         </AnimatePresence>
 
         {/* Privacy notice */}
-        <p className="text-xs text-gray-500 dark:text-gray-400 mb-6 text-center">
-          <strong>Privacy:</strong> Your photos are processed locally on your device and are not stored or sent to any
-          server.
+        <p className="text-xs text-gray-500 mb-6 text-center">
+          <strong className="text-gray-400">Privacy:</strong> Your photos are processed locally on your device and are
+          not stored or sent to any server.
         </p>
 
         {/* Start analysis button */}
         <button
           onClick={startAnalysis}
           disabled={isAnalyzing}
-          className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50"
+          className="w-full py-3 px-4 bg-blue-600 text-white rounded-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50"
         >
           {isAnalyzing ? (
             <>
@@ -422,15 +403,12 @@ export default function AnalyzerPage() {
           ) : capturedImage ? (
             <span>Start {analysisType === "simple" ? "Simple" : "Detailed"} Analysis</span>
           ) : (
-            <span>{analysisMode === "camera" ? "Capture & Analyze" : "Select & Analyze"}</span>
+            <span>Capture & Analyze</span>
           )}
         </button>
 
         {/* Back link */}
-        <Link
-          href="/"
-          className="mt-6 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors"
-        >
+        <Link href="/" className="mt-6 text-gray-400 hover:text-gray-200 transition-colors text-sm">
           ← Back to Home
         </Link>
       </div>

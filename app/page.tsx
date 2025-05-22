@@ -2,16 +2,18 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import Frame3DCaptureModal from "../components/frame-3d-capture-modal"
-import AnimationStyleButton from "../components/animation-style-button"
-import ThemeToggle from "../components/theme-toggle"
-import SubscribeButton from "../components/subscribe-button"
-import { Shield, Glasses, ChevronRight } from "lucide-react"
 import Link from "next/link"
+import { Glasses, Shield, ChevronRight } from "lucide-react"
+import AnimationStyleButton from "@/components/animation-style-button"
+import Frame3DCaptureModal from "@/components/frame-3d-capture-modal"
+import ThemeToggle from "@/components/theme-toggle"
+import SubscribeButton from "@/components/subscribe-button"
+import ProfileModal from "@/components/profile-modal"
+import AnimatedBackground from "@/components/animated-background"
 
 export default function Page() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [modelUrl, setModelUrl] = useState<string | null>(null)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
 
   const handleOpenModal = () => {
     setIsModalOpen(true)
@@ -22,23 +24,25 @@ export default function Page() {
   }
 
   const handleModelCreated = (url: string) => {
-    setModelUrl(url)
     setIsModalOpen(false)
+  }
+
+  const toggleProfileModal = () => {
+    setIsProfileModalOpen(!isProfileModalOpen)
   }
 
   return (
     <>
+      {/* Animated Background */}
+      <AnimatedBackground />
+
       {/* Theme toggle in top left */}
-      <div className="fixed top-4 left-4 z-50">
-        <ThemeToggle />
-      </div>
+      <ThemeToggle />
 
       {/* Subscribe button in top right */}
-      <div className="fixed top-4 right-4 z-50">
-        <SubscribeButton />
-      </div>
+      <SubscribeButton />
 
-      <main className="flex min-h-screen flex-col items-center justify-center p-6 pb-28">
+      <main className="flex min-h-screen flex-col items-center justify-center p-6 pb-28 bg-slate-50/70 dark:bg-[#0f172a]/80 backdrop-blur-[2px] text-slate-900 dark:text-white">
         <motion.div
           className="w-full max-w-md mx-auto"
           initial={{ opacity: 0, y: 20 }}
@@ -50,12 +54,12 @@ export default function Page() {
             <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-3 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
               wearables.ai
             </h1>
-            <p className="text-lg sm:text-xl text-muted-foreground">Find your perfect eyewear match</p>
+            <p className="text-lg sm:text-xl text-slate-600 dark:text-gray-300">Find your perfect eyewear match</p>
           </div>
 
           {/* Main Card */}
           <motion.div
-            className="card-gradient p-6 rounded-2xl w-full shadow-xl border border-primary/10"
+            className="bg-white/80 dark:bg-[#1e293b]/90 backdrop-blur-[2px] p-6 rounded-2xl w-full shadow-xl border border-slate-200 dark:border-gray-700"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
@@ -70,17 +74,20 @@ export default function Page() {
                   "Get personalized eyewear recommendations",
                   "Try frames virtually with AR technology",
                 ].map((feature, index) => (
-                  <div key={index} className="flex items-center gap-3 bg-primary/5 p-3 rounded-lg">
-                    <div className="bg-primary/10 rounded-full p-1.5 flex-shrink-0">
-                      <ChevronRight className="h-4 w-4 text-primary" />
+                  <div
+                    key={index}
+                    className="flex items-center gap-3 bg-slate-100/80 dark:bg-[#2d3748]/80 backdrop-blur-[2px] p-3 rounded-lg"
+                  >
+                    <div className="bg-blue-100 dark:bg-blue-500/20 rounded-full p-1.5 flex-shrink-0">
+                      <ChevronRight className="h-4 w-4 text-blue-500 dark:text-blue-400" />
                     </div>
-                    <p className="text-sm sm:text-base">{feature}</p>
+                    <p className="text-sm sm:text-base text-slate-700 dark:text-gray-200">{feature}</p>
                   </div>
                 ))}
               </div>
 
               {/* Privacy badge */}
-              <div className="flex items-start gap-3 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-100 dark:border-blue-800/30 my-2">
+              <div className="flex items-start gap-3 bg-blue-50/80 dark:bg-blue-900/20 backdrop-blur-[2px] p-4 rounded-lg border border-blue-100 dark:border-blue-800/30 my-2">
                 <div className="bg-blue-500 rounded-full p-1.5 mt-0.5 flex-shrink-0">
                   <Shield className="h-4 w-4 text-white" />
                 </div>
@@ -94,36 +101,35 @@ export default function Page() {
             {/* CTA Button */}
             <Link
               href="/analyzer"
-              className="group relative w-full flex items-center justify-center gap-3 button-primary py-4 text-lg font-medium overflow-hidden mt-6"
+              className="group relative w-full flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 text-white py-4 rounded-lg mt-6 font-medium transition-colors"
             >
               <Glasses className="h-5 w-5" />
               <span>Start Analysis</span>
-              <span className="absolute inset-0 bg-white/20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
             </Link>
           </motion.div>
 
-          {/* Additional Info */}
+          {/* Additional Info with Animation Button */}
           <motion.div
-            className="mt-8 text-center text-sm text-muted-foreground"
+            className="mt-8 text-center text-sm text-slate-500 dark:text-gray-400"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.5 }}
           >
-            <p>Advanced AI-powered face analysis technology</p>
-            <p className="mt-2">
-              <Link href="/guide" className="text-primary hover:underline">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span>Advanced AI-powered</span>
+              <AnimationStyleButton />
+              <span>face analysis technology</span>
+            </div>
+            <p>
+              <Link href="/guide" className="text-blue-500 dark:text-blue-400 hover:underline">
                 Learn how it works
               </Link>
             </p>
           </motion.div>
         </motion.div>
 
-        {/* Animation style button at the bottom center */}
-        <div className="fixed bottom-32 left-1/2 transform -translate-x-1/2 z-40">
-          <AnimationStyleButton />
-        </div>
-
         <Frame3DCaptureModal isOpen={isModalOpen} onClose={handleCloseModal} onModelCreated={handleModelCreated} />
+        <ProfileModal isOpen={isProfileModalOpen} onClose={toggleProfileModal} />
       </main>
     </>
   )

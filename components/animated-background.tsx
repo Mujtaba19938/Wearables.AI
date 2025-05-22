@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react"
 import { useAnimationStore } from "@/store/animation-store"
 import { useTheme } from "next-themes"
 
-export function AnimatedBackground() {
+export default function AnimatedBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { style } = useAnimationStore()
   const [mounted, setMounted] = useState(false)
-  const { theme } = useTheme()
+  const { resolvedTheme } = useTheme()
   const animationRef = useRef<number | null>(null)
   const particlesRef = useRef<Particle[]>([])
   const bubblesRef = useRef<Bubble[]>([])
@@ -182,15 +182,15 @@ export function AnimatedBackground() {
       // Clear the entire canvas
       ctx.clearRect(0, 0, dimensions.width, dimensions.height)
 
-      // Get colors based on theme
+      // Get colors based on theme - INCREASED OPACITY FOR LIGHT MODE
       const primaryColor =
-        theme === "dark"
+        resolvedTheme === "dark"
           ? "rgba(59, 130, 246, 0.6)" // Blue for dark mode
-          : "rgba(59, 130, 246, 0.3)" // Lighter blue for light mode
+          : "rgba(59, 130, 246, 0.7)" // Darker blue for light mode (increased opacity)
       const secondaryColor =
-        theme === "dark"
+        resolvedTheme === "dark"
           ? "rgba(139, 92, 246, 0.6)" // Purple for dark mode
-          : "rgba(139, 92, 246, 0.3)" // Lighter purple for light mode
+          : "rgba(139, 92, 246, 0.7)" // Darker purple for light mode (increased opacity)
 
       // Draw based on selected style
       switch (style) {
@@ -222,7 +222,7 @@ export function AnimatedBackground() {
         animationRef.current = null
       }
     }
-  }, [style, theme, mounted, dimensions])
+  }, [style, resolvedTheme, mounted, dimensions])
 
   const drawNetworkParticles = (ctx: CanvasRenderingContext2D, primaryColor: string, secondaryColor: string) => {
     if (particlesRef.current.length === 0) {
@@ -270,8 +270,10 @@ export function AnimatedBackground() {
           // Draw line with gradient
           ctx.beginPath()
           ctx.strokeStyle = particle.color === "primary" ? primaryColor : secondaryColor
-          ctx.globalAlpha = opacity * 0.5 // More transparent lines
-          ctx.lineWidth = opacity * 1.5 // Thicker lines for closer particles
+          // Increased line opacity for better visibility
+          ctx.globalAlpha = opacity * (resolvedTheme === "dark" ? 0.5 : 0.7)
+          // Thicker lines for better visibility
+          ctx.lineWidth = opacity * (resolvedTheme === "dark" ? 1.5 : 2.0)
           ctx.moveTo(particle.x, particle.y)
           ctx.lineTo(otherParticle.x, otherParticle.y)
           ctx.stroke()
@@ -288,19 +290,21 @@ export function AnimatedBackground() {
     particlesRef.current.forEach((particle) => {
       // Draw particle
       ctx.beginPath()
-      ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2)
+      // Larger particles in light mode for better visibility
+      const particleSize = resolvedTheme === "dark" ? particle.size : particle.size * 1.5
+      ctx.arc(particle.x, particle.y, particleSize, 0, Math.PI * 2)
 
       // More vibrant colors for particles
       const particleColor =
         particle.color === "primary"
-          ? primaryColor.replace(/[\d.]+\)$/, "0.8)") // More opaque
-          : secondaryColor.replace(/[\d.]+\)$/, "0.8)") // More opaque
+          ? primaryColor.replace(/[\d.]+\)$/, resolvedTheme === "dark" ? "0.8)" : "0.9)") // More opaque in light mode
+          : secondaryColor.replace(/[\d.]+\)$/, resolvedTheme === "dark" ? "0.8)" : "0.9)") // More opaque in light mode
 
       ctx.fillStyle = particleColor
       ctx.fill()
 
-      // Add subtle glow effect
-      ctx.shadowBlur = 10
+      // Add stronger glow effect in light mode
+      ctx.shadowBlur = resolvedTheme === "dark" ? 10 : 15
       ctx.shadowColor = particleColor
       ctx.fill()
       ctx.shadowBlur = 0
@@ -333,7 +337,8 @@ export function AnimatedBackground() {
 
     const gradient1 = ctx.createLinearGradient(0, height / 2, 0, height)
     gradient1.addColorStop(0, primaryColor)
-    gradient1.addColorStop(1, "rgba(59, 130, 246, 0)")
+    // More visible fade in light mode
+    gradient1.addColorStop(1, resolvedTheme === "dark" ? "rgba(59, 130, 246, 0)" : "rgba(59, 130, 246, 0.1)")
     ctx.fillStyle = gradient1
     ctx.fill()
 
@@ -353,7 +358,8 @@ export function AnimatedBackground() {
 
     const gradient2 = ctx.createLinearGradient(0, height / 2 + 50, 0, height)
     gradient2.addColorStop(0, secondaryColor)
-    gradient2.addColorStop(1, "rgba(139, 92, 246, 0)")
+    // More visible fade in light mode
+    gradient2.addColorStop(1, resolvedTheme === "dark" ? "rgba(139, 92, 246, 0)" : "rgba(139, 92, 246, 0.1)")
     ctx.fillStyle = gradient2
     ctx.fill()
   }
@@ -391,7 +397,8 @@ export function AnimatedBackground() {
 
       gradient.addColorStop(0, primaryColor)
       gradient.addColorStop(0.5, secondaryColor)
-      gradient.addColorStop(1, "rgba(0, 0, 0, 0)")
+      // More visible fade in light mode
+      gradient.addColorStop(1, resolvedTheme === "dark" ? "rgba(0, 0, 0, 0)" : "rgba(200, 200, 255, 0.05)")
 
       ctx.fillStyle = gradient
       ctx.fillRect(0, 0, width, height)
@@ -417,19 +424,24 @@ export function AnimatedBackground() {
 
       // Draw bubble
       ctx.beginPath()
-      ctx.arc(bubble.x, bubble.y, bubble.size, 0, Math.PI * 2)
+      // Larger bubbles in light mode for better visibility
+      const bubbleSize = resolvedTheme === "dark" ? bubble.size : bubble.size * 1.2
+      ctx.arc(bubble.x, bubble.y, bubbleSize, 0, Math.PI * 2)
       ctx.fillStyle = bubble.color === "primary" ? primaryColor : secondaryColor
-      ctx.globalAlpha = 0.3
+      // More opaque in light mode
+      ctx.globalAlpha = resolvedTheme === "dark" ? 0.3 : 0.5
       ctx.fill()
       ctx.strokeStyle = bubble.color === "primary" ? primaryColor : secondaryColor
-      ctx.lineWidth = 1
+      // Thicker stroke in light mode
+      ctx.lineWidth = resolvedTheme === "dark" ? 1 : 1.5
       ctx.stroke()
       ctx.globalAlpha = 1
 
       // Add highlight
       ctx.beginPath()
-      ctx.arc(bubble.x - bubble.size * 0.3, bubble.y - bubble.size * 0.3, bubble.size * 0.2, 0, Math.PI * 2)
-      ctx.fillStyle = "rgba(255, 255, 255, 0.5)"
+      ctx.arc(bubble.x - bubbleSize * 0.3, bubble.y - bubbleSize * 0.3, bubbleSize * 0.2, 0, Math.PI * 2)
+      // Brighter highlight in light mode
+      ctx.fillStyle = resolvedTheme === "dark" ? "rgba(255, 255, 255, 0.5)" : "rgba(255, 255, 255, 0.7)"
       ctx.fill()
     })
   }
@@ -448,8 +460,7 @@ export function AnimatedBackground() {
         height: "100vh",
         display: "block",
       }}
+      aria-hidden="true"
     />
   )
 }
-
-export default AnimatedBackground

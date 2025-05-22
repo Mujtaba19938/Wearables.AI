@@ -117,7 +117,7 @@ export default function AboutPage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <motion.div variants={sectionVariants} className="text-center mb-10">
           <h1 className="text-3xl sm:text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
-            About Face Analyzer
+            About NextWear.ai
           </h1>
           <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto text-pretty text-lg leading-relaxed">
             Our mission is to make finding the perfect eyewear easier, more accurate, and more fun than ever before.
@@ -163,8 +163,8 @@ export default function AboutPage() {
                 >
                   <div className="p-6 space-y-6">
                     <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-                      Face Analyzer is an advanced web application designed to help you find the perfect eyewear for
-                      your unique face shape. Using cutting-edge face detection and analysis technology, our app:
+                      NextWear.ai is an advanced web application designed to help you find the perfect eyewear for your
+                      unique face shape. Using cutting-edge face detection and analysis technology, our app:
                     </p>
                     <ul className="space-y-4">
                       {[
@@ -258,7 +258,7 @@ export default function AboutPage() {
                 >
                   <div className="p-6 space-y-6">
                     <p className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed">
-                      Face Analyzer leverages several cutting-edge technologies:
+                      NextWear.ai leverages several cutting-edge technologies:
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       {[
@@ -439,7 +439,7 @@ export default function AboutPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                       <motion.a
-                        href="mailto:contact@faceanalyzer.app"
+                        href="mailto:contact@nextwear.ai"
                         className="flex items-center p-5 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors group shadow-sm hover:shadow-md"
                         whileHover={{ y: -5 }}
                         initial={{ opacity: 0, y: 10 }}
@@ -451,9 +451,7 @@ export default function AboutPage() {
                         </div>
                         <div>
                           <h3 className="font-medium mb-1 text-lg">Email Us</h3>
-                          <p className="text-blue-600 dark:text-blue-400 group-hover:underline">
-                            contact@faceanalyzer.app
-                          </p>
+                          <p className="text-blue-600 dark:text-blue-400 group-hover:underline">contact@nextwear.ai</p>
                         </div>
                         <ExternalLink className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
                       </motion.a>
@@ -600,8 +598,8 @@ export default function AboutPage() {
           transition={{ delay: 0.5 }}
         >
           <p className="text-gray-700 dark:text-gray-300 text-base">
-            Made with ❤️ by the Face Analyzer Team
-            <br />© 2023 Face Analyzer. All rights reserved.
+            Made with ❤️ by the NextWear.ai Team
+            <br />© 2023 NextWear.ai. All rights reserved.
           </p>
           <div className="mt-4 flex justify-center gap-4">
             <Link href="/privacy-policy" className="text-sm text-primary hover:underline flex items-center gap-1">

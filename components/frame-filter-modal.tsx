@@ -17,7 +17,7 @@ interface FrameFilterModalProps {
   setActiveFilters: (filters: FilterState) => void
 }
 
-export function FrameFilterModal({ isOpen, onClose, activeFilters, setActiveFilters }: FrameFilterModalProps) {
+export default function FrameFilterModal({ isOpen, onClose, activeFilters, setActiveFilters }: FrameFilterModalProps) {
   const [localFilters, setLocalFilters] = useState<FilterState>(activeFilters)
   const [mounted, setMounted] = useState(false)
 
@@ -208,3 +208,5 @@ export function FrameFilterModal({ isOpen, onClose, activeFilters, setActiveFilt
     </AnimatePresence>
   )
 }
+
+export { FrameFilterModal }
