@@ -39,7 +39,7 @@ export default function BottomNavbar() {
       <div className="fixed bottom-3 left-0 right-0 z-50 flex justify-center items-center gap-3 px-4">
         {/* Main Navigation */}
         <motion.nav
-          className="flex items-center justify-between px-4 py-2 bg-gray-800/90 backdrop-blur-md rounded-full border border-gray-700/50 shadow-lg"
+          className="flex items-center justify-between px-4 py-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-full border border-gray-200/50 dark:border-gray-700/50 shadow-lg"
           initial={{ y: 100 }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
@@ -54,7 +54,9 @@ export default function BottomNavbar() {
                 href={item.href}
                 onClick={handleNavClick}
                 className={`relative flex flex-col items-center justify-center px-2 py-1 rounded-full transition-all duration-200 ${
-                  active ? "text-blue-400" : "text-gray-400 hover:text-gray-200"
+                  active
+                    ? "text-blue-500 dark:text-blue-400"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
                 } ${index < navItems.length - 1 ? "mr-1" : ""}`}
                 aria-current={active ? "page" : undefined}
               >
@@ -62,7 +64,7 @@ export default function BottomNavbar() {
                 <span className="text-[10px] font-medium">{item.label}</span>
                 {active && (
                   <motion.div
-                    className="absolute inset-0 bg-blue-500/10 rounded-full"
+                    className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/20 rounded-full"
                     layoutId="navbar-indicator"
                     transition={{ type: "spring", duration: 0.5 }}
                   />
@@ -80,7 +82,7 @@ export default function BottomNavbar() {
         >
           <button
             onClick={toggleProfileModal}
-            className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 shadow-lg bg-blue-500 hover:bg-blue-600 text-white"
+            className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 shadow-lg bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 text-white"
             aria-label="Open profile"
           >
             <User className="h-5 w-5" />

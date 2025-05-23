@@ -45,7 +45,7 @@ export default function SubscribeButton() {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white font-medium transition-all duration-300 shadow-lg backdrop-blur-sm border border-slate-600 dark:border-slate-500"
+        className="fixed top-4 right-4 z-50 flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500 dark:bg-blue-600 hover:bg-blue-600 dark:hover:bg-blue-700 text-white font-medium transition-all duration-300 shadow-lg backdrop-blur-sm border border-blue-400 dark:border-blue-500"
         aria-label="Subscribe to updates"
       >
         <Mail className="h-4 w-4" />
@@ -54,7 +54,7 @@ export default function SubscribeButton() {
 
       <AnimatePresence>
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="fixed inset-0 bg-black/30 dark:bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <motion.div
               className="bg-white dark:bg-slate-800 rounded-xl shadow-xl p-6 max-w-md w-full mx-4 border border-slate-200 dark:border-slate-700"
               initial={{ opacity: 0, scale: 0.95 }}
@@ -129,7 +129,7 @@ export default function SubscribeButton() {
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="px-6 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-400 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+                      className="px-6 py-2 bg-blue-500 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700 disabled:bg-blue-400 dark:disabled:bg-blue-500/70 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
                     >
                       {isSubmitting ? (
                         <>
