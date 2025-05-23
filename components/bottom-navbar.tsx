@@ -5,10 +5,12 @@ import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
 import { Home, BookOpen, Glasses, Info, User } from "lucide-react"
 import ProfileModal from "./profile-modal"
+import { useHaptic } from "@/hooks/use-haptic"
 
 export default function BottomNavbar() {
   const pathname = usePathname()
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
+  const { triggerSelection, triggerLight } = useHaptic()
 
   const navItems = [
     { href: "/", label: "Home", icon: Home },
@@ -24,7 +26,12 @@ export default function BottomNavbar() {
   }
 
   const toggleProfileModal = () => {
+    triggerSelection() // Haptic feedback when opening/closing profile
     setIsProfileModalOpen(!isProfileModalOpen)
+  }
+
+  const handleNavClick = () => {
+    triggerLight() // Light haptic feedback for navigation
   }
 
   return (
@@ -45,6 +52,7 @@ export default function BottomNavbar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={handleNavClick}
                 className={`relative flex flex-col items-center justify-center px-2 py-1 rounded-full transition-all duration-200 ${
                   active ? "text-blue-400" : "text-gray-400 hover:text-gray-200"
                 } ${index < navItems.length - 1 ? "mr-1" : ""}`}

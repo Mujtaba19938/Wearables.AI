@@ -8,6 +8,8 @@ import AnimatedBackground from "./animated-background"
 import Preloader from "./preloader"
 import Link from "next/link"
 import { ToastProvider } from "./toast-provider"
+import SwipeNavigation from "./swipe-navigation"
+import SwipeTutorial from "./swipe-tutorial"
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
@@ -109,8 +111,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
               </div>
             )}
 
-            <main className="flex-grow w-full">{children}</main>
+            <SwipeNavigation>
+              <main className="flex-grow w-full">{children}</main>
+            </SwipeNavigation>
             <BottomNavbar />
+            <SwipeTutorial />
 
             {/* Inline scroll to top button */}
             {showScrollTop && (
