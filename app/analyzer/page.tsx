@@ -3,12 +3,14 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Camera, Upload, Info, Sliders, BarChart2, ChevronRight, AlertTriangle } from "lucide-react"
+import { Camera, Upload, Info, Sliders, BarChart2, ChevronRight, AlertTriangle, Smartphone, ZoomIn } from "lucide-react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
 import { generateFaceShapeFromImage, analyzeImageForFace, drawSimpleFaceOutline } from "@/utils/face-analysis"
 import { createFaceTracker, type WebRTCFaceTracker, type FaceTrackingResult } from "@/utils/webrtc-face-tracking"
+import { createCameraMotionController, type CameraMotionController } from "@/utils/device-motion"
+import { createTouchGestureHandler, type TouchGestureHandler } from "@/utils/touch-gestures"
 import { useToast } from "@/components/toast-provider"
 
 export default function AnalyzerPage() {
@@ -23,18 +25,39 @@ export default function AnalyzerPage() {
   const [faceAnalysisResult, setFaceAnalysisResult] = useState<any>(null)
   const [isDetecting, setIsDetecting] = useState(false)
   const [faceTrackingResult, setFaceTrackingResult] = useState<FaceTrackingResult | null>(null)
+  const [motionEnabled, setMotionEnabled] = useState(false)
+  const [motionSupported, setMotionSupported] = useState(false)
+  const [gesturesEnabled, setGesturesEnabled] = useState(true)
+  const [currentScale, setCurrentScale] = useState(1)
+  const [showGestureInfo, setShowGestureInfo] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement>(null)
+  const videoContainerRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
   const faceTrackerRef = useRef<WebRTCFaceTracker | null>(null)
+  const motionControllerRef = useRef<CameraMotionController | null>(null)
+  const gestureHandlerRef = useRef<TouchGestureHandler | null>(null)
   const animationRef = useRef<number | null>(null)
+  const gestureInfoTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const router = useRouter()
   const { addToast } = useToast()
+
+  // Check motion support on mount
+  useEffect(() => {
+    const checkMotionSupport = () => {
+      // Check if device motion is supported
+      const isSupported = window && ("DeviceMotionEvent" in window || "DeviceOrientationEvent" in window)
+
+      setMotionSupported(isSupported)
+    }
+
+    checkMotionSupport()
+  }, [])
 
   // Clean up on unmount
   useEffect(() => {
@@ -50,6 +73,18 @@ export default function AnalyzerPage() {
       // Stop face tracker
       if (faceTrackerRef.current) {
         faceTrackerRef.current.stopTracking()
+      }
+      // Stop motion controller
+      if (motionControllerRef.current) {
+        motionControllerRef.current.stop()
+      }
+      // Stop gesture handler
+      if (gestureHandlerRef.current) {
+        gestureHandlerRef.current.stop()
+      }
+      // Clear gesture info timeout
+      if (gestureInfoTimeoutRef.current) {
+        clearTimeout(gestureInfoTimeoutRef.current)
       }
     }
   }, [])
@@ -78,6 +113,14 @@ export default function AnalyzerPage() {
               setCameraActive(true)
               // Initialize and start face tracking
               initFaceTracking()
+              // Initialize motion controller if supported
+              if (motionSupported) {
+                initMotionController()
+              }
+              // Initialize touch gesture handler
+              initGestureHandler()
+              // Show gesture info
+              showGestureInfoMessage()
             })
           }
         }
@@ -103,11 +146,192 @@ export default function AnalyzerPage() {
       faceTrackerRef.current = null
     }
 
+    // Stop motion controller
+    if (motionControllerRef.current) {
+      motionControllerRef.current.stop()
+      motionControllerRef.current = null
+    }
+
+    // Stop gesture handler
+    if (gestureHandlerRef.current) {
+      gestureHandlerRef.current.stop()
+      gestureHandlerRef.current = null
+    }
+
     // Stop animation frame
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current)
       animationRef.current = null
     }
+
+    // Reset states
+    setMotionEnabled(false)
+    setCurrentScale(1)
+  }
+
+  // Initialize camera motion controller
+  const initMotionController = async () => {
+    if (!videoRef.current || !overlayCanvasRef.current) return
+
+    try {
+      // Create motion controller
+      const controller = createCameraMotionController(
+        videoRef.current,
+        overlayCanvasRef.current,
+        1.5, // Initial sensitivity
+      )
+
+      motionControllerRef.current = controller
+
+      // Start the controller
+      const started = await controller.start()
+
+      if (started) {
+        setMotionEnabled(true)
+        addToast("Device motion tracking enabled", "success")
+      } else {
+        setMotionEnabled(false)
+        console.warn("Could not start motion controller")
+      }
+    } catch (error) {
+      console.error("Error initializing motion controller:", error)
+      setMotionEnabled(false)
+    }
+  }
+
+  // Initialize touch gesture handler
+  const initGestureHandler = () => {
+    if (!videoContainerRef.current || !videoRef.current) return
+
+    try {
+      // Create gesture handler
+      const handler = createTouchGestureHandler(videoContainerRef.current, {
+        minScale: 1,
+        maxScale: 4,
+        maxTranslate: 200,
+        onGestureStart: () => {
+          // Disable motion tracking during gestures to avoid conflicts
+          if (motionEnabled && motionControllerRef.current) {
+            motionControllerRef.current.stop()
+          }
+        },
+        onGestureChange: (state) => {
+          // Update current scale for UI
+          setCurrentScale(state.scale)
+
+          // Apply gesture state to motion controller
+          if (motionControllerRef.current) {
+            motionControllerRef.current.setGestureState(state)
+          } else {
+            // If no motion controller, apply transform directly
+            if (videoRef.current) {
+              videoRef.current.style.transform = `translate(${state.translateX}px, ${state.translateY}px) scale(${state.scale})`
+            }
+          }
+        },
+        onGestureEnd: (state) => {
+          // Re-enable motion tracking after gesture ends
+          if (motionEnabled && motionControllerRef.current) {
+            motionControllerRef.current.start()
+            // Keep the gesture transform
+            motionControllerRef.current.setGestureState(state)
+          }
+        },
+      })
+
+      gestureHandlerRef.current = handler
+
+      // Start the handler
+      handler.start()
+      setGesturesEnabled(true)
+    } catch (error) {
+      console.error("Error initializing gesture handler:", error)
+      setGesturesEnabled(false)
+    }
+  }
+
+  // Show gesture info message
+  const showGestureInfoMessage = () => {
+    // Clear any existing timeout
+    if (gestureInfoTimeoutRef.current) {
+      clearTimeout(gestureInfoTimeoutRef.current)
+    }
+
+    // Show the info
+    setShowGestureInfo(true)
+
+    // Hide after 5 seconds
+    gestureInfoTimeoutRef.current = setTimeout(() => {
+      setShowGestureInfo(false)
+    }, 5000)
+  }
+
+  // Toggle device motion tracking
+  const toggleMotionTracking = async () => {
+    if (!motionSupported) return
+
+    if (motionEnabled && motionControllerRef.current) {
+      // Stop motion tracking
+      motionControllerRef.current.stop()
+      motionControllerRef.current = null
+      setMotionEnabled(false)
+
+      // Reset video element transform
+      if (videoRef.current) {
+        videoRef.current.style.transform = "none"
+      }
+
+      addToast("Device motion tracking disabled", "info")
+    } else {
+      // Start motion tracking
+      await initMotionController()
+    }
+  }
+
+  // Toggle touch gestures
+  const toggleGestures = () => {
+    if (gesturesEnabled && gestureHandlerRef.current) {
+      // Stop gesture handler
+      gestureHandlerRef.current.stop()
+      gestureHandlerRef.current = null
+      setGesturesEnabled(false)
+
+      // Reset video element transform
+      if (videoRef.current) {
+        videoRef.current.style.transform = "none"
+      }
+      setCurrentScale(1)
+
+      addToast("Touch gestures disabled", "info")
+    } else {
+      // Start gesture handler
+      initGestureHandler()
+      addToast("Touch gestures enabled", "success")
+    }
+  }
+
+  // Reset camera view (zoom and position)
+  const resetCameraView = () => {
+    // Reset gesture handler
+    if (gestureHandlerRef.current) {
+      gestureHandlerRef.current.reset()
+    }
+
+    // Reset motion controller
+    if (motionControllerRef.current) {
+      motionControllerRef.current.resetTransform()
+      motionControllerRef.current.setGestureState(null)
+    }
+
+    // Reset video element transform directly
+    if (videoRef.current) {
+      videoRef.current.style.transform = "none"
+    }
+
+    // Reset scale
+    setCurrentScale(1)
+
+    addToast("Camera view reset", "info")
   }
 
   // Initialize face tracking
@@ -554,10 +778,14 @@ export default function AnalyzerPage() {
               ) : null}
             </div>
           ) : analysisMode === "camera" ? (
-            <>
+            <div
+              ref={videoContainerRef}
+              className="relative w-full h-full overflow-hidden"
+              style={{ touchAction: "none" }} // Prevent browser handling of touch events
+            >
               <video
                 ref={videoRef}
-                className={`w-full h-full object-cover ${cameraActive ? "block" : "hidden"}`}
+                className={`w-full h-full object-cover ${cameraActive ? "block" : "hidden"} transition-transform duration-200`}
                 autoPlay
                 playsInline
                 muted
@@ -572,6 +800,62 @@ export default function AnalyzerPage() {
                   <button onClick={initCamera} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md">
                     Start Camera
                   </button>
+                </div>
+              )}
+
+              {/* Camera controls */}
+              {cameraActive && (
+                <div className="absolute top-2 right-2 flex gap-2">
+                  {/* Motion tracking toggle */}
+                  {motionSupported && (
+                    <button
+                      onClick={toggleMotionTracking}
+                      className={`p-2 rounded-full ${motionEnabled ? "bg-blue-500" : "bg-gray-800/70"}`}
+                      title={motionEnabled ? "Disable motion tracking" : "Enable motion tracking"}
+                    >
+                      <Smartphone className="h-5 w-5" />
+                    </button>
+                  )}
+
+                  {/* Gesture toggle */}
+                  <button
+                    onClick={toggleGestures}
+                    className={`p-2 rounded-full ${gesturesEnabled ? "bg-blue-500" : "bg-gray-800/70"}`}
+                    title={gesturesEnabled ? "Disable touch gestures" : "Enable touch gestures"}
+                  >
+                    <ZoomIn className="h-5 w-5" />
+                  </button>
+
+                  {/* Reset view button */}
+                  {(currentScale > 1 || motionEnabled) && (
+                    <button
+                      onClick={resetCameraView}
+                      className="p-2 rounded-full bg-gray-800/70"
+                      title="Reset camera view"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                        <path d="M3 3v5h5" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Zoom indicator */}
+              {cameraActive && currentScale > 1 && (
+                <div className="absolute top-2 left-2 bg-gray-800/70 text-white px-2 py-1 rounded-md text-xs">
+                  {Math.round(currentScale * 100)}%
                 </div>
               )}
 
@@ -608,7 +892,7 @@ export default function AnalyzerPage() {
                   )}
                 </div>
               )}
-            </>
+            </div>
           ) : (
             <div className="text-center p-4">
               <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-gray-600 flex items-center justify-center">
@@ -634,12 +918,29 @@ export default function AnalyzerPage() {
           <canvas ref={canvasRef} className="hidden" />
         </div>
 
-        {/* WebRTC tracking info */}
-        {analysisMode === "camera" && cameraActive && (
+        {/* Gesture info message */}
+        <AnimatePresence>
+          {showGestureInfo && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="w-full mb-4 bg-blue-500/20 border border-blue-500/30 rounded-md p-3 text-sm text-blue-200"
+            >
+              <p className="flex items-center">
+                <Info className="h-4 w-4 mr-2 flex-shrink-0" />
+                Pinch to zoom and swipe to pan the camera view. Double-tap to reset.
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Motion tracking info */}
+        {analysisMode === "camera" && cameraActive && motionEnabled && (
           <div className="w-full mb-4 bg-blue-500/20 border border-blue-500/30 rounded-md p-3 text-sm text-blue-200">
             <p className="flex items-center">
               <Info className="h-4 w-4 mr-2 flex-shrink-0" />
-              Using WebRTC face tracking for real-time face detection and analysis.
+              Device motion tracking enabled. Tilt your device to pan the camera view.
             </p>
           </div>
         )}
