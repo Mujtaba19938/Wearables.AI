@@ -3,7 +3,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { Home, BookOpen, Glasses, Info, User } from 'lucide-react'
+import { Home, BookOpen, Glasses, Info, User } from "lucide-react"
 import ProfileModal from "./profile-modal"
 
 export default function BottomNavbar() {
@@ -29,10 +29,10 @@ export default function BottomNavbar() {
 
   return (
     <>
-      <div className="fixed bottom-4 left-0 right-0 z-50 flex justify-center items-center gap-4 px-4">
+      <div className="fixed bottom-3 left-0 right-0 z-50 flex justify-center items-center gap-3 px-4">
         {/* Main Navigation */}
         <motion.nav
-          className="flex items-center justify-between px-6 py-3 bg-gray-800/90 backdrop-blur-md rounded-full border border-gray-700/50 shadow-lg"
+          className="flex items-center justify-between px-4 py-2 bg-gray-800/90 backdrop-blur-md rounded-full border border-gray-700/50 shadow-lg"
           initial={{ y: 100 }}
           animate={{ y: 0 }}
           transition={{ type: "spring", stiffness: 260, damping: 20 }}
@@ -45,13 +45,13 @@ export default function BottomNavbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`relative flex flex-col items-center justify-center px-4 py-2 rounded-full transition-all duration-200 ${
+                className={`relative flex flex-col items-center justify-center px-2 py-1 rounded-full transition-all duration-200 ${
                   active ? "text-blue-400" : "text-gray-400 hover:text-gray-200"
-                } ${index < navItems.length - 1 ? "mr-2" : ""}`}
+                } ${index < navItems.length - 1 ? "mr-1" : ""}`}
                 aria-current={active ? "page" : undefined}
               >
-                <Icon className="h-5 w-5 mb-1" />
-                <span className="text-xs font-medium">{item.label}</span>
+                <Icon className="h-4 w-4 mb-0.5" />
+                <span className="text-[10px] font-medium">{item.label}</span>
                 {active && (
                   <motion.div
                     className="absolute inset-0 bg-blue-500/10 rounded-full"
@@ -72,10 +72,10 @@ export default function BottomNavbar() {
         >
           <button
             onClick={toggleProfileModal}
-            className="flex items-center justify-center w-12 h-12 rounded-full transition-all duration-200 shadow-lg bg-blue-500 hover:bg-blue-600 text-white"
+            className="flex items-center justify-center w-10 h-10 rounded-full transition-all duration-200 shadow-lg bg-blue-500 hover:bg-blue-600 text-white"
             aria-label="Open profile"
           >
-            <User className="h-6 w-6" />
+            <User className="h-5 w-5" />
           </button>
         </motion.div>
       </div>
