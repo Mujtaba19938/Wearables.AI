@@ -2,14 +2,13 @@
 
 import type React from "react"
 
-import { useState, useRef } from "react"
-import { Camera, Upload, Info, Sliders, BarChart2, ChevronRight } from "lucide-react"
+import { useState, useRef, useEffect } from "react"
+import { Camera, Upload, Info, Sliders, BarChart2, ChevronRight, AlertTriangle } from "lucide-react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
-
-// Define face shape types
-const faceShapes = ["Oval", "Round", "Square", "Heart", "Diamond", "Rectangle", "Triangle"]
+import { loadFaceDetectionModels, detectFaces, analyzeFaceShape, drawFaceLandmarks } from "@/utils/face-detection"
+import { useToast } from "@/components/toast-provider"
 
 export default function AnalyzerPage() {
   const [analysisMode, setAnalysisMode] = useState<"camera" | "upload">("camera")
@@ -18,13 +17,54 @@ export default function AnalyzerPage() {
   const [showTips, setShowTips] = useState(false)
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [cameraActive, setCameraActive] = useState(false)
+  const [modelsLoaded, setModelsLoaded] = useState(false)
+  const [modelsLoading, setModelsLoading] = useState(false)
+  const [detectionError, setDetectionError] = useState<string | null>(null)
+  const [faceDetected, setFaceDetected] = useState(false)
+  const [faceAnalysisResult, setFaceAnalysisResult] = useState<any>(null)
+
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const overlayCanvasRef = useRef<HTMLCanvasElement>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const [imageHash, setImageHash] = useState<string | null>(null)
+  const imageRef = useRef<HTMLImageElement>(null)
+  const animationRef = useRef<number | null>(null)
 
   const router = useRouter()
+  const { addToast } = useToast()
+
+  // Load face detection models on component mount
+  useEffect(() => {
+    const loadModels = async () => {
+      if (!modelsLoaded && !modelsLoading) {
+        setModelsLoading(true)
+        try {
+          const success = await loadFaceDetectionModels()
+          setModelsLoaded(success)
+          if (success) {
+            addToast("Face detection models loaded successfully", "success")
+          } else {
+            addToast("Failed to load face detection models", "error")
+          }
+        } catch (error) {
+          console.error("Error loading models:", error)
+          addToast("Error loading face detection models", "error")
+        } finally {
+          setModelsLoading(false)
+        }
+      }
+    }
+
+    loadModels()
+
+    return () => {
+      // Clean up animation frame
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current)
+      }
+    }
+  }, [addToast, modelsLoaded, modelsLoading])
 
   const initCamera = async () => {
     try {
@@ -48,6 +88,8 @@ export default function AnalyzerPage() {
           if (videoRef.current) {
             videoRef.current.play().then(() => {
               setCameraActive(true)
+              // Start face detection when camera is active
+              startFaceDetection()
             })
           }
         }
@@ -55,6 +97,8 @@ export default function AnalyzerPage() {
     } catch (error) {
       console.error("Error accessing camera:", error)
       setCameraActive(false)
+      setDetectionError("Could not access camera. Please check permissions.")
+      addToast("Camera access denied. Please check permissions.", "error")
     }
   }
 
@@ -64,72 +108,186 @@ export default function AnalyzerPage() {
       streamRef.current = null
       setCameraActive(false)
     }
+
+    // Stop face detection loop
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current)
+      animationRef.current = null
+    }
   }
 
-  const captureImage = () => {
+  // Start face detection loop for live camera
+  const startFaceDetection = () => {
+    if (!videoRef.current || !overlayCanvasRef.current || !modelsLoaded) return
+
+    const video = videoRef.current
+    const canvas = overlayCanvasRef.current
+
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+
+    const detectFacesInVideo = async () => {
+      if (!video || !canvas || video.paused || video.ended || !modelsLoaded) {
+        return
+      }
+
+      try {
+        // Detect faces in the video stream
+        const detections = await detectFaces(video)
+
+        // Draw landmarks on the overlay canvas
+        drawFaceLandmarks(canvas, detections)
+
+        // Update face detected state
+        setFaceDetected(detections.length > 0)
+        setDetectionError(null)
+
+        // Continue detection loop
+        animationRef.current = requestAnimationFrame(detectFacesInVideo)
+      } catch (error) {
+        console.error("Error in face detection loop:", error)
+        setDetectionError("Error detecting faces. Please try again.")
+        setFaceDetected(false)
+      }
+    }
+
+    // Start the detection loop
+    detectFacesInVideo()
+  }
+
+  const captureImage = async () => {
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current
       const canvas = canvasRef.current
       const context = canvas.getContext("2d")
 
       if (context) {
+        // Set canvas dimensions to match video
         canvas.width = video.videoWidth
         canvas.height = video.videoHeight
+
+        // Draw the video frame to the canvas
         context.drawImage(video, 0, 0, canvas.width, canvas.height)
-        const imageDataUrl = canvas.toDataURL("image/jpeg")
+
+        // Get image data URL
+        const imageDataUrl = canvas.toDataURL("image/jpeg", 0.9)
         setCapturedImage(imageDataUrl)
-        // Generate a simple hash from the image data for consistent analysis results
-        setImageHash(generateSimpleHash(imageDataUrl))
+
+        // Stop camera after capturing
         stopCamera()
+
+        // Create an image element for face detection
+        const img = new Image()
+        img.crossOrigin = "anonymous"
+        img.onload = async () => {
+          imageRef.current = img
+          await analyzeCapturedImage(img)
+        }
+        img.src = imageDataUrl
       }
     }
-  }
-
-  // Generate a simple hash from the image data
-  const generateSimpleHash = (imageData: string): string => {
-    let hash = 0
-    for (let i = 0; i < Math.min(imageData.length, 1000); i++) {
-      hash = (hash << 5) - hash + imageData.charCodeAt(i)
-      hash = hash & hash // Convert to 32bit integer
-    }
-    return hash.toString()
-  }
-
-  // Determine face shape based on image hash
-  const determineFaceShape = (hash: string): string => {
-    // Use the hash to consistently select a face shape
-    const hashNum = Number.parseInt(hash, 10)
-    const index = Math.abs(hashNum) % faceShapes.length
-    return faceShapes[index]
   }
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (file) {
+      // Check if file is an image
+      if (!file.type.startsWith("image/")) {
+        addToast("Please select an image file", "error")
+        return
+      }
+
       const reader = new FileReader()
       reader.onload = (e) => {
         if (e.target?.result) {
           const imageData = e.target.result as string
           setCapturedImage(imageData)
-          // Generate a simple hash from the image data for consistent analysis results
-          setImageHash(generateSimpleHash(imageData))
+
+          // Create an image element for face detection
+          const img = new Image()
+          img.crossOrigin = "anonymous"
+          img.onload = async () => {
+            imageRef.current = img
+            await analyzeCapturedImage(img)
+          }
+          img.src = imageData
         }
       }
       reader.readAsDataURL(file)
     }
   }
 
+  const analyzeCapturedImage = async (image: HTMLImageElement) => {
+    if (!modelsLoaded) {
+      setDetectionError("Face detection models not loaded. Please try again.")
+      addToast("Face detection models not loaded", "error")
+      return
+    }
+
+    try {
+      // Detect faces in the image
+      const detections = await detectFaces(image)
+
+      if (detections.length === 0) {
+        setFaceDetected(false)
+        setDetectionError("No face detected. Please try again with a clearer photo.")
+        addToast("No face detected in the image", "error")
+        return
+      }
+
+      // Use the first detected face
+      const detection = detections[0]
+
+      // Analyze face shape
+      const analysis = analyzeFaceShape(detection.landmarks)
+
+      if (!analysis) {
+        setDetectionError("Could not analyze face shape. Please try again.")
+        addToast("Face analysis failed", "error")
+        return
+      }
+
+      // Set face detected and analysis result
+      setFaceDetected(true)
+      setFaceAnalysisResult(analysis)
+      setDetectionError(null)
+
+      // Draw landmarks on canvas if available
+      if (overlayCanvasRef.current) {
+        const canvas = overlayCanvasRef.current
+        canvas.width = image.width
+        canvas.height = image.height
+        drawFaceLandmarks(canvas, detections)
+      }
+
+      console.log("Face analysis result:", analysis)
+    } catch (error) {
+      console.error("Error analyzing face:", error)
+      setFaceDetected(false)
+      setDetectionError("Error analyzing face. Please try again.")
+      addToast("Face analysis failed", "error")
+    }
+  }
+
   const resetCapture = () => {
     setCapturedImage(null)
-    setImageHash(null)
+    setFaceDetected(false)
+    setFaceAnalysisResult(null)
+    setDetectionError(null)
+
     if (analysisMode === "camera") {
       initCamera()
     }
   }
 
-  const startAnalysis = () => {
+  const startAnalysis = async () => {
     if (!capturedImage) {
       if (analysisMode === "camera") {
+        if (!faceDetected) {
+          addToast("Please ensure your face is clearly visible", "error")
+          return
+        }
         captureImage()
         return
       } else {
@@ -139,20 +297,26 @@ export default function AnalyzerPage() {
       }
     }
 
+    if (!faceDetected || !faceAnalysisResult) {
+      addToast("No face detected or analysis failed. Please try again.", "error")
+      return
+    }
+
     setIsAnalyzing(true)
 
-    // Simulate analysis process with different durations based on analysis type
-    const analysisDuration = analysisType === "simple" ? 2000 : 4000
+    try {
+      // Simulate analysis process with different durations based on analysis type
+      const analysisDuration = analysisType === "simple" ? 1500 : 3000
 
-    setTimeout(() => {
+      await new Promise((resolve) => setTimeout(resolve, analysisDuration))
+
+      // Navigate to results page with the analysis result
+      router.push(`/results?result=true&type=${analysisType}&faceShape=${faceAnalysisResult.shape}`)
+    } catch (error) {
+      console.error("Error during analysis:", error)
+      addToast("Analysis failed. Please try again.", "error")
       setIsAnalyzing(false)
-
-      // Determine face shape based on the image hash
-      const faceShape = imageHash ? determineFaceShape(imageHash) : "Oval"
-
-      // Navigate to results page with the determined face shape
-      router.push(`/results?result=true&type=${analysisType}&faceShape=${faceShape}`)
-    }, analysisDuration)
+    }
   }
 
   return (
@@ -170,7 +334,9 @@ export default function AnalyzerPage() {
             onClick={() => {
               setAnalysisMode("camera")
               setCapturedImage(null)
-              setImageHash(null)
+              setFaceDetected(false)
+              setFaceAnalysisResult(null)
+              setDetectionError(null)
             }}
             className={`flex-1 py-2.5 px-4 rounded-md flex items-center justify-center gap-2 transition-colors ${
               analysisMode === "camera" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
@@ -183,7 +349,9 @@ export default function AnalyzerPage() {
             onClick={() => {
               setAnalysisMode("upload")
               setCapturedImage(null)
-              setImageHash(null)
+              setFaceDetected(false)
+              setFaceAnalysisResult(null)
+              setDetectionError(null)
             }}
             className={`flex-1 py-2.5 px-4 rounded-md flex items-center justify-center gap-2 transition-colors ${
               analysisMode === "upload" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
@@ -246,6 +414,7 @@ export default function AnalyzerPage() {
           {capturedImage ? (
             <div className="relative w-full h-full">
               <img src={capturedImage || "/placeholder.svg"} alt="Captured" className="w-full h-full object-cover" />
+              <canvas ref={overlayCanvasRef} className="absolute top-0 left-0 w-full h-full pointer-events-none" />
               <button
                 onClick={resetCapture}
                 className="absolute top-2 right-2 bg-gray-800/70 text-white p-2 rounded-full"
@@ -264,6 +433,35 @@ export default function AnalyzerPage() {
                   <path d="M18 6L6 18M6 6l12 12" />
                 </svg>
               </button>
+
+              {/* Face detection status */}
+              {faceDetected && (
+                <div className="absolute bottom-2 left-2 bg-green-500/80 text-white px-2 py-1 rounded-md text-xs flex items-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="mr-1"
+                  >
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  Face Detected
+                </div>
+              )}
+
+              {detectionError && (
+                <div className="absolute bottom-2 left-2 bg-red-500/80 text-white px-2 py-1 rounded-md text-xs flex items-center">
+                  <AlertTriangle className="w-3 h-3 mr-1" />
+                  {detectionError}
+                </div>
+              )}
             </div>
           ) : analysisMode === "camera" ? (
             <>
@@ -274,12 +472,56 @@ export default function AnalyzerPage() {
                 playsInline
                 muted
               />
+              <canvas ref={overlayCanvasRef} className="absolute top-0 left-0 w-full h-full pointer-events-none" />
               {!cameraActive && (
                 <div className="text-center p-4">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-gray-600 flex items-center justify-center">
                     <Camera className="h-8 w-8 text-gray-400" />
                   </div>
-                  <p className="text-gray-400 text-sm">Camera access will be requested when you start the analysis</p>
+                  <p className="text-gray-400 text-sm">
+                    {modelsLoading
+                      ? "Loading face detection models..."
+                      : "Camera access will be requested when you start the analysis"}
+                  </p>
+                  {!modelsLoaded && !modelsLoading && (
+                    <button
+                      onClick={() => loadFaceDetectionModels()}
+                      className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md"
+                    >
+                      Load Face Detection Models
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Face detection status for camera */}
+              {cameraActive && (
+                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md text-xs flex items-center">
+                  {faceDetected ? (
+                    <div className="bg-green-500/80 text-white px-2 py-1 rounded-md flex items-center">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="mr-1"
+                      >
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                      </svg>
+                      Face Detected
+                    </div>
+                  ) : (
+                    <div className="bg-yellow-500/80 text-white px-2 py-1 rounded-md flex items-center">
+                      <AlertTriangle className="w-3 h-3 mr-1" />
+                      Position your face in the frame
+                    </div>
+                  )}
                 </div>
               )}
             </>
@@ -303,6 +545,17 @@ export default function AnalyzerPage() {
               >
                 Select Image
               </label>
+
+              {!modelsLoaded && !modelsLoading && (
+                <button
+                  onClick={() => loadFaceDetectionModels()}
+                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md block mx-auto"
+                >
+                  Load Face Detection Models
+                </button>
+              )}
+
+              {modelsLoading && <p className="mt-2 text-blue-400 text-sm">Loading face detection models...</p>}
             </div>
           )}
           <canvas ref={canvasRef} className="hidden" />
@@ -392,14 +645,16 @@ export default function AnalyzerPage() {
         {/* Start analysis button */}
         <button
           onClick={startAnalysis}
-          disabled={isAnalyzing}
-          className="w-full py-3 px-4 bg-blue-600 text-white rounded-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50"
+          disabled={isAnalyzing || (!capturedImage && analysisMode === "upload") || modelsLoading}
+          className="w-full py-3 px-4 bg-blue-600 text-white rounded-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isAnalyzing ? (
             <>
               <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               <span>{analysisType === "simple" ? "Analyzing Face Shape..." : "Performing Detailed Analysis..."}</span>
             </>
+          ) : modelsLoading ? (
+            <span>Loading Face Detection Models...</span>
           ) : capturedImage ? (
             <span>Start {analysisType === "simple" ? "Simple" : "Detailed"} Analysis</span>
           ) : (

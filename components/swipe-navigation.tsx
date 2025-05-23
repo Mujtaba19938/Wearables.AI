@@ -196,15 +196,6 @@ export default function SwipeNavigation({ children }: SwipeNavigationProps) {
         </div>
       </div>
 
-      {/* Haptic feedback indicator (only show if supported) */}
-      {isSupported && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-30">
-          <div className="bg-gray-800/60 backdrop-blur-sm rounded-full px-3 py-1 text-xs text-white opacity-0 animate-pulse">
-            📳 Haptic feedback enabled
-          </div>
-        </div>
-      )}
-
       {/* Main content with swipe detection */}
       <motion.div
         drag="x"
