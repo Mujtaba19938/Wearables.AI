@@ -1,185 +1,120 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
+import { getFaceShapeRecommendations } from "@/utils/face-analysis"
 
-// Define face shape descriptions and recommendations
-const faceShapeData = {
-  Oval: {
-    description: "You have an oval face shape, characterized by balanced proportions and a gently rounded jawline.",
-    frames: ["Rectangle", "Square", "Aviator"],
-    colors: ["Tortoise", "Brown", "Gold"],
-    measurements: { width: "14.2 cm", height: "20.8 cm" },
-  },
-  Round: {
-    description: "You have a round face shape, characterized by soft curves and similar width and length dimensions.",
-    frames: ["Rectangle", "Square", "Wayfarer"],
-    colors: ["Black", "Blue", "Tortoise"],
-    measurements: { width: "15.0 cm", height: "15.5 cm" },
-  },
-  Square: {
-    description:
-      "You have a square face shape, characterized by a strong jawline and forehead with similar width dimensions.",
-    frames: ["Round", "Oval", "Rimless"],
-    colors: ["Burgundy", "Brown", "Gray"],
-    measurements: { width: "14.8 cm", height: "16.2 cm" },
-  },
-  Heart: {
-    description: "You have a heart-shaped face, characterized by a wider forehead that narrows down to a pointed chin.",
-    frames: ["Oval", "Light Rimmed", "Cat-Eye"],
-    colors: ["Light Brown", "Transparent", "Rose Gold"],
-    measurements: { width: "14.5 cm", height: "19.5 cm" },
-  },
-  Diamond: {
-    description: "You have a diamond face shape, characterized by a narrow forehead and jawline with wider cheekbones.",
-    frames: ["Cat-Eye", "Oval", "Rimless"],
-    colors: ["Purple", "Blue", "Black"],
-    measurements: { width: "13.8 cm", height: "20.2 cm" },
-  },
-  Rectangle: {
-    description:
-      "You have a rectangular face shape, characterized by a longer face with a forehead, cheekbones, and jawline of similar width.",
-    frames: ["Round", "Square", "Oversized"],
-    colors: ["Dark Brown", "Green", "Tortoise"],
-    measurements: { width: "13.5 cm", height: "22.0 cm" },
-  },
-  Triangle: {
-    description:
-      "You have a triangular face shape, characterized by a wider jawline that narrows towards the forehead.",
-    frames: ["Cat-Eye", "Browline", "Decorative Temples"],
-    colors: ["Black", "Navy", "Crystal"],
-    measurements: { width: "15.2 cm", height: "19.0 cm" },
-  },
-}
-
-// Define background colors for face shape display
-const faceShapeColors = {
-  Oval: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400",
-  Round: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400",
-  Square: "bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400",
-  Heart: "bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400",
-  Diamond: "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400",
-  Rectangle: "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400",
-  Triangle: "bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400",
-}
-
-export default function ResultsPageSimplified() {
-  const [loading, setLoading] = useState(true)
+export default function SimplifiedResultsPage() {
   const searchParams = useSearchParams()
-  const router = useRouter()
-  const analysisType = searchParams.get("type") || "simple"
+  const result = searchParams.get("result")
   const faceShape = searchParams.get("faceShape") || "Oval"
 
-  useEffect(() => {
-    // Check if we have a result parameter, if not redirect to analyzer
-    if (!searchParams.get("result")) {
-      router.push("/analyzer")
-      return
-    }
+  // Get recommendations based on face shape
+  const recommendations = getFaceShapeRecommendations(faceShape)
 
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1000)
-
-    return () => clearTimeout(timer)
-  }, [searchParams, router])
-
-  if (loading) {
+  // If no result parameter, show error
+  if (!result) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-xl">Analyzing your results...</p>
+      <main className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md mx-auto text-center">
+          <h1 className="text-2xl font-bold mb-4">No Analysis Results</h1>
+          <p className="text-gray-400 mb-6">
+            No face analysis results were found. Please complete a face analysis first.
+          </p>
+          <Link
+            href="/analyzer"
+            className="inline-block py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Go to Face Analyzer
+          </Link>
         </div>
-      </div>
+      </main>
     )
   }
 
-  // Get data for the detected face shape
-  const shapeData = faceShapeData[faceShape as keyof typeof faceShapeData] || faceShapeData.Oval
-  const shapeColor = faceShapeColors[faceShape as keyof typeof faceShapeColors] || faceShapeColors.Oval
-
   return (
-    <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <div className="flex items-center mb-6">
-        <Link
-          href="/analyzer"
-          className="mr-4 p-2 rounded-full bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <h1 className="text-2xl font-bold">Your Face Analysis Results</h1>
-      </div>
-
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6">
-        <div className="flex justify-center mb-4">
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-medium ${
-              analysisType === "detailed"
-                ? "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
-                : "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300"
-            }`}
-          >
-            {analysisType === "detailed" ? "Detailed Analysis" : "Simple Analysis"}
-          </span>
+    <main className="min-h-screen bg-[#0f172a] text-white flex flex-col items-center p-4">
+      <div className="w-full max-w-md mx-auto">
+        <div className="flex items-center mb-6">
+          <Link href="/" className="text-gray-400 hover:text-white transition-colors flex items-center gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            <span>Home</span>
+          </Link>
         </div>
 
-        <div className="text-center mb-6">
-          <div className={`w-32 h-32 ${shapeColor} rounded-full flex items-center justify-center mx-auto mb-4`}>
-            <span className="text-2xl font-bold">{faceShape}</span>
+        <div className="bg-[#1e293b] rounded-lg overflow-hidden mb-6">
+          <div className="bg-blue-600 p-4">
+            <h1 className="text-xl font-bold text-center">Face Shape Analysis Results</h1>
           </div>
-          <h2 className="text-xl font-semibold mb-2">Your Face Shape: {faceShape}</h2>
-          <p className="text-gray-600 dark:text-gray-400">{shapeData.description}</p>
-        </div>
-
-        <div className="mb-6">
-          <h3 className="text-lg font-medium mb-3">Recommended Frame Styles</h3>
-          <div className="grid grid-cols-3 gap-3">
-            {shapeData.frames.map((style) => (
-              <div key={style} className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg text-center">
-                <p className="font-medium">{style}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {analysisType === "detailed" && (
-          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-            <h3 className="text-lg font-medium mb-3">Detailed Measurements</h3>
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Face Width</p>
-                <p className="text-lg font-semibold">{shapeData.measurements.width}</p>
-              </div>
-              <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
-                <p className="text-sm text-gray-500 dark:text-gray-400">Face Height</p>
-                <p className="text-lg font-semibold">{shapeData.measurements.height}</p>
+          <div className="p-6">
+            <div className="flex justify-center mb-6">
+              <div className="w-32 h-32 rounded-full bg-blue-500/20 border-4 border-blue-500 flex items-center justify-center">
+                <span className="text-2xl font-bold">{faceShape}</span>
               </div>
             </div>
 
-            <h3 className="text-lg font-medium mb-3">Color Recommendations</h3>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {shapeData.colors.map((color) => (
-                <span key={color} className="px-3 py-1 bg-gray-50 dark:bg-gray-700 rounded-full text-sm">
-                  {color}
-                </span>
-              ))}
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-2">Your Face Shape</h2>
+              <p className="text-gray-300 mb-4">{recommendations.description}</p>
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-3">Recommended Frame Styles</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {recommendations.frames.map((frame, index) => (
+                  <div key={index} className="bg-[#2d3748] p-3 rounded-md">
+                    <h3 className="text-sm font-medium">{frame}</h3>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-3">Recommended Colors</h2>
+              <div className="flex flex-wrap gap-2">
+                {recommendations.colors.map((color, index) => (
+                  <span
+                    key={index}
+                    className="px-3 py-1 bg-[#2d3748] text-sm rounded-full text-gray-300 border border-gray-600"
+                  >
+                    {color}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold mb-3">Frames to Avoid</h2>
+              <ul className="list-disc pl-5 text-gray-300 space-y-1">
+                {recommendations.avoid.map((item, index) => (
+                  <li key={index}>{item}</li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <Link
+                href="/frames"
+                className="w-full py-2.5 px-4 bg-blue-600 text-white rounded-md text-center hover:bg-blue-700 transition-colors"
+              >
+                Browse Recommended Frames
+              </Link>
+              <Link
+                href="/analyzer"
+                className="w-full py-2.5 px-4 bg-[#2d3748] text-white rounded-md text-center hover:bg-[#374151] transition-colors"
+              >
+                Try Another Analysis
+              </Link>
             </div>
           </div>
-        )}
-      </div>
+        </div>
 
-      <div className="flex justify-center">
-        <Link
-          href="/frames"
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Browse Recommended Frames
-        </Link>
+        <p className="text-xs text-gray-500 text-center">
+          <strong className="text-gray-400">Privacy:</strong> Your analysis results are stored locally on your device
+          and are not shared with any third parties.
+        </p>
       </div>
-    </div>
+    </main>
   )
 }

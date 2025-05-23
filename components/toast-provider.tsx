@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, createContext, useContext } from "react"
+import { useState, createContext, useContext, useCallback } from "react"
 
 // Create a simple toast context
 type ToastType = "success" | "error" | "info"
@@ -24,20 +24,31 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined)
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
 
-  const addToast = (message: string, type: ToastType = "info", duration = 5000) => {
-    const id = Math.random().toString(36).substring(2, 9)
-    setToasts((prev) => [...prev, { id, message, type, duration }])
+  const addToast = useCallback(
+    (message: string, type: ToastType = "info", duration = 5000) => {
+      // Check if a toast with the same message and type already exists
+      const existingToast = toasts.find((toast) => toast.message === message && toast.type === type)
 
-    if (duration !== Number.POSITIVE_INFINITY) {
-      setTimeout(() => {
-        removeToast(id)
-      }, duration)
-    }
-  }
+      if (existingToast) {
+        // If it exists, reset its timer by removing and re-adding it
+        removeToast(existingToast.id)
+      }
 
-  const removeToast = (id: string) => {
+      const id = Math.random().toString(36).substring(2, 9)
+      setToasts((prev) => [...prev, { id, message, type, duration }])
+
+      if (duration !== Number.POSITIVE_INFINITY) {
+        setTimeout(() => {
+          removeToast(id)
+        }, duration)
+      }
+    },
+    [toasts],
+  )
+
+  const removeToast = useCallback((id: string) => {
     setToasts((prev) => prev.filter((toast) => toast.id !== id))
-  }
+  }, [])
 
   return (
     <ToastContext.Provider value={{ toasts, addToast, removeToast }}>

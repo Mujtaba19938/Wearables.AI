@@ -7,7 +7,8 @@ import { Camera, Upload, Info, Sliders, BarChart2, ChevronRight, AlertTriangle }
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import { useRouter } from "next/navigation"
-import { loadFaceDetectionModels, detectFaces, analyzeFaceShape, drawFaceLandmarks } from "@/utils/face-detection"
+import { generateFaceShapeFromImage, analyzeImageForFace, drawSimpleFaceOutline } from "@/utils/face-analysis"
+import { createFaceTracker, type WebRTCFaceTracker, type FaceTrackingResult } from "@/utils/webrtc-face-tracking"
 import { useToast } from "@/components/toast-provider"
 
 export default function AnalyzerPage() {
@@ -17,11 +18,11 @@ export default function AnalyzerPage() {
   const [showTips, setShowTips] = useState(false)
   const [capturedImage, setCapturedImage] = useState<string | null>(null)
   const [cameraActive, setCameraActive] = useState(false)
-  const [modelsLoaded, setModelsLoaded] = useState(false)
-  const [modelsLoading, setModelsLoading] = useState(false)
   const [detectionError, setDetectionError] = useState<string | null>(null)
   const [faceDetected, setFaceDetected] = useState(false)
   const [faceAnalysisResult, setFaceAnalysisResult] = useState<any>(null)
+  const [isDetecting, setIsDetecting] = useState(false)
+  const [faceTrackingResult, setFaceTrackingResult] = useState<FaceTrackingResult | null>(null)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -29,42 +30,29 @@ export default function AnalyzerPage() {
   const streamRef = useRef<MediaStream | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const imageRef = useRef<HTMLImageElement>(null)
+  const faceTrackerRef = useRef<WebRTCFaceTracker | null>(null)
   const animationRef = useRef<number | null>(null)
 
   const router = useRouter()
   const { addToast } = useToast()
 
-  // Load face detection models on component mount
+  // Clean up on unmount
   useEffect(() => {
-    const loadModels = async () => {
-      if (!modelsLoaded && !modelsLoading) {
-        setModelsLoading(true)
-        try {
-          const success = await loadFaceDetectionModels()
-          setModelsLoaded(success)
-          if (success) {
-            addToast("Face detection models loaded successfully", "success")
-          } else {
-            addToast("Failed to load face detection models", "error")
-          }
-        } catch (error) {
-          console.error("Error loading models:", error)
-          addToast("Error loading face detection models", "error")
-        } finally {
-          setModelsLoading(false)
-        }
-      }
-    }
-
-    loadModels()
-
     return () => {
       // Clean up animation frame
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current)
       }
+      // Clean up camera stream
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((track) => track.stop())
+      }
+      // Stop face tracker
+      if (faceTrackerRef.current) {
+        faceTrackerRef.current.stopTracking()
+      }
     }
-  }, [addToast, modelsLoaded, modelsLoading])
+  }, [])
 
   const initCamera = async () => {
     try {
@@ -88,8 +76,8 @@ export default function AnalyzerPage() {
           if (videoRef.current) {
             videoRef.current.play().then(() => {
               setCameraActive(true)
-              // Start face detection when camera is active
-              startFaceDetection()
+              // Initialize and start face tracking
+              initFaceTracking()
             })
           }
         }
@@ -109,51 +97,46 @@ export default function AnalyzerPage() {
       setCameraActive(false)
     }
 
-    // Stop face detection loop
+    // Stop face tracker
+    if (faceTrackerRef.current) {
+      faceTrackerRef.current.stopTracking()
+      faceTrackerRef.current = null
+    }
+
+    // Stop animation frame
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current)
       animationRef.current = null
     }
   }
 
-  // Start face detection loop for live camera
-  const startFaceDetection = () => {
-    if (!videoRef.current || !overlayCanvasRef.current || !modelsLoaded) return
+  // Initialize face tracking
+  const initFaceTracking = () => {
+    if (!videoRef.current || !overlayCanvasRef.current) return
 
-    const video = videoRef.current
-    const canvas = overlayCanvasRef.current
+    // Create face tracker
+    const tracker = createFaceTracker(videoRef.current, overlayCanvasRef.current, {
+      minFaceSize: 0.2,
+      scaleFactor: 1.1,
+      minNeighbors: 5,
+      edgesDensity: 0.1,
+    })
 
-    // Set canvas dimensions to match video
-    canvas.width = video.videoWidth
-    canvas.height = video.videoHeight
+    if (tracker) {
+      faceTrackerRef.current = tracker
 
-    const detectFacesInVideo = async () => {
-      if (!video || !canvas || video.paused || video.ended || !modelsLoaded) {
-        return
-      }
-
-      try {
-        // Detect faces in the video stream
-        const detections = await detectFaces(video)
-
-        // Draw landmarks on the overlay canvas
-        drawFaceLandmarks(canvas, detections)
-
-        // Update face detected state
-        setFaceDetected(detections.length > 0)
+      // Start tracking with callback
+      tracker.startTracking((result) => {
+        setFaceTrackingResult(result)
+        setFaceDetected(result.detected)
         setDetectionError(null)
+      })
 
-        // Continue detection loop
-        animationRef.current = requestAnimationFrame(detectFacesInVideo)
-      } catch (error) {
-        console.error("Error in face detection loop:", error)
-        setDetectionError("Error detecting faces. Please try again.")
-        setFaceDetected(false)
-      }
+      addToast("Face tracking initialized", "success")
+    } else {
+      setDetectionError("Could not initialize face tracking.")
+      addToast("Face tracking initialization failed", "error")
     }
-
-    // Start the detection loop
-    detectFacesInVideo()
   }
 
   const captureImage = async () => {
@@ -177,15 +160,106 @@ export default function AnalyzerPage() {
         // Stop camera after capturing
         stopCamera()
 
-        // Create an image element for face detection
-        const img = new Image()
-        img.crossOrigin = "anonymous"
-        img.onload = async () => {
-          imageRef.current = img
-          await analyzeCapturedImage(img)
+        // Use the face tracking result if available
+        if (faceTrackingResult && faceTrackingResult.detected) {
+          // Generate face shape analysis based on tracking result
+          const analysis = generateFaceShapeFromTracking(faceTrackingResult, imageDataUrl)
+          setFaceAnalysisResult(analysis)
+
+          // Draw face outline on overlay canvas
+          if (overlayCanvasRef.current) {
+            const overlayCanvas = overlayCanvasRef.current
+            overlayCanvas.width = canvas.width
+            overlayCanvas.height = canvas.height
+
+            // Draw tracking result visualization
+            const ctx = overlayCanvas.getContext("2d")
+            if (ctx) {
+              ctx.strokeStyle = "rgba(0, 255, 0, 0.8)"
+              ctx.lineWidth = 2
+              ctx.strokeRect(
+                faceTrackingResult.x,
+                faceTrackingResult.y,
+                faceTrackingResult.width,
+                faceTrackingResult.height,
+              )
+
+              // Draw face landmarks
+              drawFaceLandmarks(ctx, faceTrackingResult)
+            }
+          }
+        } else {
+          // Analyze the captured image if no tracking result
+          await analyzeCapturedImage(imageDataUrl)
         }
-        img.src = imageDataUrl
       }
+    }
+  }
+
+  // Draw face landmarks based on tracking result
+  const drawFaceLandmarks = (ctx: CanvasRenderingContext2D, result: FaceTrackingResult) => {
+    const centerX = result.x + result.width / 2
+    const centerY = result.y + result.height / 2
+    const eyeY = result.y + result.height * 0.35
+    const eyeDistance = result.width * 0.25
+
+    // Draw eyes
+    ctx.fillStyle = "rgba(0, 150, 255, 0.8)"
+    ctx.beginPath()
+    ctx.arc(centerX - eyeDistance, eyeY, 5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.beginPath()
+    ctx.arc(centerX + eyeDistance, eyeY, 5, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Draw nose
+    ctx.fillStyle = "rgba(255, 150, 0, 0.8)"
+    ctx.beginPath()
+    ctx.arc(centerX, centerY, 5, 0, Math.PI * 2)
+    ctx.fill()
+
+    // Draw mouth
+    ctx.strokeStyle = "rgba(255, 0, 150, 0.8)"
+    ctx.beginPath()
+    ctx.arc(centerX, result.y + result.height * 0.7, result.width * 0.2, 0, Math.PI)
+    ctx.stroke()
+  }
+
+  // Generate face shape analysis from tracking result
+  const generateFaceShapeFromTracking = (tracking: FaceTrackingResult, imageData: string) => {
+    // Calculate face shape based on tracking dimensions
+    const widthToHeightRatio = tracking.width / tracking.height
+
+    // Determine face shape based on ratio
+    let faceShape = "Oval" // Default
+
+    if (widthToHeightRatio > 0.95) {
+      if (widthToHeightRatio > 1.05) {
+        faceShape = "Round"
+      } else {
+        faceShape = "Square"
+      }
+    } else if (widthToHeightRatio < 0.85) {
+      faceShape = "Rectangle"
+    }
+
+    // Generate measurements
+    const baseWidth = tracking.width / 10 // Convert to cm (approximate)
+    const baseHeight = tracking.height / 10 // Convert to cm (approximate)
+
+    return {
+      shape: faceShape,
+      confidence: tracking.confidence,
+      measurements: {
+        faceWidth: baseWidth.toFixed(1),
+        faceHeight: baseHeight.toFixed(1),
+        jawWidth: (baseWidth * 0.9).toFixed(1),
+        foreheadWidth: (baseWidth * 0.95).toFixed(1),
+        cheekboneWidth: (baseWidth * 1.0).toFixed(1),
+      },
+      widthToHeightRatio,
+      foreheadToJawRatio: 0.95 / 0.9, // Based on measurements above
+      cheekboneToJawRatio: 1.0 / 0.9, // Based on measurements above
     }
   }
 
@@ -199,74 +273,80 @@ export default function AnalyzerPage() {
       }
 
       const reader = new FileReader()
-      reader.onload = (e) => {
+      reader.onload = async (e) => {
         if (e.target?.result) {
           const imageData = e.target.result as string
           setCapturedImage(imageData)
-
-          // Create an image element for face detection
-          const img = new Image()
-          img.crossOrigin = "anonymous"
-          img.onload = async () => {
-            imageRef.current = img
-            await analyzeCapturedImage(img)
-          }
-          img.src = imageData
+          await analyzeCapturedImage(imageData)
         }
       }
       reader.readAsDataURL(file)
     }
   }
 
-  const analyzeCapturedImage = async (image: HTMLImageElement) => {
-    if (!modelsLoaded) {
-      setDetectionError("Face detection models not loaded. Please try again.")
-      addToast("Face detection models not loaded", "error")
-      return
-    }
+  const analyzeCapturedImage = async (imageData: string) => {
+    setIsDetecting(true)
+    setDetectionError(null)
 
     try {
-      // Detect faces in the image
-      const detections = await detectFaces(image)
+      // Create an image element for analysis
+      const img = new Image()
+      img.crossOrigin = "anonymous"
 
-      if (detections.length === 0) {
+      img.onload = async () => {
+        try {
+          // Analyze if the image contains a face
+          const hasFace = await analyzeImageForFace(img)
+
+          if (!hasFace) {
+            setFaceDetected(false)
+            setDetectionError("No face detected. Please try again with a clearer photo.")
+            addToast("No face detected in the image", "error")
+            setIsDetecting(false)
+            return
+          }
+
+          // Generate face shape analysis
+          const analysis = generateFaceShapeFromImage(imageData)
+
+          // Set face detected and analysis result
+          setFaceDetected(true)
+          setFaceAnalysisResult(analysis)
+          setDetectionError(null)
+
+          // Draw simple face outline on canvas
+          if (overlayCanvasRef.current) {
+            const canvas = overlayCanvasRef.current
+            canvas.width = img.width
+            canvas.height = img.height
+            drawSimpleFaceOutline(canvas, true)
+          }
+
+          console.log("Face analysis result:", analysis)
+        } catch (error) {
+          console.error("Error analyzing image:", error)
+          setFaceDetected(false)
+          setDetectionError("Error analyzing image. Please try again.")
+          addToast("Image analysis failed", "error")
+        } finally {
+          setIsDetecting(false)
+        }
+      }
+
+      img.onerror = () => {
         setFaceDetected(false)
-        setDetectionError("No face detected. Please try again with a clearer photo.")
-        addToast("No face detected in the image", "error")
-        return
+        setDetectionError("Could not load image. Please try again.")
+        addToast("Could not load image", "error")
+        setIsDetecting(false)
       }
 
-      // Use the first detected face
-      const detection = detections[0]
-
-      // Analyze face shape
-      const analysis = analyzeFaceShape(detection.landmarks)
-
-      if (!analysis) {
-        setDetectionError("Could not analyze face shape. Please try again.")
-        addToast("Face analysis failed", "error")
-        return
-      }
-
-      // Set face detected and analysis result
-      setFaceDetected(true)
-      setFaceAnalysisResult(analysis)
-      setDetectionError(null)
-
-      // Draw landmarks on canvas if available
-      if (overlayCanvasRef.current) {
-        const canvas = overlayCanvasRef.current
-        canvas.width = image.width
-        canvas.height = image.height
-        drawFaceLandmarks(canvas, detections)
-      }
-
-      console.log("Face analysis result:", analysis)
+      img.src = imageData
     } catch (error) {
-      console.error("Error analyzing face:", error)
+      console.error("Error in image analysis:", error)
       setFaceDetected(false)
-      setDetectionError("Error analyzing face. Please try again.")
-      addToast("Face analysis failed", "error")
+      setDetectionError("Error analyzing image. Please try again.")
+      addToast("Image analysis failed", "error")
+      setIsDetecting(false)
     }
   }
 
@@ -275,6 +355,8 @@ export default function AnalyzerPage() {
     setFaceDetected(false)
     setFaceAnalysisResult(null)
     setDetectionError(null)
+    setIsDetecting(false)
+    setFaceTrackingResult(null)
 
     if (analysisMode === "camera") {
       initCamera()
@@ -311,7 +393,8 @@ export default function AnalyzerPage() {
       await new Promise((resolve) => setTimeout(resolve, analysisDuration))
 
       // Navigate to results page with the analysis result
-      router.push(`/results?result=true&type=${analysisType}&faceShape=${faceAnalysisResult.shape}`)
+      const faceShape = faceAnalysisResult?.shape || "Oval"
+      router.push(`/results?result=true&type=${analysisType}&faceShape=${faceShape}`)
     } catch (error) {
       console.error("Error during analysis:", error)
       addToast("Analysis failed. Please try again.", "error")
@@ -337,6 +420,8 @@ export default function AnalyzerPage() {
               setFaceDetected(false)
               setFaceAnalysisResult(null)
               setDetectionError(null)
+              setIsDetecting(false)
+              setFaceTrackingResult(null)
             }}
             className={`flex-1 py-2.5 px-4 rounded-md flex items-center justify-center gap-2 transition-colors ${
               analysisMode === "camera" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
@@ -352,6 +437,8 @@ export default function AnalyzerPage() {
               setFaceDetected(false)
               setFaceAnalysisResult(null)
               setDetectionError(null)
+              setIsDetecting(false)
+              setFaceTrackingResult(null)
             }}
             className={`flex-1 py-2.5 px-4 rounded-md flex items-center justify-center gap-2 transition-colors ${
               analysisMode === "upload" ? "bg-blue-600 text-white" : "bg-gray-800 text-gray-300 hover:bg-gray-700"
@@ -435,7 +522,12 @@ export default function AnalyzerPage() {
               </button>
 
               {/* Face detection status */}
-              {faceDetected && (
+              {isDetecting ? (
+                <div className="absolute bottom-2 left-2 bg-blue-500/80 text-white px-2 py-1 rounded-md text-xs flex items-center">
+                  <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  Analyzing Image...
+                </div>
+              ) : faceDetected ? (
                 <div className="absolute bottom-2 left-2 bg-green-500/80 text-white px-2 py-1 rounded-md text-xs flex items-center">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -454,14 +546,12 @@ export default function AnalyzerPage() {
                   </svg>
                   Face Detected
                 </div>
-              )}
-
-              {detectionError && (
+              ) : detectionError ? (
                 <div className="absolute bottom-2 left-2 bg-red-500/80 text-white px-2 py-1 rounded-md text-xs flex items-center">
                   <AlertTriangle className="w-3 h-3 mr-1" />
                   {detectionError}
                 </div>
-              )}
+              ) : null}
             </div>
           ) : analysisMode === "camera" ? (
             <>
@@ -478,19 +568,10 @@ export default function AnalyzerPage() {
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full border-2 border-gray-600 flex items-center justify-center">
                     <Camera className="h-8 w-8 text-gray-400" />
                   </div>
-                  <p className="text-gray-400 text-sm">
-                    {modelsLoading
-                      ? "Loading face detection models..."
-                      : "Camera access will be requested when you start the analysis"}
-                  </p>
-                  {!modelsLoaded && !modelsLoading && (
-                    <button
-                      onClick={() => loadFaceDetectionModels()}
-                      className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md"
-                    >
-                      Load Face Detection Models
-                    </button>
-                  )}
+                  <p className="text-gray-400 text-sm">Camera access will be requested when you start the analysis</p>
+                  <button onClick={initCamera} className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md">
+                    Start Camera
+                  </button>
                 </div>
               )}
 
@@ -515,6 +596,9 @@ export default function AnalyzerPage() {
                         <polyline points="22 4 12 14.01 9 11.01"></polyline>
                       </svg>
                       Face Detected
+                      {faceTrackingResult && (
+                        <span className="ml-1">({Math.round(faceTrackingResult.confidence * 100)}%)</span>
+                      )}
                     </div>
                   ) : (
                     <div className="bg-yellow-500/80 text-white px-2 py-1 rounded-md flex items-center">
@@ -545,21 +629,20 @@ export default function AnalyzerPage() {
               >
                 Select Image
               </label>
-
-              {!modelsLoaded && !modelsLoading && (
-                <button
-                  onClick={() => loadFaceDetectionModels()}
-                  className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md block mx-auto"
-                >
-                  Load Face Detection Models
-                </button>
-              )}
-
-              {modelsLoading && <p className="mt-2 text-blue-400 text-sm">Loading face detection models...</p>}
             </div>
           )}
           <canvas ref={canvasRef} className="hidden" />
         </div>
+
+        {/* WebRTC tracking info */}
+        {analysisMode === "camera" && cameraActive && (
+          <div className="w-full mb-4 bg-blue-500/20 border border-blue-500/30 rounded-md p-3 text-sm text-blue-200">
+            <p className="flex items-center">
+              <Info className="h-4 w-4 mr-2 flex-shrink-0" />
+              Using WebRTC face tracking for real-time face detection and analysis.
+            </p>
+          </div>
+        )}
 
         {/* Analysis features based on type */}
         <div className="w-full mb-4 bg-[#1e293b] p-4 rounded-md">
@@ -645,7 +728,7 @@ export default function AnalyzerPage() {
         {/* Start analysis button */}
         <button
           onClick={startAnalysis}
-          disabled={isAnalyzing || (!capturedImage && analysisMode === "upload") || modelsLoading}
+          disabled={isAnalyzing || isDetecting || (!capturedImage && analysisMode === "upload")}
           className="w-full py-3 px-4 bg-blue-600 text-white rounded-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isAnalyzing ? (
@@ -653,8 +736,11 @@ export default function AnalyzerPage() {
               <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               <span>{analysisType === "simple" ? "Analyzing Face Shape..." : "Performing Detailed Analysis..."}</span>
             </>
-          ) : modelsLoading ? (
-            <span>Loading Face Detection Models...</span>
+          ) : isDetecting ? (
+            <>
+              <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Detecting Face...</span>
+            </>
           ) : capturedImage ? (
             <span>Start {analysisType === "simple" ? "Simple" : "Detailed"} Analysis</span>
           ) : (
